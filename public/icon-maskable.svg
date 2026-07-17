@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="linux-blog">
+  <defs>
+    <linearGradient id="bgm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161b22"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </linearGradient>
+  </defs>
+  <!-- Full-bleed background so platform masks can crop safely -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#bgm)"/>
+  <!-- Glyph kept inside the maskable safe zone (centered ~60%) -->
+  <g transform="translate(256,256) scale(0.62) translate(-256,-256)">
+    <g fill="none" stroke="#3fb950" stroke-width="38" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="182,176 268,256 182,336"/>
+    </g>
+    <rect x="286" y="306" width="150" height="36" rx="18" fill="#3fb950"/>
+  </g>
+</svg>

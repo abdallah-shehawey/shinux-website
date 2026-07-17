@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="linux-blog">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161b22"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded terminal tile -->
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#bg)"/>
+  <rect x="8.75" y="8.75" width="494.5" height="494.5" rx="111.25" fill="none" stroke="#30363d" stroke-width="1.5"/>
+  <!-- Prompt glyph: green ">" chevron + cursor bar -->
+  <g fill="none" stroke="#3fb950" stroke-width="38" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="182,176 268,256 182,336"/>
+  </g>
+  <rect x="286" y="306" width="150" height="36" rx="18" fill="#3fb950"/>
+</svg>

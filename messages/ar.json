@@ -1,0 +1,33 @@
+{
+  "site": {
+    "name": "linux-blog",
+    "tagline": "مدونة شخصية عن لينكس: توزيعات، أوامر، وحلول مشاكل."
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "articles": "المقالات",
+    "questions": "الأسئلة",
+    "ask": "اسأل سؤال",
+    "about": "عنّي"
+  },
+  "theme": {
+    "toggle": "تبديل المظهر"
+  },
+  "locale": {
+    "switchTo": "English"
+  },
+  "home": {
+    "prompt": "whoami",
+    "heroTitle": "أهلاً بك في مدونة لينكس",
+    "heroSubtitle": "شروحات، حلول مشاكل، وأرشيف أسئلة وأجوبة حول لينكس والطرفية — بالعربية والإنجليزية.",
+    "browseArticles": "تصفّح المقالات",
+    "askQuestion": "اطرح سؤالاً",
+    "latestArticles": "أحدث المقالات",
+    "latestQuestions": "أحدث الأسئلة المجابة",
+    "comingSoon": "قريباً في المرحلة القادمة…"
+  },
+  "footer": {
+    "builtWith": "مبني بـ Next.js و Supabase",
+    "rights": "جميع الحقوق محفوظة"
+  }
+}

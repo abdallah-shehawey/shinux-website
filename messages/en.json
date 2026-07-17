@@ -1,0 +1,33 @@
+{
+  "site": {
+    "name": "linux-blog",
+    "tagline": "A personal blog about Linux: distros, commands, and troubleshooting."
+  },
+  "nav": {
+    "home": "Home",
+    "articles": "Articles",
+    "questions": "Questions",
+    "ask": "Ask",
+    "about": "About"
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "locale": {
+    "switchTo": "العربية"
+  },
+  "home": {
+    "prompt": "whoami",
+    "heroTitle": "Welcome to the Linux blog",
+    "heroSubtitle": "Guides, fixes, and a Q&A archive about Linux and the terminal — in Arabic and English.",
+    "browseArticles": "Browse articles",
+    "askQuestion": "Ask a question",
+    "latestArticles": "Latest articles",
+    "latestQuestions": "Latest answered questions",
+    "comingSoon": "Coming in the next phase…"
+  },
+  "footer": {
+    "builtWith": "Built with Next.js & Supabase",
+    "rights": "All rights reserved"
+  }
+}

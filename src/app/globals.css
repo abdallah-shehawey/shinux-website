@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* Class-based dark mode: the `dark` class on <html> controls the theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme (GitHub-light inspired, terminal-green accent). */
+:root {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --accent: #1a7f37;
+  --accent-fg: #ffffff;
+  --border: #d1d9e0;
+  --card: #f6f8fa;
+}
+
+/* Dark theme is the default look of the site. */
+.dark {
+  --bg: #0d1117;
+  --fg: #e6edf3;
+  --muted: #9198a1;
+  --accent: #3fb950;
+  --accent-fg: #051b0d;
+  --border: #30363d;
+  --card: #161b22;
+}
+
+/* Expose the tokens as Tailwind utilities: bg-bg, text-fg, text-accent, etc. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Arabic UI uses IBM Plex Sans Arabic; English uses Inter. */
+html[lang="ar"] body {
+  font-family: var(--font-ibm-plex-arabic), system-ui, sans-serif;
+}
+
+code,
+pre,
+kbd,
+.font-mono {
+  font-family: var(--font-jetbrains-mono), ui-monospace, "Cascadia Code", monospace;
+}
+
+/* Small reusable component classes (plain CSS to stay Tailwind-v4 safe). */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: var(--accent-fg);
+  padding: 0.55rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  padding: 0.55rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-ghost:hover {
+  background: var(--card);
+  border-color: var(--accent);
+}
+
+.card {
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 1.5rem;
+}
