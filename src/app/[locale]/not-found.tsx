@@ -1,15 +1,17 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-// Minimal locale-aware 404. A fuller error/404 experience lands in Phase 6.
-export default function NotFound() {
+// Locale-aware 404. A fuller error/404 experience (custom illustration, etc.)
+// lands in Phase 6.
+export default async function NotFound() {
+  const t = await getTranslations("notFound");
+
   return (
     <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-32 text-center">
-      <p className="font-mono text-4xl text-accent">404</p>
-      <p className="font-mono text-sm text-muted">
-        $ cat page &rarr; No such file or directory
-      </p>
+      <p className="font-mono text-4xl text-accent">{t("title")}</p>
+      <p className="font-mono text-sm text-muted">$ {t("message")}</p>
       <Link href="/" className="btn-ghost mt-2">
-        cd ~/
+        {t("home")}
       </Link>
     </div>
   );

@@ -29,5 +29,35 @@
   "footer": {
     "builtWith": "Built with Next.js & Supabase",
     "rights": "All rights reserved"
+  },
+  "articlesPage": {
+    "title": "Articles",
+    "subtitle": "Guides, fixes, and write-ups about Linux and the terminal.",
+    "allTags": "All",
+    "empty": "No articles yet.",
+    "noResults": "No articles match this tag."
+  },
+  "article": {
+    "readingTime": "{minutes, plural, =1 {1 min read} other {# min read}}",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "toc": "On this page",
+    "prev": "Previous",
+    "next": "Next",
+    "related": "Related articles",
+    "writtenBy": "Written by",
+    "backToArticles": "Back to articles",
+    "notFoundTitle": "Article not found",
+    "notFoundBody": "This article doesn't exist or hasn't been published yet."
+  },
+  "about": {
+    "title": "About",
+    "intro": "Hi, I'm {name} — I write about Linux, the terminal, and whatever breaks (and gets fixed) along the way.",
+    "linksTitle": "Find me online"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "cat page → No such file or directory",
+    "home": "cd ~/"
   }
 }

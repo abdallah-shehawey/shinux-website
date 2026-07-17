@@ -97,3 +97,159 @@ kbd,
   background: var(--card);
   padding: 1.5rem;
 }
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-family: var(--font-jetbrains-mono), monospace;
+  color: var(--muted);
+}
+.tag-chip:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.tag-chip[data-active="true"] {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Article prose ---- */
+.prose {
+  max-width: 68ch;
+  line-height: 1.8;
+  color: var(--fg);
+}
+.prose > * + * {
+  margin-top: 1.15em;
+}
+.prose h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 2em;
+  scroll-margin-top: 5rem;
+}
+.prose h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 1.75em;
+  scroll-margin-top: 5rem;
+}
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose .heading-anchor {
+  color: inherit;
+  text-decoration: none;
+}
+.prose ul,
+.prose ol {
+  padding-inline-start: 1.4em;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose blockquote {
+  border-inline-start: 3px solid var(--accent);
+  padding-inline-start: 1em;
+  color: var(--muted);
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.7rem;
+  text-align: start;
+}
+.prose th {
+  background: var(--card);
+}
+.prose code {
+  font-size: 0.85em;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.3em;
+  padding: 0.1em 0.4em;
+}
+
+/* Code blocks are ALWAYS LTR, regardless of page direction (spec §5). */
+.prose pre {
+  direction: ltr;
+  text-align: start;
+  position: relative;
+  overflow-x: auto;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
+  padding: 1rem 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+.prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Shiki dual-theme (defaultColor:false): every color is ONLY a CSS custom
+   property (--shiki-light[-bg] / --shiki-dark[-bg]) on the <pre>/token spans —
+   nothing is painted until we read one pair or the other here, switched by
+   the site's .dark class. */
+.prose pre.shiki,
+.prose pre .shiki {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg) !important;
+}
+.prose pre.shiki span,
+.prose pre .shiki span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, normal);
+  font-weight: var(--shiki-light-font-weight, inherit);
+}
+.dark .prose pre.shiki,
+.dark .prose pre .shiki {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg) !important;
+}
+.dark .prose pre.shiki span,
+.dark .prose pre .shiki span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, normal);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 0.5rem;
+  inset-inline-end: 0.5rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-family: var(--font-jetbrains-mono), monospace;
+  padding: 0.2rem 0.55rem;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.prose pre:hover .copy-code-btn,
+.copy-code-btn:focus-visible {
+  opacity: 1;
+}
+.copy-code-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
