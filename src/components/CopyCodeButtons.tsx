@@ -1,17 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
+
+const COPY_LABEL = "Copy";
+const COPIED_LABEL = "Copied!";
 
 // Injects a "Copy" button into every <pre> code block inside the article body.
 // Done client-side (rather than in the Markdown pipeline) so the same
 // sanitized HTML works whether it's rendered from a file or, later, from the
 // database — no server-only DOM APIs involved.
 export default function CopyCodeButtons({ containerId }: { containerId: string }) {
-  const t = useTranslations("article");
-  const copyLabel = t("copy");
-  const copiedLabel = t("copied");
-
   useEffect(() => {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -25,15 +23,15 @@ export default function CopyCodeButtons({ containerId }: { containerId: string }
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "copy-code-btn";
-      btn.textContent = copyLabel;
+      btn.textContent = COPY_LABEL;
 
       const onClick = async () => {
         const code = pre.querySelector("code")?.textContent ?? "";
         try {
           await navigator.clipboard.writeText(code);
-          btn.textContent = copiedLabel;
+          btn.textContent = COPIED_LABEL;
           setTimeout(() => {
-            btn.textContent = copyLabel;
+            btn.textContent = COPY_LABEL;
           }, 1500);
         } catch {
           /* clipboard unavailable — silently ignore */
@@ -46,7 +44,7 @@ export default function CopyCodeButtons({ containerId }: { containerId: string }
     });
 
     return () => cleanups.forEach((fn) => fn());
-  }, [containerId, copyLabel, copiedLabel]);
+  }, [containerId]);
 
   return null;
 }

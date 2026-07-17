@@ -1,0 +1,80 @@
+import type { Metadata, Viewport } from "next";
+import { Inter, IBM_Plex_Sans_Arabic, JetBrains_Mono } from "next/font/google";
+import { site } from "@/lib/site";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { ThemeScript } from "@/components/ThemeScript";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+// Still loaded even though the site UI is English-only: individual articles
+// can be written in Arabic and are rendered with this font (see ArticlePage).
+const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ibm-plex-arabic",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1117" },
+  ],
+};
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: { default: site.name, template: `%s · ${site.name}` },
+  description: site.tagline,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: site.name,
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+  },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html
+      lang="en"
+      dir="ltr"
+      suppressHydrationWarning
+      className={`${inter.variable} ${ibmPlexArabic.variable} ${jetbrainsMono.variable} h-full antialiased`}
+    >
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="flex min-h-full flex-col bg-bg text-fg">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <ServiceWorkerRegister />
+      </body>
+    </html>
+  );
+}

@@ -1,15 +1,19 @@
 # linux-blog
 
-A personal Linux blog (articles + Q&A) built with Next.js. English-first (LTR) with
-full Arabic (RTL) support. Production: https://shehaweyblog.vercel.app
+A personal Linux blog (articles + Q&A) built with Next.js. The site UI is
+English-only; individual articles can be written in English or Arabic.
+Production: https://shehaweyblog.vercel.app
 
 > 📖 **صاحب الموقع:** اقرأ **[SETUP.md](./SETUP.md)** — دليل مفصّل بالعربية لكل ما تحتاجه.
 
 ## Tech stack
 
 - **Next.js 16** (App Router, TypeScript) + **Tailwind CSS v4**
-- **next-intl** for i18n — English (default, LTR) and Arabic (`/ar`, RTL)
-- Fonts: IBM Plex Sans Arabic (ar UI), Inter (en UI), JetBrains Mono (code)
+- English-only UI. Articles carry their own `locale` in frontmatter and render
+  with the right `dir`/`lang`/font on their own page — the site chrome (header,
+  footer, labels) never changes language.
+- Fonts: Inter (UI + English articles), IBM Plex Sans Arabic (Arabic articles),
+  JetBrains Mono (code)
 - Dark mode by default, no-flash theme toggle (cookie-based)
 - Installable PWA (web manifest + service worker + icons)
 - Articles: plain Markdown files, `unified`/`remark`/`rehype` + Shiki (dual light/dark
@@ -20,7 +24,7 @@ full Arabic (RTL) support. Production: https://shehaweyblog.vercel.app
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000  (ar: /, en: /en)
+npm run dev        # http://localhost:3000
 npm run build      # production build
 npm start          # serve the production build
 ```
@@ -33,44 +37,47 @@ npm start          # serve the production build
 ## Project structure
 
 ```
-content/articles/{en,ar}/ Markdown articles (see "Adding a new article" below)
-messages/                 translation JSON (ar.json, en.json)
+content/articles/         All articles, flat — one .md file per article (see below)
 public/                   icons, manifest source SVGs, service worker (sw.js)
 src/
-  i18n/                   next-intl routing / navigation / request config
-  proxy.ts                locale middleware (Next 16 "proxy" convention)
   lib/
     articles.ts            reads content/articles, frontmatter, drafts, related, prev/next
     markdown.ts             reusable Markdown -> sanitized HTML pipeline (Shiki, TOC, slugs)
     site.ts                 site/author config (used by AuthorCard, /about)
   app/
-    manifest.ts            PWA web app manifest
-    rss.xml/route.ts       combined RSS feed (both locales)
-    [locale]/
-      layout.tsx           html/body, fonts, theme, header/footer, metadata
-      page.tsx             homepage (latest articles)
-      not-found.tsx        localized 404
-      about/page.tsx
-      articles/page.tsx        list + tag filter (?tag=...)
-      articles/[slug]/page.tsx article page (TOC, reading time, prev/next, related)
-  components/              Header, Footer, ThemeToggle, ThemeScript, LocaleSwitcher,
+    layout.tsx              html/body, fonts, theme, header/footer, metadata (always English/LTR)
+    page.tsx                homepage (latest articles)
+    not-found.tsx           404
+    manifest.ts             PWA web app manifest
+    rss.xml/route.ts        combined RSS feed
+    about/page.tsx
+    articles/page.tsx           list + tag filter (?tag=...)
+    articles/[slug]/page.tsx    article page — TOC, reading time, prev/next, related;
+                                 switches to RTL + Arabic font for that one article
+                                 when its own frontmatter says locale: ar
+  components/              Header, Footer, ThemeToggle, ThemeScript,
                            ServiceWorkerRegister, ArticleCard, AuthorCard,
                            TableOfContents, CopyCodeButtons
 ```
 
-## Internationalization
+## Article language vs. site language
 
-- English is the default and served at the root (`/`, `/articles`, …).
-- Arabic is served under `/ar` (`/ar`, `/ar/articles`, …), rendered RTL.
-- The root is deterministically English (no auto Accept-Language redirect); switch
-  via the header's language button.
-- Always import navigation from `@/i18n/navigation` (locale-aware `Link`), and use
-  logical CSS utilities (`ms-*`, `me-*`, `ps-*`, `pe-*`) so RTL/LTR both work.
+The site's UI (nav, buttons, labels) is always English. This is independent of
+what language an *article* is written in:
+
+- An article's frontmatter `locale: en` or `locale: ar` controls **only that
+  article's own title/tags/body** — it renders RTL with the Arabic font when
+  `ar`, LTR with Inter when `en`. Code blocks are always LTR regardless.
+- Arabic articles get a small "AR" badge on their card and page so readers can
+  tell before clicking.
+- There is no `/en` or `/ar` URL prefix — every article lives at
+  `/articles/your-slug` regardless of its content language.
 
 ## Adding a new article
 
-1. Create a new file at `content/articles/en/your-slug.md` (or `content/articles/ar/your-slug.md`
-   for Arabic). The **filename becomes the URL slug** — use lowercase, hyphens, no spaces.
+1. Create a new file at `content/articles/your-slug.md`. The **filename becomes
+   the URL slug** — use lowercase, hyphens, no spaces. All articles live in this
+   one flat folder regardless of language.
 2. Start the file with frontmatter, then write plain Markdown below it:
 
    ```markdown
@@ -85,8 +92,12 @@ src/
 
    Your content here. Headings (`##`, `###`), lists, tables, links, and fenced
    code blocks (` ```bash `) are all supported and get syntax highlighting
-   automatically. Code blocks always render left-to-right, even on Arabic pages.
+   automatically. Code blocks always render left-to-right.
    ```
+
+   Set `locale: ar` (and write the title/body in Arabic) to publish an Arabic
+   article — the page will render that article RTL automatically while the
+   site's header/footer stay in English.
 
 3. Set `draft: true` while you're still writing — the article then only shows up
    locally (`npm run dev`), never on the live site. Flip it to `false` when ready.
@@ -94,13 +105,13 @@ src/
 
 Notes:
 - `tags` drive both the `/articles` tag filter and the "related articles" section
-  (articles sharing tags are suggested to each other) — reuse the same tag spelling
-  across articles.
+  (articles sharing tags are suggested to each other, regardless of language) —
+  reuse the same tag spelling across articles.
 - `.mdx` files are also read, but only plain Markdown is rendered (no embedded JSX
   components yet) — stick to `.md` for now.
-- There's no requirement that an English and Arabic article share a slug, but doing
-  so (as the sample articles do) keeps things tidy if you ever add a language switch
-  link on the article page itself.
+- Slugs must be unique across the whole folder. If you're writing an Arabic and
+  an English version of the same topic, suffix one (e.g. `my-topic.md` and
+  `my-topic-ar.md`), as the sample articles do.
 
 ---
 

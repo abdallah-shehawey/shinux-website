@@ -1,13 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-
 // The visible icon is driven purely by the `dark` class via CSS (no React
 // state), so there is never a hydration mismatch. Clicking flips the class and
 // persists the choice in a long-lived cookie so ThemeScript can restore it.
 export default function ThemeToggle() {
-  const t = useTranslations("theme");
-
   function toggle() {
     const d = document.documentElement;
     const next = !d.classList.contains("dark");
@@ -20,8 +16,8 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={t("toggle")}
-      title={t("toggle")}
+      aria-label="Toggle theme"
+      title="Toggle theme"
       className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-fg hover:border-accent"
     >
       {/* Sun shown in dark mode (click -> light) */}

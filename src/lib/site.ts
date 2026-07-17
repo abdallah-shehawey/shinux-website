@@ -15,15 +15,18 @@ export interface Author {
 }
 
 export const site = {
+  name: "linux-blog",
+  tagline: "A personal blog about Linux: distros, commands, and troubleshooting.",
   /** Production URL (env-overridable elsewhere via NEXT_PUBLIC_SITE_URL). */
   url: "https://shehaweyblog.vercel.app",
-  repoUrl: "https://github.com/abdallah-shehawey/Linux-Blog",
+  repoUrl: "https://github.com/abdallah-shehawey/shehaweyblog",
   author: {
     name: "Abdallah Shehawey",
     username: "abdallah-shehawey",
   } satisfies Author,
   socials: [
     { label: "GitHub", href: "https://github.com/abdallah-shehawey" },
+    { label: "LinkedIn", href: "https://linkedin.com/in/abdallah-shehawey" },
   ] as SocialLink[],
 } as const;
 

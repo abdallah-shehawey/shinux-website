@@ -1,29 +1,25 @@
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
+import { site } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
-import LocaleSwitcher from "./LocaleSwitcher";
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/articles", label: "Articles" },
+  { href: "/questions", label: "Questions" },
+  { href: "/ask", label: "Ask" },
+  { href: "/about", label: "About" },
+] as const;
 
 export default function Header() {
-  const t = useTranslations("nav");
-  const tSite = useTranslations("site");
-
-  const links = [
-    { href: "/", label: t("home") },
-    { href: "/articles", label: t("articles") },
-    { href: "/questions", label: t("questions") },
-    { href: "/ask", label: t("ask") },
-    { href: "/about", label: t("about") },
-  ] as const;
-
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-4">
+      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-8 lg:px-12">
         <Link
           href="/"
           className="flex items-center gap-1.5 font-mono text-sm font-semibold text-fg"
         >
           <span className="text-accent">$</span>
-          <span>{tSite("name")}</span>
+          <span>{site.name}</span>
         </Link>
 
         <nav className="ms-2 hidden items-center gap-4 text-sm sm:flex">
@@ -39,7 +35,6 @@ export default function Header() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
-          <LocaleSwitcher />
           <ThemeToggle />
         </div>
       </div>

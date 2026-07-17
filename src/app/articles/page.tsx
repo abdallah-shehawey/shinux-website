@@ -1,37 +1,38 @@
-import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { getArticles, getAllTags } from "@/lib/articles";
 import ArticleCard from "@/components/ArticleCard";
 
+export const metadata: Metadata = { title: "Articles" };
+
+function readingLabel(minutes: number) {
+  return `${minutes} min read`;
+}
+
 export default async function ArticlesPage({
-  params,
   searchParams,
 }: {
-  params: Promise<{ locale: string }>;
   searchParams: Promise<{ tag?: string }>;
 }) {
-  const { locale } = await params;
   const { tag } = await searchParams;
-  setRequestLocale(locale);
 
-  const t = await getTranslations("articlesPage");
-  const tReading = await getTranslations("article");
-
-  const allArticles = getArticles(locale);
-  const tags = getAllTags(locale);
+  const allArticles = getArticles();
+  const tags = getAllTags();
   const articles = tag ? allArticles.filter((a) => a.tags.includes(tag)) : allArticles;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
+    <div className="mx-auto max-w-[1600px] px-4 py-12 sm:px-8 lg:px-12">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="mt-2 text-muted">{t("subtitle")}</p>
+        <h1 className="text-3xl font-bold tracking-tight">Articles</h1>
+        <p className="mt-2 text-muted">
+          Guides, fixes, and write-ups about Linux and the terminal.
+        </p>
       </header>
 
       {tags.length > 0 && (
         <div className="mb-8 flex flex-wrap gap-2">
           <Link href="/articles" className="tag-chip" data-active={!tag}>
-            {t("allTags")}
+            All
           </Link>
           {tags.map((tg) => (
             <Link
@@ -47,14 +48,16 @@ export default async function ArticlesPage({
       )}
 
       {articles.length === 0 ? (
-        <p className="text-muted">{tag ? t("noResults") : t("empty")}</p>
+        <p className="text-muted">
+          {tag ? "No articles match this tag." : "No articles yet."}
+        </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => (
             <ArticleCard
               key={article.slug}
               article={article}
-              readingLabel={tReading("readingTime", { minutes: article.readingMinutes })}
+              readingLabel={readingLabel(article.readingMinutes)}
             />
           ))}
         </div>

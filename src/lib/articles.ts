@@ -5,10 +5,12 @@ import matter from "gray-matter";
 import readingTime from "reading-time";
 
 // ------------------------------------------------------------------------------
-// File-based article source. Reads Markdown/MDX from:
-//   content/articles/{en,ar}/*.{md,mdx}
-// Frontmatter (see spec §4):
-//   title, description, date, tags, locale, draft, cover
+// File-based article source. Reads Markdown/MDX from a single flat directory:
+//   content/articles/*.{md,mdx}
+// The site's UI is English-only, but individual articles can be written in
+// English or Arabic — the `locale` frontmatter field is used purely to render
+// THAT article's own title/body with the right dir/lang (spec §4 frontmatter),
+// it does not affect routing or the surrounding site chrome.
 // Drafts are shown in dev only and excluded from production builds.
 // ------------------------------------------------------------------------------
 
@@ -17,7 +19,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 export interface ArticleMeta {
   slug: string;
-  locale: string;
+  locale: string; // content language of this article ("en" | "ar")
   title: string;
   description: string;
   date: string; // YYYY-MM-DD
@@ -38,22 +40,21 @@ function toISODate(value: unknown): string {
   return date.toISOString().slice(0, 10);
 }
 
-function readLocale(locale: string): Article[] {
-  const dir = path.join(CONTENT_DIR, locale);
-  if (!fs.existsSync(dir)) return [];
+function readAll(): Article[] {
+  if (!fs.existsSync(CONTENT_DIR)) return [];
 
   const files = fs
-    .readdirSync(dir)
+    .readdirSync(CONTENT_DIR)
     .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
 
   return files
     .map((file) => {
-      const raw = fs.readFileSync(path.join(dir, file), "utf8");
+      const raw = fs.readFileSync(path.join(CONTENT_DIR, file), "utf8");
       const { data, content } = matter(raw);
       const slug = file.replace(/\.mdx?$/, "");
       return {
         slug,
-        locale,
+        locale: data.locale === "ar" ? "ar" : "en",
         title: typeof data.title === "string" ? data.title : slug,
         description: typeof data.description === "string" ? data.description : "",
         date: toISODate(data.date),
@@ -74,35 +75,31 @@ function stripBody(a: Article): ArticleMeta {
   return meta;
 }
 
-/** All published articles for a locale (newest first), without bodies. */
-export function getArticles(locale: string): ArticleMeta[] {
-  return readLocale(locale).map(stripBody);
+/** All published articles (newest first), without bodies. */
+export function getArticles(): ArticleMeta[] {
+  return readAll().map(stripBody);
 }
 
-/** The N newest articles for a locale (for the homepage). */
-export function getLatestArticles(locale: string, n = 3): ArticleMeta[] {
-  return getArticles(locale).slice(0, n);
+/** The N newest articles (for the homepage). */
+export function getLatestArticles(n = 3): ArticleMeta[] {
+  return getArticles().slice(0, n);
 }
 
 /** A single article (with body), or null if not found / draft in production. */
-export function getArticle(locale: string, slug: string): Article | null {
-  return readLocale(locale).find((a) => a.slug === slug) ?? null;
+export function getArticle(slug: string): Article | null {
+  return readAll().find((a) => a.slug === slug) ?? null;
 }
 
-/** Unique tags across a locale's articles, sorted. */
-export function getAllTags(locale: string): string[] {
+/** Unique tags across all articles, sorted. */
+export function getAllTags(): string[] {
   const set = new Set<string>();
-  for (const a of readLocale(locale)) a.tags.forEach((t) => set.add(t));
+  for (const a of readAll()) a.tags.forEach((t) => set.add(t));
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 
 /** Related articles by tag overlap (most shared tags first), excluding self. */
-export function getRelatedArticles(
-  locale: string,
-  slug: string,
-  limit = 3,
-): ArticleMeta[] {
-  const all = readLocale(locale);
+export function getRelatedArticles(slug: string, limit = 3): ArticleMeta[] {
+  const all = readAll();
   const current = all.find((a) => a.slug === slug);
   if (!current) return [];
   return all
@@ -118,11 +115,11 @@ export function getRelatedArticles(
 }
 
 /** Previous (newer) and next (older) article in the sorted list. */
-export function getPrevNext(locale: string, slug: string): {
+export function getPrevNext(slug: string): {
   prev: ArticleMeta | null;
   next: ArticleMeta | null;
 } {
-  const all = readLocale(locale).map(stripBody);
+  const all = readAll().map(stripBody);
   const i = all.findIndex((a) => a.slug === slug);
   if (i === -1) return { prev: null, next: null };
   return {

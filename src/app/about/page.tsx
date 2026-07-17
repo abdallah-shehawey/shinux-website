@@ -1,43 +1,27 @@
 import type { Metadata } from "next";
-import { setRequestLocale, getTranslations } from "next-intl/server";
 import { site, siteAuthor } from "@/lib/site";
 import AuthorCard from "@/components/AuthorCard";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "about" });
-  return { title: t("title") };
-}
+export const metadata: Metadata = { title: "About" };
 
-export default async function AboutPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations("about");
-
+export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">{t("title")}</h1>
+    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-8">
+      <h1 className="mb-6 text-3xl font-bold tracking-tight">About</h1>
 
       <div className="mb-8">
-        <AuthorCard author={siteAuthor} label={t("linksTitle")} />
+        <AuthorCard author={siteAuthor} label="Find me online" />
       </div>
 
       <p className="text-lg leading-relaxed text-muted">
-        {t("intro", { name: siteAuthor.name })}
+        Hi, I&apos;m {siteAuthor.name} — I write about Linux, the terminal, and
+        whatever breaks (and gets fixed) along the way.
       </p>
 
       {site.socials.length > 0 && (
         <div className="mt-8">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-            {t("linksTitle")}
+            Find me online
           </h2>
           <ul className="flex flex-wrap gap-3">
             {site.socials.map((s) => (
