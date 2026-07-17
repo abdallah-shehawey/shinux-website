@@ -9,6 +9,14 @@ export default function ArticleCard({
   readingLabel: string;
 }) {
   const isRtl = article.locale === "ar";
+  // Bilingual articles advertise every language they carry (e.g. "EN · AR");
+  // single-language Arabic articles keep the plain "AR" tag as before.
+  const langBadge =
+    article.locales.length > 1
+      ? article.locales.map((l) => l.toUpperCase()).join(" · ")
+      : article.locale === "ar"
+        ? "AR"
+        : null;
 
   return (
     <Link
@@ -19,7 +27,7 @@ export default function ArticleCard({
         <span>
           {article.date} · {readingLabel}
         </span>
-        {isRtl && <span className="tag-chip">AR</span>}
+        {langBadge && <span className="tag-chip">{langBadge}</span>}
       </p>
       <div dir={isRtl ? "rtl" : "ltr"} lang={article.locale}>
         <h3 className="text-lg font-semibold text-fg">{article.title}</h3>

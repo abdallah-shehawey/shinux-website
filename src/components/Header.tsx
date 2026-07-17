@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { createClient } from "@/lib/supabase/server";
 import ThemeToggle from "./ThemeToggle";
 
 const links = [
@@ -10,10 +11,15 @@ const links = [
   { href: "/about", label: "About" },
 ] as const;
 
-export default function Header() {
+export default async function Header() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-8 lg:px-12">
+      <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-8 lg:px-12">
         <Link
           href="/"
           className="flex items-center gap-1.5 font-mono text-sm font-semibold text-fg"
@@ -35,6 +41,15 @@ export default function Header() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
+          {user ? (
+            <Link href="/me" className="btn-ghost">
+              My account
+            </Link>
+          ) : (
+            <Link href="/login" className="btn-ghost">
+              Log in
+            </Link>
+          )}
           <ThemeToggle />
         </div>
       </div>

@@ -1,7 +1,7 @@
 # دليل الإعداد — linux-blog
 
 > هذا الملف موجّه لك أنت (صاحب الموقع). مكتوب بالعربية وبخطوات مفصّلة.
-> يُحدَّث بعد كل مرحلة. أنت الآن في نهاية **المرحلة 2 (المدونة)** + تعديلات إضافية طلبتها بعد كده.
+> يُحدَّث بعد كل مرحلة. أنت الآن في **المرحلة 3 (Supabase والمصادقة)** — ومحتاج تعمل خطوات يدوية عشان تسجيل الدخول يشتغل، اقرأ القسم الجديد تحت.
 
 ---
 
@@ -127,11 +127,71 @@ npm start
 
 ---
 
+## ✅ ما الذي تم في المرحلة 3 (Supabase والمصادقة)
+
+- الـ **schema** كامل (جداول `profiles`, `questions`, `answers`, `notifications`,
+  `question_upvotes`) + الـ **view** الخاصة بمنطق "السؤال المجهول" + كل سياسات
+  **RLS** + trigger بينشئ profile تلقائياً أول ما حد يسجّل دخول — كل ده في ملف
+  واحد: `supabase/migrations/0001_init.sql`.
+- صفحة **`/login`**: تسجيل دخول بـ GitHub، Google، أو إيميل (رابط سحري
+  magic link — من غير باسورد).
+- صفحة **`/me`**: بيانات حسابك الأساسية + زرار تسجيل خروج.
+- الشريط العلوي بقى يعرض **"Log in"** لو مش مسجّل، أو **"My account"** لو مسجّل.
+- اختبار آلي (`npm run test:rls`) بيتأكد إن السؤال "المجهول" فعلاً بيختفي فيه اسم
+  صاحبه لما حد بره الموقع يقرأه — ده شرط أساسي من متطلبات الأمان.
+
+### ⚠️ محتاج منك 3 خطوات يدوية عشان ده يشتغل فعلياً
+
+**1) تنفيذ ملف قاعدة البيانات (مرة واحدة فقط):**
+
+1. ادخل **[supabase.com](https://supabase.com)** وسجّل دخول بحساب مشروعك.
+2. من القائمة الجانبية افتح **SQL Editor**.
+3. اضغط **New query**.
+4. افتح الملف `supabase/migrations/0001_init.sql` من مجلد المشروع، انسخ **كل
+   محتواه**، الصقه في محرر SQL في Supabase، واضغط **Run**.
+5. المفروض تشوف رسالة نجاح. لو ظهر أي error، ابعتهولي وأنا أصلحه.
+
+**2) تفعيل تسجيل الدخول بـ GitHub:**
+
+1. في Supabase: **Authentication → Providers → GitHub**، وانسخ الـ **Callback
+   URL** الظاهر هناك (شكله `https://<project-ref>.supabase.co/auth/v1/callback`).
+2. اذهب لـ **github.com → Settings → Developer settings → OAuth Apps → New
+   OAuth App**.
+3. **Homepage URL**: `http://localhost:3000` (وبعد النشر: `https://shehaweyblog.vercel.app`).
+4. **Authorization callback URL**: الصق الـ Callback URL اللي نسخته من Supabase.
+5. بعد الإنشاء، انسخ **Client ID** واعمل **Generate a new client secret** وانسخه.
+6. ارجع لصفحة GitHub Provider في Supabase، الصق الـ Client ID والـ Secret،
+   وفعّل المفتاح (Enable).
+
+**3) تفعيل تسجيل الدخول بـ Google:**
+
+1. ادخل **[console.cloud.google.com](https://console.cloud.google.com)** →
+   أنشئ مشروع جديد (أو استخدم موجود).
+2. **APIs & Services → OAuth consent screen** → اختر **External** → املأ اسم
+   التطبيق وإيميلك.
+3. **APIs & Services → Credentials → Create Credentials → OAuth client ID**
+   → نوع التطبيق **Web application**.
+4. في **Authorized redirect URIs** الصق نفس الـ Callback URL بتاع Supabase
+   (من الخطوة اللي فاتت).
+5. انسخ **Client ID** و **Client Secret**، وحطهم في **Authentication → Providers
+   → Google** في Supabase، وفعّل المفتاح.
+
+**4) خليك أنت الأدمن (بعد أول تسجيل دخول ليك في الموقع):**
+
+1. جرّب تسجّل دخول من `/login` على `http://localhost:3000` (بأي طريقة: GitHub،
+   Google، أو إيميل).
+2. ارجع لـ Supabase → **SQL Editor** ونفّذ (غيّر `اسم_المستخدم` باسم المستخدم
+   اللي اتسجل بيه تلقائياً — تقدر تشوفه في صفحة `/me`):
+
+   ```sql
+   update public.profiles set role = 'admin' where username = 'اسم_المستخدم';
+   ```
+
+بعد الخطوات دي، رجّع افتح `npm run dev` وجرّب تسجّل دخول وتشوف صفحة `/me`.
+
+---
+
 ## 🔜 الخطوات اليدوية القادمة (ليست الآن)
 
-- **المرحلة 3:** مفاتيح Supabase اللي بعتهالي حطيتها بالفعل في `.env.local` (الملف
-  ده مش مرفوع على GitHub، آمن). لسه محتاج منك تفعّل تسجيل الدخول بـ GitHub و Google
-  من لوحة تحكم Supabase — هقولك الخطوة بخطوة بالظبط وقتها.
-- **المرحلة 6:** النشر على **Vercel** وربط الدومين.
-
-لا يوجد أي إجراء مطلوب منك الآن — فقط جرّب `npm run dev` وتصفّح الموقع. 🎉
+- **المرحلة 6:** النشر على **Vercel** وربط الدومين، وبعدين لازم نرجع نغيّر
+  الـ Callback URLs بتاعة GitHub/Google لتاخد الدومين النهائي بدل localhost.

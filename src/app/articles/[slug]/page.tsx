@@ -10,10 +10,9 @@ import {
 } from "@/lib/articles";
 import { renderMarkdown } from "@/lib/markdown";
 import { siteAuthor } from "@/lib/site";
-import TableOfContents from "@/components/TableOfContents";
 import AuthorCard from "@/components/AuthorCard";
 import ArticleCard from "@/components/ArticleCard";
-import CopyCodeButtons from "@/components/CopyCodeButtons";
+import ArticleReader, { type RenderedLocale } from "@/components/ArticleReader";
 
 export function generateStaticParams() {
   return getArticles().map((a) => ({ slug: a.slug }));
@@ -40,8 +39,6 @@ export async function generateMetadata({
     },
   };
 }
-
-const CONTENT_ID = "article-body";
 
 function readingLabel(minutes: number) {
   return `${minutes} min read`;
@@ -90,95 +87,62 @@ export default async function ArticlePage({
   const article = getArticle(slug);
   if (!article) notFound();
 
-  const isRtl = article.locale === "ar";
-  const { html, toc } = await renderMarkdown(article.body);
+  // Render every available language's Markdown up front; the in-page toggle in
+  // <ArticleReader> just swaps between these pre-rendered HTML strings.
+  const rendered: Record<string, RenderedLocale> = {};
+  for (const loc of article.locales) {
+    const t = article.translations[loc];
+    const { html, toc } = await renderMarkdown(t.body);
+    rendered[loc] = {
+      title: t.title,
+      html,
+      toc,
+      readingMinutes: t.readingMinutes,
+    };
+  }
+
   const { prev, next } = getPrevNext(slug);
   const related = getRelatedArticles(slug);
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
       <Link href="/articles" className="text-sm text-muted hover:text-accent">
         &larr; Back to articles
       </Link>
 
-      <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_16rem]">
-        <div>
-          <header
-            className="mb-8"
-            dir={isRtl ? "rtl" : "ltr"}
-            lang={article.locale}
-            style={isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined}
-          >
-            <p className="mb-2 font-mono text-xs text-muted" dir="ltr">
-              {article.date} · {readingLabel(article.readingMinutes)}
-              {isRtl && <span className="ms-2 tag-chip">AR</span>}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {article.title}
-            </h1>
-            {article.tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5" dir="ltr">
-                {article.tags.map((tag) => (
-                  <Link
-                    key={tag}
-                    href={`/articles?tag=${encodeURIComponent(tag)}`}
-                    className="tag-chip"
-                  >
-                    {tag}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </header>
-
-          <div
-            id={CONTENT_ID}
-            className="prose"
-            dir={isRtl ? "rtl" : "ltr"}
-            lang={article.locale}
-            style={isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined}
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
-          <CopyCodeButtons containerId={CONTENT_ID} />
-
-          <div className="mt-10">
-            <AuthorCard author={siteAuthor} label="Written by" />
-          </div>
-
-          {(prev || next) && (
-            <nav className="mt-8 grid gap-3 sm:grid-cols-2">
-              {prev && <AdjacentCard article={prev} label="Previous" align="start" />}
-              {next && <AdjacentCard article={next} label="Next" align="end" />}
-            </nav>
-          )}
-
-          {related.length > 0 && (
-            <div className="mt-10">
-              <h2 className="mb-4 text-lg font-semibold">Related articles</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {related.map((a) => (
-                  <ArticleCard
-                    key={a.slug}
-                    article={a}
-                    readingLabel={readingLabel(a.readingMinutes)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+      <ArticleReader
+        date={article.date}
+        tags={article.tags}
+        locales={article.locales}
+        defaultLocale={article.locale}
+        rendered={rendered}
+      >
+        <div className="mt-10">
+          <AuthorCard author={siteAuthor} label="Written by" />
         </div>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
-            <TableOfContents
-              items={toc}
-              title="On this page"
-              dir={isRtl ? "rtl" : "ltr"}
-              lang={article.locale}
-            />
+        {(prev || next) && (
+          <nav className="mt-8 grid gap-3 sm:grid-cols-2">
+            {prev && <AdjacentCard article={prev} label="Previous" align="start" />}
+            {next && <AdjacentCard article={next} label="Next" align="end" />}
+          </nav>
+        )}
+
+        {related.length > 0 && (
+          <div className="mt-10">
+            <h2 className="mb-4 text-lg font-semibold">Related articles</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {related.map((a) => (
+                <ArticleCard
+                  key={a.slug}
+                  article={a}
+                  readingLabel={readingLabel(a.readingMinutes)}
+                />
+              ))}
+            </div>
           </div>
-        </aside>
-      </article>
+        )}
+      </ArticleReader>
     </div>
   );
 }

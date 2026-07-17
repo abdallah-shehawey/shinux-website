@@ -118,6 +118,27 @@ kbd,
   border-color: var(--accent);
 }
 
+/* Segmented in-article language switch (see ArticleReader). */
+.lang-toggle-btn {
+  padding: 0.2rem 0.7rem;
+  font-size: 0.75rem;
+  font-family: var(--font-jetbrains-mono), monospace;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.lang-toggle-btn + .lang-toggle-btn {
+  border-inline-start: 1px solid var(--border);
+}
+.lang-toggle-btn:hover {
+  color: var(--accent);
+}
+.lang-toggle-btn[data-active="true"] {
+  color: var(--accent-fg);
+  background: var(--accent);
+}
+
 /* ---- Article prose ---- */
 .prose {
   max-width: 68ch;

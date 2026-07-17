@@ -21,7 +21,7 @@ export default async function ArticlesPage({
   const articles = tag ? allArticles.filter((a) => a.tags.includes(tag)) : allArticles;
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Articles</h1>
         <p className="mt-2 text-muted">

@@ -10,7 +10,7 @@ export default function HomePage() {
   const latestArticles = getLatestArticles(3);
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 sm:px-8 lg:px-12">
       <section className="py-20 text-center sm:text-start">
         <p className="mb-3 font-mono text-sm text-accent">
           <span className="text-muted">$</span> whoami

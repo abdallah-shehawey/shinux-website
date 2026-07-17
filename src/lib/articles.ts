@@ -11,26 +11,45 @@ import readingTime from "reading-time";
 // English or Arabic — the `locale` frontmatter field is used purely to render
 // THAT article's own title/body with the right dir/lang (spec §4 frontmatter),
 // it does not affect routing or the surrounding site chrome.
+//
+// An article can also ship in BOTH languages from a SINGLE file: list them with
+// `locales: [en, ar]`, give `title`/`description` per-locale maps, pick the one
+// shown first with `defaultLocale`, and separate the two bodies with
+// `<!-- lang:en -->` / `<!-- lang:ar -->` markers. Such an article is one entry,
+// one URL, and the reader flips languages with an in-page toggle.
+//
 // Drafts are shown in dev only and excluded from production builds.
 // ------------------------------------------------------------------------------
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "articles");
 const isProd = process.env.NODE_ENV === "production";
 
-export interface ArticleMeta {
-  slug: string;
-  locale: string; // content language of this article ("en" | "ar")
+// One language's worth of an article's content.
+export interface LocaleContent {
   title: string;
   description: string;
+  body: string; // raw Markdown for this language (frontmatter/markers stripped)
+  readingMinutes: number;
+}
+
+export interface ArticleMeta {
+  slug: string;
+  locale: string; // the DEFAULT content language ("en" | "ar")
+  locales: string[]; // every language this article ships in, default first
+  title: string; // default-language title
+  description: string; // default-language description
   date: string; // YYYY-MM-DD
   tags: string[];
   cover?: string;
   draft: boolean;
-  readingMinutes: number;
+  readingMinutes: number; // default-language reading time
 }
 
 export interface Article extends ArticleMeta {
-  body: string; // raw Markdown (frontmatter stripped)
+  body: string; // default-language Markdown
+  // Per-language content, keyed by locale. Single-language articles have one
+  // entry; bilingual articles have one per declared locale.
+  translations: Record<string, LocaleContent>;
 }
 
 function toISODate(value: unknown): string {
@@ -38,6 +57,40 @@ function toISODate(value: unknown): string {
   const date = value instanceof Date ? value : new Date(String(value));
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toISOString().slice(0, 10);
+}
+
+// Only these languages are understood; anything else falls back to English.
+function normalizeLocale(value: unknown): string | null {
+  return value === "ar" ? "ar" : value === "en" ? "en" : null;
+}
+
+// Split a bilingual body into { locale: markdown } using `<!-- lang:xx -->`
+// markers. Text before the first marker is ignored. Returns {} when there are
+// no markers (i.e. the body isn't split by language).
+function splitBodyByLocale(content: string): Record<string, string> {
+  const re = /<!--\s*lang:\s*([a-zA-Z-]+)\s*-->/g;
+  const matches = [...content.matchAll(re)];
+  if (matches.length === 0) return {};
+
+  const out: Record<string, string> = {};
+  for (let i = 0; i < matches.length; i++) {
+    const loc = matches[i][1].toLowerCase();
+    const start = (matches[i].index ?? 0) + matches[i][0].length;
+    const end =
+      i + 1 < matches.length ? (matches[i + 1].index ?? content.length) : content.length;
+    out[loc] = content.slice(start, end).trim();
+  }
+  return out;
+}
+
+// A frontmatter field can be a single string (single-language article) or a
+// per-locale map like { en: "...", ar: "..." } (bilingual article).
+function pickLocalized(field: unknown, loc: string, fallback: string): string {
+  if (field && typeof field === "object" && !Array.isArray(field)) {
+    const value = (field as Record<string, unknown>)[loc];
+    return typeof value === "string" ? value : fallback;
+  }
+  return typeof field === "string" ? field : fallback;
 }
 
 function readAll(): Article[] {
@@ -52,17 +105,64 @@ function readAll(): Article[] {
       const raw = fs.readFileSync(path.join(CONTENT_DIR, file), "utf8");
       const { data, content } = matter(raw);
       const slug = file.replace(/\.mdx?$/, "");
+
+      // Which languages does this article ship in? An explicit `locales` array
+      // (length > 1) makes it bilingual; otherwise it's a single-language
+      // article keyed off the legacy `locale` field.
+      const declared = Array.isArray(data.locales)
+        ? [
+            ...new Set(
+              data.locales
+                .map(normalizeLocale)
+                .filter((l): l is string => l !== null),
+            ),
+          ]
+        : [];
+      const localesRaw = declared.length > 0 ? declared : [normalizeLocale(data.locale) ?? "en"];
+      const isBilingual = localesRaw.length > 1;
+
+      // The language shown first when the article is opened (chosen in the .md).
+      const requestedDefault = normalizeLocale(data.defaultLocale);
+      const defaultLocale =
+        requestedDefault && localesRaw.includes(requestedDefault)
+          ? requestedDefault
+          : localesRaw[0];
+      // Default language first — drives the toggle order and the card language.
+      const locales = [defaultLocale, ...localesRaw.filter((l) => l !== defaultLocale)];
+
+      // Bodies per language. If the article claims to be bilingual but has no
+      // markers, keep the whole body under the default language rather than
+      // silently dropping it.
+      let bodyByLocale = isBilingual ? splitBodyByLocale(content) : {};
+      if (isBilingual && Object.keys(bodyByLocale).length === 0) {
+        bodyByLocale = { [defaultLocale]: content };
+      }
+
+      const translations: Record<string, LocaleContent> = {};
+      for (const loc of locales) {
+        const body = isBilingual ? (bodyByLocale[loc] ?? "") : content;
+        translations[loc] = {
+          title: pickLocalized(data.title, loc, slug),
+          description: pickLocalized(data.description, loc, ""),
+          body,
+          readingMinutes: Math.max(1, Math.round(readingTime(body).minutes)),
+        };
+      }
+
+      const def = translations[defaultLocale];
       return {
         slug,
-        locale: data.locale === "ar" ? "ar" : "en",
-        title: typeof data.title === "string" ? data.title : slug,
-        description: typeof data.description === "string" ? data.description : "",
+        locale: defaultLocale,
+        locales,
+        title: def.title,
+        description: def.description,
         date: toISODate(data.date),
         tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
         cover: typeof data.cover === "string" ? data.cover : undefined,
         draft: data.draft === true,
-        readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
-        body: content,
+        readingMinutes: def.readingMinutes,
+        body: def.body,
+        translations,
       } satisfies Article;
     })
     .filter((a) => !(isProd && a.draft)) // hide drafts in production
@@ -70,8 +170,9 @@ function readAll(): Article[] {
 }
 
 function stripBody(a: Article): ArticleMeta {
-  const { body: _body, ...meta } = a;
+  const { body: _body, translations: _translations, ...meta } = a;
   void _body;
+  void _translations;
   return meta;
 }
 
