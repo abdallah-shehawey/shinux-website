@@ -14,7 +14,7 @@ export default async function AskPage() {
   if (!user) redirect("/login?next=/ask");
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-12 sm:px-8">
+    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
       <h1 className="mb-2 text-3xl font-bold tracking-tight">Ask a question</h1>
       <p className="mb-8 text-muted">
         An admin reviews every question before it goes live. Once it&apos;s published, anyone
