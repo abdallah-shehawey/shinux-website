@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 
 export default function ReplyForm({
   answerId,
@@ -71,6 +72,7 @@ export default function ReplyForm({
     setBody("");
     setOpen(false);
     setStatus("idle");
+    await revalidateQuestionCaches();
     router.refresh();
   }
 

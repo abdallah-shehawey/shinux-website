@@ -21,6 +21,7 @@ const LABELS: Record<string, string> = {
   question_rejected: "Your question was not approved",
   question_submitted: "A new question needs review",
   answer_reply: "Someone replied to your answer",
+  new_question_published: "A new question was published",
 };
 
 export function notificationLabel(type: string): string {

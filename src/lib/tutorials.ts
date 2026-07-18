@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
@@ -39,6 +40,8 @@ export interface LessonMeta {
   tags: string[];
   draft: boolean;
   readingMinutes: number;
+  /** Optional `author: <username>` frontmatter, same convention as articles.ts. */
+  author?: string;
 }
 
 export interface Lesson extends LessonMeta {
@@ -55,7 +58,9 @@ function isMarkdown(file: string): boolean {
 }
 
 // Every track directory that has an _index.md, with its meta (no lessons).
-function readTrackDirs(): { slug: string; dir: string; data: Record<string, unknown> }[] {
+// React cache(): a lesson page resolves the track, the lesson and its
+// neighbours — one directory walk per request instead of one per helper.
+const readTrackDirs = cache((): { slug: string; dir: string; data: Record<string, unknown> }[] => {
   if (!fs.existsSync(CONTENT_DIR)) return [];
   return fs
     .readdirSync(CONTENT_DIR, { withFileTypes: true })
@@ -68,9 +73,9 @@ function readTrackDirs(): { slug: string; dir: string; data: Record<string, unkn
       return { slug: e.name, dir, data };
     })
     .filter((t): t is { slug: string; dir: string; data: Record<string, unknown> } => t !== null);
-}
+});
 
-function readLessons(track: string, dir: string): Lesson[] {
+const readLessons = cache((track: string, dir: string): Lesson[] => {
   return fs
     .readdirSync(dir)
     .filter((f) => isMarkdown(f) && f !== "_index.md")
@@ -87,6 +92,7 @@ function readLessons(track: string, dir: string): Lesson[] {
         tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
         draft: data.draft === true,
         readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
+        author: typeof data.author === "string" && data.author.trim() ? data.author.trim() : undefined,
         body: content,
       } satisfies Lesson;
     })
@@ -94,7 +100,7 @@ function readLessons(track: string, dir: string): Lesson[] {
     .sort((a, b) =>
       a.order !== b.order ? a.order - b.order : a.title.localeCompare(b.title),
     );
-}
+});
 
 function stripBody(l: Lesson): LessonMeta {
   const { body: _body, ...meta } = l;
@@ -168,6 +174,20 @@ export function getAllLessonParams(): { track: string; lesson: string }[] {
   return readTrackDirs().flatMap(({ slug, dir }) =>
     readLessons(slug, dir).map((l) => ({ track: slug, lesson: l.slug })),
   );
+}
+
+export interface LessonByAuthor extends LessonMeta {
+  trackTitle: string;
+}
+
+/** Every lesson (across all tracks) written by a given username — for public profiles. */
+export function getLessonsByAuthor(username: string): LessonByAuthor[] {
+  return readTrackDirs().flatMap(({ slug, dir, data }) => {
+    const trackTitle = typeof data.title === "string" ? data.title : slug;
+    return readLessons(slug, dir)
+      .filter((l) => l.author === username)
+      .map((l) => ({ ...stripBody(l), trackTitle }));
+  });
 }
 
 // ------------------------------------------------------------------------------

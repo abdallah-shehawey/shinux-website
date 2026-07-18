@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { site, siteAuthor } from "@/lib/site";
 import { getAuthorProfile } from "@/lib/authors";
 import AuthorCard from "@/components/AuthorCard";
+import { getSocialIcon } from "@/lib/social-icons";
 
 export const metadata: Metadata = { title: "About" };
 
@@ -46,11 +47,13 @@ export default async function AboutPage() {
             Find me online
           </h2>
           <ul className="flex flex-wrap gap-3">
-            {site.socials.map((s) =>
-              s.links ? (
+            {site.socials.map((s) => {
+              const Icon = getSocialIcon(s.label);
+              return s.links ? (
                 <li key={s.label}>
                   <details className="group relative">
-                    <summary className="btn-ghost cursor-pointer select-none list-none">
+                    <summary className="btn-ghost inline-flex cursor-pointer select-none list-none items-center gap-1.5">
+                      <Icon className="h-4 w-4" aria-hidden />
                       {s.label} <span className="ms-1 text-muted">&darr;</span>
                     </summary>
                     <ul className="absolute start-0 top-full z-10 mt-1 flex min-w-max flex-col gap-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
@@ -75,13 +78,14 @@ export default async function AboutPage() {
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-ghost"
+                    className="btn-ghost inline-flex items-center gap-1.5"
                   >
+                    <Icon className="h-4 w-4" aria-hidden />
                     {s.label}
                   </a>
                 </li>
-              ),
-            )}
+              );
+            })}
           </ul>
         </div>
       )}

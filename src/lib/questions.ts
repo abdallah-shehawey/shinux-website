@@ -1,6 +1,9 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAnonClient } from "@/lib/supabase/anon";
+import { renderMarkdown } from "@/lib/markdown";
 
 // ------------------------------------------------------------------------------
 // Q&A data layer (Phase 4/5). Mirrors the shape of src/lib/articles.ts for
@@ -28,6 +31,10 @@ export interface QuestionSummary {
   author_avatar: string | null;
   /** Null when anonymous, same as author_id — never link an anonymous asker. */
   author_username: string | null;
+  /** When the question was actually approved (null for legacy rows published before this column existed). */
+  published_at: string | null;
+  /** coalesce(published_at, created_at) — what the public listing sorts by, so a freshly-approved question jumps to the top. */
+  sort_at: string;
 }
 
 export interface QuestionDetail extends QuestionSummary {
@@ -58,7 +65,19 @@ export interface OwnQuestion {
 }
 
 const SUMMARY_COLUMNS =
-  "id, title, locale, status, slug, tags, created_at, is_anonymous, upvote_count, answer_count, author_id, author_display, author_avatar, author_username";
+  "id, title, locale, status, slug, tags, created_at, is_anonymous, upvote_count, answer_count, author_id, author_display, author_avatar, author_username, published_at, sort_at";
+
+const ANSWER_COLUMNS =
+  "id, question_id, body, is_accepted, created_at, author_id, author_display, author_avatar, author_username";
+
+const REPLY_COLUMNS =
+  "id, answer_id, body, created_at, author_id, author_display, author_avatar, author_username";
+
+// Everything under the "questions" cache tag is public-view data fetched with
+// the cookie-free anon client, stored in the Next data cache. Mutations bust
+// the tag via revalidateQuestionCaches(); `revalidate` is only a backstop for
+// writes that bypass the app (e.g. edits straight in the Supabase dashboard).
+const QUESTIONS_CACHE_REVALIDATE = 300;
 
 /** Published/answered questions, newest first, with optional search + tag filter. */
 export async function getPublicQuestions(opts: {
@@ -70,7 +89,7 @@ export async function getPublicQuestions(opts: {
   let query = supabase
     .from("questions_public")
     .select(SUMMARY_COLUMNS)
-    .order("created_at", { ascending: false });
+    .order("sort_at", { ascending: false });
 
   if (opts.tag) query = query.contains("tags", [opts.tag]);
   if (opts.search) {
@@ -84,30 +103,59 @@ export async function getPublicQuestions(opts: {
   return (data ?? []) as QuestionSummary[];
 }
 
-/** The N newest answered questions (for the homepage). */
-export async function getLatestAnsweredQuestions(limit = 3): Promise<QuestionSummary[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("questions_public")
-    .select(SUMMARY_COLUMNS)
-    .eq("status", "answered")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return (data ?? []) as QuestionSummary[];
-}
+/**
+ * Cached variant of the default (no-search) questions listing, for the index
+ * page. Search results stay on the live getPublicQuestions() path — arbitrary
+ * search terms would mint unbounded cache entries.
+ */
+export const getCachedPublicQuestions = unstable_cache(
+  async (tag?: string): Promise<QuestionSummary[]> => {
+    const supabase = createAnonClient();
+    let query = supabase
+      .from("questions_public")
+      .select(SUMMARY_COLUMNS)
+      .order("sort_at", { ascending: false });
+    if (tag) query = query.contains("tags", [tag]);
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data ?? []) as QuestionSummary[];
+  },
+  ["questions-list"],
+  { revalidate: QUESTIONS_CACHE_REVALIDATE, tags: ["questions"] },
+);
 
-/** Every tag used by a publicly-visible question, sorted. */
-export async function getAllQuestionTags(): Promise<string[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("questions_public").select("tags");
-  if (error) throw error;
-  const set = new Set<string>();
-  for (const row of data ?? []) {
-    for (const tag of (row as { tags: string[] }).tags ?? []) set.add(tag);
-  }
-  return [...set].sort((a, b) => a.localeCompare(b));
-}
+/** The N newest answered questions (for the homepage), from the data cache. */
+export const getLatestAnsweredQuestions = unstable_cache(
+  async (limit = 3): Promise<QuestionSummary[]> => {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase
+      .from("questions_public")
+      .select(SUMMARY_COLUMNS)
+      .eq("status", "answered")
+      .order("sort_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []) as QuestionSummary[];
+  },
+  ["questions-latest"],
+  { revalidate: QUESTIONS_CACHE_REVALIDATE, tags: ["questions"] },
+);
+
+/** Every tag used by a publicly-visible question, sorted. From the data cache. */
+export const getAllQuestionTags = unstable_cache(
+  async (): Promise<string[]> => {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase.from("questions_public").select("tags");
+    if (error) throw error;
+    const set = new Set<string>();
+    for (const row of data ?? []) {
+      for (const tag of (row as { tags: string[] }).tags ?? []) set.add(tag);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  },
+  ["questions-tags"],
+  { revalidate: QUESTIONS_CACHE_REVALIDATE, tags: ["questions"] },
+);
 
 /**
  * A single published/answered question with its full body. Wrapped in React
@@ -227,6 +275,93 @@ export async function getRepliesForAnswers(
   }
   return grouped;
 }
+
+export interface AnswerWithHtml extends AnswerRecord {
+  /** The answer body pre-rendered to sanitized HTML. */
+  html: string;
+}
+
+export interface QuestionThread {
+  question: QuestionDetail;
+  questionHtml: string;
+  answers: AnswerWithHtml[];
+  /** Replies grouped by answer id — a plain object (not a Map) because this
+   *  whole payload is JSON-serialized into the Next data cache. */
+  repliesByAnswer: Record<string, ReplyRecord[]>;
+}
+
+// The full public thread, fetched with the anon client (no cookies — required
+// inside unstable_cache) and with every Markdown body already rendered, so a
+// cache hit serves the page with zero Supabase round trips and zero Shiki work.
+async function fetchQuestionThread(slug: string): Promise<QuestionThread | null> {
+  const supabase = createAnonClient();
+
+  const { data, error } = await supabase
+    .from("questions_public")
+    .select(`${SUMMARY_COLUMNS}, body`)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw error;
+  const question = (data as QuestionDetail | null) ?? null;
+  if (!question) return null;
+
+  const [{ html: questionHtml }, rawAnswers] = await Promise.all([
+    renderMarkdown(question.body),
+    supabase
+      .from("answers_public")
+      .select(ANSWER_COLUMNS)
+      .eq("question_id", question.id)
+      .order("is_accepted", { ascending: false })
+      .order("created_at", { ascending: true })
+      .then(({ data: rows, error: err }) => {
+        if (err) throw err;
+        return (rows ?? []) as AnswerRecord[];
+      }),
+  ]);
+
+  const [answers, repliesByAnswer] = await Promise.all([
+    Promise.all(
+      rawAnswers.map(async (a) => ({ ...a, html: (await renderMarkdown(a.body)).html })),
+    ),
+    (async (): Promise<Record<string, ReplyRecord[]>> => {
+      const grouped: Record<string, ReplyRecord[]> = {};
+      if (rawAnswers.length === 0) return grouped;
+      const { data: rows, error: err } = await supabase
+        .from("answer_replies_public")
+        .select(REPLY_COLUMNS)
+        .in("answer_id", rawAnswers.map((a) => a.id))
+        .order("created_at", { ascending: true });
+      if (err) throw err;
+      for (const reply of (rows ?? []) as ReplyRecord[]) {
+        (grouped[reply.answer_id] ??= []).push(reply);
+      }
+      return grouped;
+    })(),
+  ]);
+
+  return { question, questionHtml, answers, repliesByAnswer };
+}
+
+/**
+ * The question page's data, served from the Next data cache: anonymous
+ * readers open a question without touching Supabase or the Markdown pipeline
+ * after the first visit. Wrapped in React cache() so generateMetadata and the
+ * page body share one lookup per request. Invalidated by
+ * revalidateQuestionCaches() after every Q&A mutation.
+ */
+export const getQuestionThread = cache((slug: string): Promise<QuestionThread | null> => {
+  // Non-ASCII (Arabic) slugs arrive percent-encoded from the router — decode
+  // BEFORE keying the cache so both spellings share one entry.
+  const decoded = decodeURIComponent(slug);
+  return unstable_cache(
+    () => fetchQuestionThread(decoded),
+    ["question-thread", decoded],
+    {
+      revalidate: QUESTIONS_CACHE_REVALIDATE,
+      tags: ["questions", `question:${decoded}`],
+    },
+  )();
+});
 
 /** Whether a given user has already upvoted a question. */
 export async function hasUserUpvoted(questionId: string, userId: string): Promise<boolean> {

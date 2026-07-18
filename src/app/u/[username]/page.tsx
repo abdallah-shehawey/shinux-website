@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPublicProfile } from "@/lib/profiles";
 import { getQuestionsByAuthor, getAnswersByAuthor } from "@/lib/questions";
+import { getArticlesByAuthor } from "@/lib/articles";
+import { getLessonsByAuthor } from "@/lib/tutorials";
+import { getSocialIcon } from "@/lib/social-icons";
 
 export async function generateMetadata({
   params,
@@ -28,15 +31,12 @@ export default async function PublicProfilePage({
   const profile = await getPublicProfile(username);
   if (!profile) notFound();
 
-  // The admin only ever asks a question as scaffolding to write its own
-  // answer — those aren't genuine personal questions, so his own profile
-  // skips "Questions asked" and shows only "Answers given". Everyone else's
-  // questions show normally.
-  const isAdmin = profile.role === "admin";
   const [questions, answers] = await Promise.all([
-    isAdmin ? Promise.resolve([]) : getQuestionsByAuthor(profile.id),
+    getQuestionsByAuthor(profile.id),
     getAnswersByAuthor(profile.id),
   ]);
+  const articles = getArticlesByAuthor(profile.username);
+  const lessons = getLessonsByAuthor(profile.username);
 
   const initial = profile.displayName.trim().charAt(0).toUpperCase();
 
@@ -60,43 +60,95 @@ export default async function PublicProfilePage({
 
       {profile.socialLinks.length > 0 && (
         <ul className="mt-4 flex flex-wrap gap-2">
-          {profile.socialLinks.map((s) => (
-            <li key={s.url}>
-              <a href={s.url} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                {s.label || s.platform}
-              </a>
-            </li>
-          ))}
+          {profile.socialLinks.map((s) => {
+            const Icon = getSocialIcon(s.platform);
+            return (
+              <li key={s.url}>
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-ghost inline-flex items-center gap-1.5"
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                  {s.label || s.platform}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       )}
 
-      {!isAdmin && (
-        <div className="mt-10">
-          <h2 className="mb-3 text-lg font-semibold">
-            Questions asked {questions.length > 0 && `(${questions.length})`}
-          </h2>
-          {questions.length === 0 ? (
-            <p className="text-sm text-muted">No public questions yet.</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {questions.map((q) => (
-                <Link
-                  key={q.id}
-                  href={`/questions/${q.slug}`}
-                  className="card flex items-center justify-between gap-3 hover:border-accent"
-                >
-                  <span className="text-sm font-medium text-fg" dir="auto">
-                    {q.title}
-                  </span>
-                  <span className="tag-chip shrink-0">
-                    {q.answer_count} {q.answer_count === 1 ? "answer" : "answers"}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <div className="mt-10">
+        <h2 className="mb-3 text-lg font-semibold">
+          Articles {articles.length > 0 && `(${articles.length})`}
+        </h2>
+        {articles.length === 0 ? (
+          <p className="text-sm text-muted">No public articles yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {articles.map((a) => (
+              <Link
+                key={a.slug}
+                href={`/articles/${a.slug}`}
+                className="card hover:border-accent"
+              >
+                <p className="text-sm font-medium text-fg" dir="auto">
+                  {a.title}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-10">
+        <h2 className="mb-3 text-lg font-semibold">
+          Tutorials {lessons.length > 0 && `(${lessons.length})`}
+        </h2>
+        {lessons.length === 0 ? (
+          <p className="text-sm text-muted">No public tutorials yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {lessons.map((l) => (
+              <Link
+                key={`${l.track}/${l.slug}`}
+                href={`/tutorials/${l.track}/${l.slug}`}
+                className="card flex items-center justify-between gap-3 hover:border-accent"
+              >
+                <span className="text-sm font-medium text-fg">{l.title}</span>
+                <span className="tag-chip shrink-0">{l.trackTitle}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-10">
+        <h2 className="mb-3 text-lg font-semibold">
+          Questions asked {questions.length > 0 && `(${questions.length})`}
+        </h2>
+        {questions.length === 0 ? (
+          <p className="text-sm text-muted">No public questions yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {questions.map((q) => (
+              <Link
+                key={q.id}
+                href={`/questions/${q.slug}`}
+                className="card flex items-center justify-between gap-3 hover:border-accent"
+              >
+                <span className="text-sm font-medium text-fg" dir="auto">
+                  {q.title}
+                </span>
+                <span className="tag-chip shrink-0">
+                  {q.answer_count} {q.answer_count === 1 ? "answer" : "answers"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="mt-10">
         <h2 className="mb-3 text-lg font-semibold">

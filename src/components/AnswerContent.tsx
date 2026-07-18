@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 import { detectDirection } from "@/lib/bidi";
 import AuthorInline from "@/components/AuthorInline";
 
@@ -14,9 +15,10 @@ function formatDate(iso: string): string {
   });
 }
 
-// Owns an answer's byline and body, plus the admin-only edit toggle for the body.
+// Owns an answer's byline and body, plus the owner-or-admin edit/delete toggle for the body.
 export default function AnswerContent({
   answerId,
+  authorId,
   body,
   bodyHtml,
   authorDisplay,
@@ -24,8 +26,10 @@ export default function AnswerContent({
   authorAvatar,
   createdAt,
   isAdmin,
+  currentUserId,
 }: {
   answerId: string;
+  authorId: string;
   body: string;
   bodyHtml: string;
   authorDisplay: string;
@@ -33,12 +37,14 @@ export default function AnswerContent({
   authorAvatar: string | null;
   createdAt: string;
   isAdmin: boolean;
+  currentUserId: string | null;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [bodyValue, setBodyValue] = useState(body);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const canManage = isAdmin || currentUserId === authorId;
 
   async function handleSave() {
     const trimmed = bodyValue.trim();
@@ -60,6 +66,7 @@ export default function AnswerContent({
 
     setStatus("idle");
     setEditing(false);
+    await revalidateQuestionCaches();
     router.refresh();
   }
 
@@ -69,17 +76,35 @@ export default function AnswerContent({
     setEditing(false);
   }
 
+  async function handleDelete() {
+    if (!confirm("Delete this answer? This can't be undone.")) return;
+    setStatus("loading");
+    const supabase = createClient();
+    const { error } = await supabase.from("answers").delete().eq("id", answerId);
+    if (error) {
+      setStatus("error");
+      setErrorMessage(error.message);
+      return;
+    }
+    await revalidateQuestionCaches();
+    router.refresh();
+  }
+
   return (
     <div>
       <p className="mb-3 flex items-center gap-2 font-mono text-xs text-muted">
         <AuthorInline name={authorDisplay} username={authorUsername} avatar={authorAvatar} />
         <span>&middot;</span>
         <span>{formatDate(createdAt)}</span>
-        {isAdmin && !editing && (
+        {canManage && !editing && (
           <>
             <span>&middot;</span>
             <button type="button" onClick={() => setEditing(true)} className="hover:text-accent">
               Edit
+            </button>
+            <span>&middot;</span>
+            <button type="button" onClick={handleDelete} className="hover:text-red-400">
+              Delete
             </button>
           </>
         )}
@@ -111,11 +136,14 @@ export default function AnswerContent({
           </div>
         </form>
       ) : (
-        <div
-          className="prose max-w-none"
-          dir={detectDirection(body)}
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
+        <>
+          {status === "error" && <p className="mb-2 text-sm text-red-400">{errorMessage}</p>}
+          <div
+            className="prose max-w-none"
+            dir={detectDirection(body)}
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
+        </>
       )}
     </div>
   );

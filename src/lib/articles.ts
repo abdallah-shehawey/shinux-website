@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
@@ -97,7 +98,9 @@ function pickLocalized(field: unknown, loc: string, fallback: string): string {
   return typeof field === "string" ? field : fallback;
 }
 
-function readAll(): Article[] {
+// React cache(): one filesystem scan + frontmatter parse per request, however
+// many helpers below get called (an article page calls three of them).
+const readAll = cache((): Article[] => {
   if (!fs.existsSync(CONTENT_DIR)) return [];
 
   const files = fs
@@ -172,7 +175,7 @@ function readAll(): Article[] {
     })
     .filter((a) => !(isProd && a.draft)) // hide drafts in production
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-}
+});
 
 function stripBody(a: Article): ArticleMeta {
   const { body: _body, translations: _translations, ...meta } = a;
@@ -189,6 +192,11 @@ export function getArticles(): ArticleMeta[] {
 /** The N newest articles (for the homepage). */
 export function getLatestArticles(n = 3): ArticleMeta[] {
   return getArticles().slice(0, n);
+}
+
+/** Every article written by a given username — for public profiles. */
+export function getArticlesByAuthor(username: string): ArticleMeta[] {
+  return getArticles().filter((a) => a.author === username);
 }
 
 /** A single article (with body), or null if not found / draft in production. */

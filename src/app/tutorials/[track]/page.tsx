@@ -29,7 +29,7 @@ export default async function TrackPage({
   const { meta, lessons } = found;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
       <Link href="/tutorials" className="text-sm text-muted hover:text-accent">
         &larr; All tutorials
       </Link>
@@ -42,7 +42,7 @@ export default async function TrackPage({
         {meta.description && <p className="mt-2 text-muted">{meta.description}</p>}
       </header>
 
-      <ol className="flex flex-col gap-3">
+      <ol className="grid gap-4 md:grid-cols-2">
         {lessons.map((lesson, i) => (
           <li key={lesson.slug}>
             <Link

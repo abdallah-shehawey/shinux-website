@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 
 export default function UpvoteButton({
   questionId,
@@ -56,6 +57,9 @@ export default function UpvoteButton({
       // Roll back the optimistic update.
       setUpvoted(!nextUpvoted);
       setCount((c) => c - (nextUpvoted ? 1 : -1));
+    } else {
+      // Fire-and-forget: the optimistic UI already shows the new count.
+      void revalidateQuestionCaches();
     }
     setPending(false);
   }

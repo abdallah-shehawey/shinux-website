@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 import { slugify } from "@/lib/slug";
 
 export interface PendingQuestion {
@@ -58,13 +59,14 @@ export default function AdminQuestionsQueue({ initial }: { initial: PendingQuest
     const slug = await uniqueSlugFor(question.title);
     const { error } = await supabase
       .from("questions")
-      .update({ status: "published", slug })
+      .update({ status: "published", slug, published_at: new Date().toISOString() })
       .eq("id", question.id);
     setBusyId(null);
     if (error) {
       setErrorMessage(error.message);
       return;
     }
+    void revalidateQuestionCaches();
     setQueue((prev) => prev.filter((q) => q.id !== question.id));
   }
 
@@ -81,6 +83,7 @@ export default function AdminQuestionsQueue({ initial }: { initial: PendingQuest
       setErrorMessage(error.message);
       return;
     }
+    void revalidateQuestionCaches();
     setQueue((prev) => prev.filter((q) => q.id !== question.id));
   }
 

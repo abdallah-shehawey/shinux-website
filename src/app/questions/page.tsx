@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPublicQuestions, getAllQuestionTags } from "@/lib/questions";
+import { getPublicQuestions, getCachedPublicQuestions, getAllQuestionTags } from "@/lib/questions";
 import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import QuestionReorderGrid from "@/components/QuestionReorderGrid";
@@ -18,7 +18,9 @@ export default async function QuestionsPage({
   // only runs for signed-in users.
   const [user, rawQuestions, tags, order] = await Promise.all([
     getCurrentUser(),
-    getPublicQuestions({ search: q, tag }),
+    // Default browse view is served from the data cache; live search stays on
+    // the uncached path (arbitrary terms would mint unbounded cache entries).
+    q ? getPublicQuestions({ search: q, tag }) : getCachedPublicQuestions(tag),
     getAllQuestionTags(),
     getQuestionOrder(),
   ]);

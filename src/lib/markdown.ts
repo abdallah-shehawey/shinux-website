@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -95,11 +96,40 @@ function rehypeCollectToc(toc: TocItem[]) {
   };
 }
 
-export async function renderMarkdown(
+// Rendered-output cache keyed by content hash: a given Markdown source is
+// compiled at most once per server process (Shiki tokenization dominates the
+// cost, and the question page renders the question + EVERY answer on each
+// visit). The in-flight promise is stored, so concurrent renders of the same
+// source share one compilation. Bounded FIFO eviction keeps memory flat.
+const RENDER_CACHE_MAX = 500;
+const renderCache = new Map<string, Promise<RenderedMarkdown>>();
+
+export function renderMarkdown(
   source: string,
   options: RenderOptions = {},
 ): Promise<RenderedMarkdown> {
   const { sanitize = true } = options;
+  const key = `${sanitize ? "s" : "r"}:${createHash("sha1").update(source).digest("base64")}`;
+
+  const hit = renderCache.get(key);
+  if (hit) return hit;
+
+  const pending = renderMarkdownUncached(source, sanitize).catch((err) => {
+    renderCache.delete(key); // never cache a failed compile
+    throw err;
+  });
+  if (renderCache.size >= RENDER_CACHE_MAX) {
+    const oldest = renderCache.keys().next().value;
+    if (oldest !== undefined) renderCache.delete(oldest);
+  }
+  renderCache.set(key, pending);
+  return pending;
+}
+
+async function renderMarkdownUncached(
+  source: string,
+  sanitize: boolean,
+): Promise<RenderedMarkdown> {
   const toc: TocItem[] = [];
 
   const processor = unified()

@@ -2,29 +2,18 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  getQuestionBySlug,
-  getAnswersForQuestion,
-  getRepliesForAnswers,
+  getQuestionThread,
   hasUserUpvoted,
-  type AnswerRecord,
+  type AnswerWithHtml,
   type ReplyRecord,
 } from "@/lib/questions";
-import { renderMarkdown } from "@/lib/markdown";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import UpvoteButton from "@/components/UpvoteButton";
 import AnswerForm from "@/components/AnswerForm";
 import ReplyForm from "@/components/ReplyForm";
-import AuthorInline from "@/components/AuthorInline";
 import QuestionContent from "@/components/QuestionContent";
 import AnswerContent from "@/components/AnswerContent";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+import ReplyItem from "@/components/ReplyItem";
 
 function excerpt(text: string, max = 160): string {
   const plain = text.replace(/[#*`>_\-\[\]()]/g, " ").replace(/\s+/g, " ").trim();
@@ -37,7 +26,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const question = await getQuestionBySlug(slug);
+  const question = (await getQuestionThread(slug))?.question;
   if (!question) return {};
 
   return {
@@ -51,52 +40,41 @@ export async function generateMetadata({
   };
 }
 
-async function AnswerBlock({
+function AnswerBlock({
   answer,
   replies,
   isLoggedIn,
   loginNext,
   isAdmin,
+  currentUserId,
 }: {
-  answer: AnswerRecord;
+  answer: AnswerWithHtml;
   replies: ReplyRecord[];
   isLoggedIn: boolean;
   loginNext: string;
   isAdmin: boolean;
+  currentUserId: string | null;
 }) {
-  const { html } = await renderMarkdown(answer.body);
-
   return (
     <div className="card">
       <AnswerContent
         answerId={answer.id}
+        authorId={answer.author_id}
         body={answer.body}
-        bodyHtml={html}
+        bodyHtml={answer.html}
         authorDisplay={answer.author_display ?? "Deleted user"}
         authorUsername={answer.author_username}
         authorAvatar={answer.author_avatar}
         createdAt={answer.created_at}
         isAdmin={isAdmin}
+        currentUserId={currentUserId}
       />
 
       <div className="mt-4 border-t border-border pt-3">
         {replies.length > 0 && (
           <div className="mb-3 flex flex-col gap-2">
             {replies.map((r) => (
-              <div key={r.id} className="ps-3" style={{ borderInlineStart: "2px solid var(--border)" }}>
-                <p className="flex items-center gap-2 font-mono text-xs text-muted">
-                  <AuthorInline
-                    name={r.author_display ?? "Deleted user"}
-                    username={r.author_username}
-                    avatar={r.author_avatar}
-                  />
-                  <span>&middot;</span>
-                  <span>{formatDate(r.created_at)}</span>
-                </p>
-                <p className="mt-0.5 text-sm text-fg" dir="auto">
-                  {r.body}
-                </p>
-              </div>
+              <ReplyItem key={r.id} reply={r} currentUserId={currentUserId} isAdmin={isAdmin} />
             ))}
           </div>
         )}
@@ -113,26 +91,26 @@ export default async function QuestionDetailPage({
 }) {
   const { slug } = await params;
 
-  // The auth lookup doesn't depend on the question — run both together.
-  const [question, user] = await Promise.all([getQuestionBySlug(slug), getCurrentUser()]);
-  if (!question) notFound();
+  // The whole public thread (question + rendered bodies + answers + replies)
+  // comes from the Next data cache — only the auth lookup is per-request.
+  const [thread, user] = await Promise.all([getQuestionThread(slug), getCurrentUser()]);
+  if (!thread) notFound();
+  const { question, questionHtml, answers, repliesByAnswer } = thread;
 
-  const [answers, upvoted, { html: bodyHtml }] = await Promise.all([
-    getAnswersForQuestion(question.id),
-    user ? hasUserUpvoted(question.id, user.id) : Promise.resolve(false),
-    renderMarkdown(question.body),
-  ]);
-
-  // One round trip for every answer's replies instead of one per answer.
-  const repliesByAnswer = await getRepliesForAnswers(answers.map((a) => a.id));
-
-  // Single-owner site so far — admin is the same person as the author of
-  // every question/answer, so gating edit on admin doubles as "edit your own".
+  // Session-scoped reads: only signed-in visitors pay them, and in parallel.
+  let upvoted = false;
   let isAdmin = false;
   if (user) {
     const supabase = await createClient();
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    isAdmin = profile?.role === "admin";
+    [upvoted, isAdmin] = await Promise.all([
+      hasUserUpvoted(question.id, user.id),
+      supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+        .then(({ data: profile }) => profile?.role === "admin"),
+    ]);
   }
 
   // Built from question.slug (straight from the DB) rather than the route
@@ -173,9 +151,11 @@ export default async function QuestionDetailPage({
 
       <QuestionContent
         questionId={question.id}
+        authorId={question.author_id}
+        currentUserId={user?.id ?? null}
         title={question.title}
         body={question.body}
-        bodyHtml={bodyHtml}
+        bodyHtml={questionHtml}
         locale={question.locale}
         tags={question.tags}
         authorDisplay={question.author_display}
@@ -207,10 +187,11 @@ export default async function QuestionDetailPage({
               <AnswerBlock
                 key={answer.id}
                 answer={answer}
-                replies={repliesByAnswer.get(answer.id) ?? []}
+                replies={repliesByAnswer[answer.id] ?? []}
                 isLoggedIn={Boolean(user)}
                 loginNext={currentPath}
                 isAdmin={isAdmin}
+                currentUserId={user?.id ?? null}
               />
             ))}
           </div>

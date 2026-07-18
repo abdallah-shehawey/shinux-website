@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 
 export default function AnswerForm({
   questionId,
@@ -83,6 +84,8 @@ export default function AnswerForm({
     setBody("");
     setMode("write");
     setStatus("idle");
+    // Bust the cached thread BEFORE refreshing, or the refresh re-serves it.
+    await revalidateQuestionCaches();
     router.refresh();
   }
 

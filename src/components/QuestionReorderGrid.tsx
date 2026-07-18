@@ -2,6 +2,7 @@
 
 import QuestionCard from "./QuestionCard";
 import DragReorderList from "./DragReorderList";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 import type { QuestionSummary } from "@/lib/questions";
 
 export default function QuestionReorderGrid({
@@ -29,6 +30,7 @@ export default function QuestionReorderGrid({
       getId={(q) => q.id}
       table="question_order"
       idColumn="question_id"
+      onPersisted={() => void revalidateQuestionCaches()}
       gridClassName={gridClassName}
       renderNormal={grid}
       renderCard={(item) => <QuestionCard question={item} />}

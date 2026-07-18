@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 import AuthorInline from "@/components/AuthorInline";
 
 function formatDate(iso: string): string {
@@ -15,9 +16,11 @@ function formatDate(iso: string): string {
 }
 
 // Owns the question's byline, title and body, plus the admin-only edit toggle
-// for both (slug is never editable — it's baked into the URL on publish).
+// for both (slug is never editable — it's baked into the URL on publish), and
+// the owner-or-admin delete action.
 export default function QuestionContent({
   questionId,
+  authorId,
   title,
   body,
   bodyHtml,
@@ -28,8 +31,10 @@ export default function QuestionContent({
   authorAvatar,
   createdAt,
   isAdmin,
+  currentUserId,
 }: {
   questionId: string;
+  authorId: string | null;
   title: string;
   body: string;
   bodyHtml: string;
@@ -40,6 +45,7 @@ export default function QuestionContent({
   authorAvatar: string | null;
   createdAt: string;
   isAdmin: boolean;
+  currentUserId: string | null;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -47,6 +53,7 @@ export default function QuestionContent({
   const [bodyValue, setBodyValue] = useState(body);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const canDelete = isAdmin || (authorId !== null && currentUserId === authorId);
 
   const isRtl = locale === "ar";
 
@@ -73,6 +80,7 @@ export default function QuestionContent({
 
     setStatus("idle");
     setEditing(false);
+    await revalidateQuestionCaches();
     router.refresh();
   }
 
@@ -81,6 +89,19 @@ export default function QuestionContent({
     setBodyValue(body);
     setErrorMessage("");
     setEditing(false);
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this question? This can't be undone.")) return;
+    setStatus("loading");
+    const supabase = createClient();
+    const { error } = await supabase.from("questions").delete().eq("id", questionId);
+    if (error) {
+      setStatus("error");
+      setErrorMessage(error.message);
+      return;
+    }
+    router.push("/questions");
   }
 
   return (
@@ -98,7 +119,16 @@ export default function QuestionContent({
             </button>
           </>
         )}
+        {canDelete && !editing && (
+          <>
+            <span>&middot;</span>
+            <button type="button" onClick={handleDelete} className="hover:text-red-400">
+              Delete
+            </button>
+          </>
+        )}
       </div>
+      {!editing && status === "error" && <p className="mb-2 text-sm text-red-400">{errorMessage}</p>}
 
       {editing ? (
         <form

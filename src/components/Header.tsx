@@ -58,7 +58,7 @@ export default async function Header() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
-          {user && <NotificationsBell initial={notifications} />}
+          {user && <NotificationsBell initial={notifications} userId={user.id} />}
           {user ? (
             <Link href="/me" className="btn-ghost">
               My account

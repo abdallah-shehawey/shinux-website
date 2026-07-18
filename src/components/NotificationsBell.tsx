@@ -9,19 +9,48 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default function NotificationsBell({ initial }: { initial: NotificationRecord[] }) {
+export default function NotificationsBell({
+  initial,
+  userId,
+}: {
+  initial: NotificationRecord[];
+  userId: string;
+}) {
   const [notifications, setNotifications] = useState(initial);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
+  // `initial` is a server-render snapshot from the root layout, which Next.js
+  // does not re-render on client-side navigation — so it can go stale (e.g.
+  // showing 0 notifications on every page after the first, even once real
+  // ones exist). Refetch on mount to self-correct, and again whenever the
+  // dropdown opens so a long-lived tab stays current.
+  async function refetch() {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("notifications")
+      .select("id, type, payload, is_read, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(8);
+    if (data) setNotifications(data as NotificationRecord[]);
+  }
+
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!open) return;
+    refetch();
     function onClickOutside(e: MouseEvent) {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   async function markRead(id: string) {

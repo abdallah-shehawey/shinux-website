@@ -15,6 +15,8 @@ export interface DragReorderListProps<T> {
   /** Table + column the position upsert writes to, e.g. "article_order" / "slug". */
   table: string;
   idColumn: string;
+  /** Called after the order is saved successfully (e.g. to bust server caches). */
+  onPersisted?: () => void;
 }
 
 // Distance from the top/bottom of the *viewport* (not the grid) that triggers
@@ -34,6 +36,7 @@ export default function DragReorderList<T>({
   gridClassName,
   table,
   idColumn,
+  onPersisted,
 }: DragReorderListProps<T>) {
   const [items, setItems] = useState(initialItems);
   const [reordering, setReordering] = useState(false);
@@ -88,6 +91,7 @@ export default function DragReorderList<T>({
       .upsert(next.map((item, i) => ({ [idColumn]: getId(item), position: i })));
     setSaving(false);
     if (error) setErrorMessage(error.message);
+    else onPersisted?.();
   }
 
   function onDrop(targetIndex: number) {
