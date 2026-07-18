@@ -10,12 +10,13 @@ import {
   type ReplyRecord,
 } from "@/lib/questions";
 import { renderMarkdown } from "@/lib/markdown";
-import { detectDirection } from "@/lib/bidi";
-import { getCurrentUser } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import UpvoteButton from "@/components/UpvoteButton";
 import AnswerForm from "@/components/AnswerForm";
 import ReplyForm from "@/components/ReplyForm";
 import AuthorInline from "@/components/AuthorInline";
+import QuestionContent from "@/components/QuestionContent";
+import AnswerContent from "@/components/AnswerContent";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -55,29 +56,27 @@ async function AnswerBlock({
   replies,
   isLoggedIn,
   loginNext,
+  isAdmin,
 }: {
   answer: AnswerRecord;
   replies: ReplyRecord[];
   isLoggedIn: boolean;
   loginNext: string;
+  isAdmin: boolean;
 }) {
   const { html } = await renderMarkdown(answer.body);
 
   return (
     <div className="card">
-      <p className="mb-3 flex items-center gap-2 font-mono text-xs text-muted">
-        <AuthorInline
-          name={answer.author_display ?? "Deleted user"}
-          username={answer.author_username}
-          avatar={answer.author_avatar}
-        />
-        <span>&middot;</span>
-        <span>{formatDate(answer.created_at)}</span>
-      </p>
-      <div
-        className="prose max-w-none"
-        dir={detectDirection(answer.body)}
-        dangerouslySetInnerHTML={{ __html: html }}
+      <AnswerContent
+        answerId={answer.id}
+        body={answer.body}
+        bodyHtml={html}
+        authorDisplay={answer.author_display ?? "Deleted user"}
+        authorUsername={answer.author_username}
+        authorAvatar={answer.author_avatar}
+        createdAt={answer.created_at}
+        isAdmin={isAdmin}
       />
 
       <div className="mt-4 border-t border-border pt-3">
@@ -127,11 +126,19 @@ export default async function QuestionDetailPage({
   // One round trip for every answer's replies instead of one per answer.
   const repliesByAnswer = await getRepliesForAnswers(answers.map((a) => a.id));
 
+  // Single-owner site so far — admin is the same person as the author of
+  // every question/answer, so gating edit on admin doubles as "edit your own".
+  let isAdmin = false;
+  if (user) {
+    const supabase = await createClient();
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    isAdmin = profile?.role === "admin";
+  }
+
   // Built from question.slug (straight from the DB) rather than the route
   // param — Next.js hands dynamic segments to this component still
   // percent-encoded for non-ASCII (Arabic) slugs, see getQuestionBySlug.
   const currentPath = `/questions/${question.slug}`;
-  const isRtl = question.locale === "ar";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -164,41 +171,18 @@ export default async function QuestionDetailPage({
         &larr; Back to questions
       </Link>
 
-      <div className="mt-4 mb-2 flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
-        <AuthorInline
-          name={question.author_display}
-          username={question.author_username}
-          avatar={question.author_avatar}
-        />
-        <span>&middot;</span>
-        <span>{formatDate(question.created_at)}</span>
-        {question.locale === "ar" && <span className="tag-chip">AR</span>}
-      </div>
-
-      <h1
-        className="mb-4 text-3xl font-bold tracking-tight"
-        dir="auto"
-        lang={question.locale}
-      >
-        {question.title}
-      </h1>
-
-      {question.tags.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-1.5">
-          {question.tags.map((tag) => (
-            <Link key={tag} href={`/questions?tag=${encodeURIComponent(tag)}`} className="tag-chip">
-              {tag}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      <div
-        className="prose max-w-none"
-        dir={isRtl ? "rtl" : "ltr"}
-        lang={question.locale}
-        style={isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined}
-        dangerouslySetInnerHTML={{ __html: bodyHtml }}
+      <QuestionContent
+        questionId={question.id}
+        title={question.title}
+        body={question.body}
+        bodyHtml={bodyHtml}
+        locale={question.locale}
+        tags={question.tags}
+        authorDisplay={question.author_display}
+        authorUsername={question.author_username}
+        authorAvatar={question.author_avatar}
+        createdAt={question.created_at}
+        isAdmin={isAdmin}
       />
 
       <div className="mt-6">
@@ -226,6 +210,7 @@ export default async function QuestionDetailPage({
                 replies={repliesByAnswer.get(answer.id) ?? []}
                 isLoggedIn={Boolean(user)}
                 loginNext={currentPath}
+                isAdmin={isAdmin}
               />
             ))}
           </div>

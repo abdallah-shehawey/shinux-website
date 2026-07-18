@@ -126,7 +126,7 @@ async function main() {
       .insert({
         author_id: adminProfile.id,
         title: item.title,
-        body: item.title,
+        body: "",
         locale: "ar",
         is_anonymous: false,
         status: "published",

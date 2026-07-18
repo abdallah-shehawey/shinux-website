@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export interface DragReorderListProps<T> {
@@ -8,12 +8,19 @@ export interface DragReorderListProps<T> {
   getId: (item: T) => string;
   /** Normal (non-reordering) display — a full grid/list of cards. */
   renderNormal: (items: T[]) => React.ReactNode;
-  /** One compact, draggable row shown while reordering. */
-  renderRow: (item: T) => React.ReactNode;
+  /** The same card used in renderNormal, rendered draggable while reordering. */
+  renderCard: (item: T) => React.ReactNode;
+  /** Grid container classes, shared between the normal and reordering views. */
+  gridClassName: string;
   /** Table + column the position upsert writes to, e.g. "article_order" / "slug". */
   table: string;
   idColumn: string;
 }
+
+// Distance from the top/bottom of the *viewport* (not the grid) that triggers
+// auto-scroll while dragging, and the fastest scroll speed right at the edge.
+const AUTO_SCROLL_EDGE = 120;
+const AUTO_SCROLL_MAX_SPEED = 18;
 
 // Native HTML5 drag-and-drop — no extra dependency. Admin-only in practice
 // (the toggle button is only ever rendered when the caller knows the viewer
@@ -23,7 +30,8 @@ export default function DragReorderList<T>({
   initialItems,
   getId,
   renderNormal,
-  renderRow,
+  renderCard,
+  gridClassName,
   table,
   idColumn,
 }: DragReorderListProps<T>) {
@@ -32,6 +40,44 @@ export default function DragReorderList<T>({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const scrollSpeedRef = useRef(0);
+
+  // Auto-scroll the page while a card is dragged near the top/bottom edge of
+  // the viewport — a reorderable grid is routinely taller than the screen.
+  useEffect(() => {
+    if (!reordering) return;
+
+    function onWindowDragOver(e: DragEvent) {
+      const y = e.clientY;
+      if (y < AUTO_SCROLL_EDGE) {
+        scrollSpeedRef.current = -AUTO_SCROLL_MAX_SPEED * (1 - y / AUTO_SCROLL_EDGE);
+      } else if (y > window.innerHeight - AUTO_SCROLL_EDGE) {
+        scrollSpeedRef.current =
+          AUTO_SCROLL_MAX_SPEED * (1 - (window.innerHeight - y) / AUTO_SCROLL_EDGE);
+      } else {
+        scrollSpeedRef.current = 0;
+      }
+    }
+    function stopScrolling() {
+      scrollSpeedRef.current = 0;
+    }
+
+    let raf = requestAnimationFrame(function tick() {
+      if (scrollSpeedRef.current) window.scrollBy(0, scrollSpeedRef.current);
+      raf = requestAnimationFrame(tick);
+    });
+
+    window.addEventListener("dragover", onWindowDragOver);
+    window.addEventListener("dragend", stopScrolling);
+    window.addEventListener("drop", stopScrolling);
+    return () => {
+      window.removeEventListener("dragover", onWindowDragOver);
+      window.removeEventListener("dragend", stopScrolling);
+      window.removeEventListener("drop", stopScrolling);
+      cancelAnimationFrame(raf);
+      scrollSpeedRef.current = 0;
+    };
+  }, [reordering]);
 
   async function persist(next: T[]) {
     setSaving(true);
@@ -62,7 +108,9 @@ export default function DragReorderList<T>({
         </button>
         {reordering && (
           <p className="text-xs text-muted">
-            {saving ? "Saving…" : "Drag cards to set the order everyone sees."}
+            {saving
+              ? "Saving…"
+              : "Drag cards to set the order everyone sees. Drag near the top/bottom edge to scroll."}
           </p>
         )}
       </div>
@@ -70,7 +118,7 @@ export default function DragReorderList<T>({
       {errorMessage && <p className="mb-3 text-sm text-red-400">{errorMessage}</p>}
 
       {reordering ? (
-        <div className="flex flex-col gap-2">
+        <div className={gridClassName}>
           {items.map((item, i) => (
             <div
               key={getId(item)}
@@ -78,13 +126,15 @@ export default function DragReorderList<T>({
               onDragStart={() => setDragIndex(i)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(i)}
-              className="card flex cursor-grab items-center gap-3 active:cursor-grabbing"
+              className="relative cursor-grab active:cursor-grabbing"
             >
-              <span className="font-mono text-muted" aria-hidden>
+              <span
+                className="absolute end-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-md bg-bg/90 font-mono text-muted shadow-sm"
+                aria-hidden
+              >
                 ⠿
               </span>
-              <span className="font-mono text-xs text-muted">#{i + 1}</span>
-              <div className="min-w-0 flex-1">{renderRow(item)}</div>
+              {renderCard(item)}
             </div>
           ))}
         </div>

@@ -11,8 +11,10 @@ export default function QuestionReorderGrid({
   initialItems: QuestionSummary[];
   isAdmin: boolean;
 }) {
+  const gridClassName = "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
+
   const grid = (items: QuestionSummary[]) => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className={gridClassName}>
       {items.map((question) => (
         <QuestionCard key={question.id} question={question} />
       ))}
@@ -27,10 +29,9 @@ export default function QuestionReorderGrid({
       getId={(q) => q.id}
       table="question_order"
       idColumn="question_id"
+      gridClassName={gridClassName}
       renderNormal={grid}
-      renderRow={(item) => (
-        <span className="truncate text-sm font-medium text-fg">{item.title}</span>
-      )}
+      renderCard={(item) => <QuestionCard question={item} />}
     />
   );
 }

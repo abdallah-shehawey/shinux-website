@@ -14,8 +14,10 @@ export default function ArticleReorderGrid({
   authors: Record<string, Author>;
   isAdmin: boolean;
 }) {
+  const gridClassName = "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
+
   const grid = (items: ArticleMeta[]) => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className={gridClassName}>
       {items.map((article) => (
         <ArticleCard
           key={article.slug}
@@ -35,9 +37,14 @@ export default function ArticleReorderGrid({
       getId={(a) => a.slug}
       table="article_order"
       idColumn="slug"
+      gridClassName={gridClassName}
       renderNormal={grid}
-      renderRow={(item) => (
-        <span className="truncate text-sm font-medium text-fg">{item.title}</span>
+      renderCard={(item) => (
+        <ArticleCard
+          article={item}
+          readingLabel={`${item.readingMinutes} min read`}
+          author={item.author ? authors[item.author] : null}
+        />
       )}
     />
   );

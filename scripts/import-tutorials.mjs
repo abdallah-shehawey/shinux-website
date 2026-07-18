@@ -2,9 +2,9 @@
 // site's file-based Tutorials content (content/tutorials/<track>/*.md).
 //
 // It's a pure filesystem transform — each TRACK points at a source directory of
-// plain Markdown notes. Remote repos (Embedded-Linux-Notes, dotfiles-linux) are
-// downloaded into a scratch dir first (see scripts/fetch-remote-notes.sh) and
-// then imported the same way, so this script never touches the network itself.
+// plain Markdown notes, whether checked out locally or (for repos without a
+// local copy) fetched into a scratch dir first by scripts/fetch-remote-notes.sh
+// and imported the same way — this script never touches the network itself.
 //
 // Per source file it: derives a clean slug + order from the "NN. Name.md"
 // filename, lifts the title from the first H1 and a description from the first
@@ -67,7 +67,36 @@ const TRACKS = [
       "Getting started with the Raspberry Pi and talking to hardware — the entry point into Embedded Linux.",
     tag: "Embedded Linux",
     order: 5,
-    src: "/tmp/tutorial-import/raspberry-pi-interfacing",
+    src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Raspberry pi interfacing",
+    optional: true,
+  },
+  {
+    slug: "qemu",
+    title: "QEMU",
+    description:
+      "Emulation vs. virtualization, and building minimal Linux systems in QEMU for both ARM and x86.",
+    tag: "Embedded Linux",
+    order: 6,
+    src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Qemu",
+    optional: true,
+  },
+  {
+    slug: "yocto",
+    title: "Yocto",
+    description: "An introduction to the Yocto Project for building custom embedded Linux distributions.",
+    tag: "Embedded Linux",
+    order: 7,
+    src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Yocto",
+    optional: true,
+  },
+  {
+    slug: "linux-fundamentals",
+    title: "Linux Fundamentals",
+    description:
+      "Linux from an embedded angle: the boot process, shells, permissions, users & groups, networking, SSH, LVM, package management, MQTT, TTY/PTS and more.",
+    tag: "Linux",
+    order: 8,
+    src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Linux Adminstrtion",
     optional: true,
   },
 ];

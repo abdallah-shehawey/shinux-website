@@ -20,8 +20,8 @@ fetch_dir() {
     done
 }
 
-# Raspberry Pi interfacing → its own Tutorials track (no local copy, no overlap).
-fetch_dir "abdallah-shehawey/Embedded-Linux-Notes" "Raspberry pi interfacing" \
-  "$DEST/raspberry-pi-interfacing"
+# Embedded-Linux-Notes is checked out locally now (see import-tutorials.mjs's
+# TRACKS), so there's nothing to fetch here at the moment — add fetch_dir calls
+# above for any future study-note repo that isn't checked out locally.
 
 echo "Done → $DEST"
