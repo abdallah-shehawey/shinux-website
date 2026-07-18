@@ -134,7 +134,13 @@ Notes:
    anon key, and service_role key (Project Settings → API in the Supabase dashboard).
 2. Run `supabase/migrations/0001_init.sql` once, in full, via the Supabase SQL
    Editor — it creates every table, the `questions_public` view, all RLS
-   policies, and the new-user trigger in one shot.
+   policies, and the new-user trigger in one shot. Then run
+   `supabase/migrations/0002_avatar_storage.sql` the same way — it creates the
+   `avatars` storage bucket (and its access policies) used for profile photos.
+   Then `supabase/migrations/0003_profile_onboarding.sql` — adds the
+   `onboarded` flag that routes first-time sign-ins through `/welcome` to
+   review/edit the name, username, and avatar pulled from their provider
+   before it's saved as final.
 3. Enable the GitHub and Google providers under Authentication → Providers,
    pointing their OAuth app callback URLs at the Callback URL Supabase shows you.
 4. After your first sign-in, promote yourself to admin:

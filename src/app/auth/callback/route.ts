@@ -11,8 +11,22 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarded")
+        .eq("id", data.user.id)
+        .single();
+
+      // First sign-in: let the user review/edit the name, username, and
+      // avatar we derived from their provider before it's treated as final.
+      if (profile && !profile.onboarded) {
+        return NextResponse.redirect(
+          `${origin}/welcome?next=${encodeURIComponent(next)}`,
+        );
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
