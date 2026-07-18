@@ -1,10 +1,16 @@
 ---
-title: "A Comprehensive Guide to SSH"
-description: "Keys, config aliases, hardening sshd, and the file-transfer tools (scp, rsync, curl) that pair with an SSH session."
-date: 2026-07-01
-tags: [ssh, security, networking]
+title: A Comprehensive Guide to SSH
+description: >-
+  Keys, config aliases, hardening sshd, and the file-transfer tools (scp, rsync,
+  curl) that pair with an SSH session.
+date: 2026-07-01T00:00:00.000Z
+tags:
+  - ssh
+  - security
+  - networking
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 An in-depth guide to SSH (Secure Shell): generating and managing keys, connecting to servers securely, and setting up robust authentication. Covers public/private key concepts, key types, hardening, and the tools that pair well with an SSH session.

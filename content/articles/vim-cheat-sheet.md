@@ -1,10 +1,16 @@
 ---
-title: "Vim Cheat Sheet"
-description: "The Vim commands worth memorizing: movement, editing, registers, macros, search & replace, and windows."
-date: 2026-07-08
-tags: [vim, editor, cli]
+title: Vim Cheat Sheet
+description: >-
+  The Vim commands worth memorizing: movement, editing, registers, macros,
+  search & replace, and windows.
+date: 2026-07-08T00:00:00.000Z
+tags:
+  - vim
+  - editor
+  - cli
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 ## Global

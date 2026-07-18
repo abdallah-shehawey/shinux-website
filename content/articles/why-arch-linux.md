@@ -1,15 +1,23 @@
 ---
 title:
-  en: "Why I Switched to Arch Linux"
-  ar: "ليه انتقلت لـ Arch Linux"
+  en: Why I Switched to Arch Linux
+  ar: ليه انتقلت لـ Arch Linux
 description:
-  en: "A short, honest look at why Arch became my daily driver — and who it isn't for."
-  ar: "نظرة صريحة وقصيرة على سبب استخدامي لـ Arch يومياً — ولمين هي مناسبة."
-date: 2026-06-01
-tags: [arch, distros, opinion]
-locales: [en, ar]
+  en: >-
+    A short, honest look at why Arch became my daily driver — and who it isn't
+    for.
+  ar: نظرة صريحة وقصيرة على سبب استخدامي لـ Arch يومياً — ولمين هي مناسبة.
+date: 2026-06-01T00:00:00.000Z
+tags:
+  - arch
+  - distros
+  - opinion
+locales:
+  - en
+  - ar
 defaultLocale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 <!-- lang:en -->

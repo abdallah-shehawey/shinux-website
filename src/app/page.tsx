@@ -1,13 +1,24 @@
 import Link from "next/link";
-import { getLatestArticles } from "@/lib/articles";
+import { getArticles } from "@/lib/articles";
+import { getLatestAnsweredQuestions } from "@/lib/questions";
+import { getAuthorProfiles } from "@/lib/authors";
+import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
 import ArticleCard from "@/components/ArticleCard";
+import QuestionCard from "@/components/QuestionCard";
 
 function readingLabel(minutes: number) {
   return `${minutes} min read`;
 }
 
-export default function HomePage() {
-  const latestArticles = getLatestArticles(3);
+export default async function HomePage() {
+  // The admin's pin order (see /admin/articles) drives this section too, so
+  // "Latest" doubles as a lightweight "Featured" pick once they've used it.
+  const articleOrder = await getArticleOrder();
+  const latestArticles = applyCustomOrder(getArticles(), articleOrder).slice(0, 3);
+  const [latestQuestions, authors] = await Promise.all([
+    getLatestAnsweredQuestions(3),
+    getAuthorProfiles(latestArticles.map((a) => a.author).filter((a): a is string => Boolean(a))),
+  ]);
 
   return (
     <div className="mx-auto w-full px-4 sm:px-8 lg:px-12">
@@ -47,6 +58,7 @@ export default function HomePage() {
                 key={article.slug}
                 article={article}
                 readingLabel={readingLabel(article.readingMinutes)}
+                author={article.author ? authors[article.author] : null}
               />
             ))}
           </div>
@@ -54,10 +66,29 @@ export default function HomePage() {
       </section>
 
       <section className="pb-20">
-        <h2 className="mb-4 text-lg font-semibold">Latest answered questions</h2>
-        <div className="card">
-          <p className="text-sm text-muted">Coming in the next phase&hellip;</p>
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">Latest answered questions</h2>
+          <Link href="/questions" className="text-sm text-accent hover:underline">
+            Browse questions &rarr;
+          </Link>
         </div>
+        {latestQuestions.length === 0 ? (
+          <div className="card">
+            <p className="text-sm text-muted">
+              No answered questions yet.{" "}
+              <Link href="/ask" className="text-accent hover:underline">
+                Ask the first one
+              </Link>
+              .
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-3">
+            {latestQuestions.map((question) => (
+              <QuestionCard key={question.id} question={question} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

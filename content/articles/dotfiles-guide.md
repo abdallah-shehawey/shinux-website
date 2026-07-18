@@ -1,10 +1,16 @@
 ---
-title: "My Personal Linux Setup & Configuration Guide"
-description: "A living reference for the software, GNOME extensions, fonts, and system tweaks I install on every fresh Linux setup."
-date: 2026-04-05
-tags: [dotfiles, gnome, setup]
+title: My Personal Linux Setup & Configuration Guide
+description: >-
+  A living reference for the software, GNOME extensions, fonts, and system
+  tweaks I install on every fresh Linux setup.
+date: 2026-04-05T00:00:00.000Z
+tags:
+  - dotfiles
+  - gnome
+  - setup
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 This document is my personal guide for all the settings, software, and customizations I use on my Linux system.

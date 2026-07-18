@@ -1,8 +1,19 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getOwnQuestions } from "@/lib/questions";
+import { getUserNotifications } from "@/lib/notifications";
 import SignOutButton from "@/components/SignOutButton";
 import ProfileEditor from "@/components/ProfileEditor";
+import NotificationsList from "@/components/NotificationsList";
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Under review",
+  published: "Published",
+  answered: "Answered",
+  rejected: "Not approved",
+};
 
 export const metadata: Metadata = { title: "My account" };
 
@@ -29,6 +40,11 @@ export default async function MePage() {
       })
     : null;
 
+  const [questions, notifications] = await Promise.all([
+    getOwnQuestions(user.id),
+    getUserNotifications(user.id),
+  ]);
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-8">
       <h1 className="mb-8 text-3xl font-bold tracking-tight">My account</h1>
@@ -44,12 +60,44 @@ export default async function MePage() {
         socialLinks={profile?.social_links ?? []}
       />
 
-      <div className="mt-8 card">
-        <h2 className="mb-2 text-lg font-semibold">Your questions</h2>
-        <p className="text-sm text-muted">
-          Coming in the next phase — you&apos;ll see all your questions here,
-          with a badge on any you posted anonymously.
-        </p>
+      <div className="mt-8">
+        <h2 className="mb-3 text-lg font-semibold">Notifications</h2>
+        <NotificationsList initial={notifications} />
+      </div>
+
+      <div className="mt-8">
+        <h2 className="mb-3 text-lg font-semibold">Your questions</h2>
+        {questions.length === 0 ? (
+          <p className="text-sm text-muted">
+            You haven&apos;t asked anything yet.{" "}
+            <Link href="/ask" className="text-accent hover:underline">
+              Ask a question
+            </Link>
+            .
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {questions.map((q) => (
+              <Link
+                key={q.id}
+                href={q.slug ? `/questions/${q.slug}` : "#"}
+                className={`card flex items-center justify-between gap-3 ${q.slug ? "hover:border-accent" : "pointer-events-none opacity-70"}`}
+              >
+                <div>
+                  <p className="text-sm font-medium text-fg">
+                    {q.title} {q.is_anonymous && <span title="Posted anonymously">🕶️</span>}
+                  </p>
+                  {q.status === "answered" && (
+                    <p className="mt-0.5 text-xs text-muted">
+                      {q.answer_count} {q.answer_count === 1 ? "answer" : "answers"}
+                    </p>
+                  )}
+                </div>
+                <span className="tag-chip shrink-0">{STATUS_LABEL[q.status] ?? q.status}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8">

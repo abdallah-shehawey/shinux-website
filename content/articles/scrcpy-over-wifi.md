@@ -1,10 +1,15 @@
 ---
-title: "Mirroring Your Android Phone with scrcpy (USB & Wi-Fi)"
-description: "Install scrcpy and control your Android phone from Linux over USB or wireless debugging, no root required."
-date: 2026-05-17
-tags: [android, tools]
+title: Mirroring Your Android Phone with scrcpy (USB & Wi-Fi)
+description: >-
+  Install scrcpy and control your Android phone from Linux over USB or wireless
+  debugging, no root required.
+date: 2026-05-17T00:00:00.000Z
+tags:
+  - android
+  - tools
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 `scrcpy` lets you display and control your Android phone from a Linux PC. It works over **USB** or **Wi-Fi**, has low latency, and does not require root.

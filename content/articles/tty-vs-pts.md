@@ -1,10 +1,15 @@
 ---
-title: "TTY vs PTS: What's the Real Difference?"
-description: "Kernel virtual consoles vs software-emulated pseudo-terminals, explained with a real-life analogy and a boot-to-shell flow."
-date: 2026-07-05
-tags: [terminal, systems]
+title: 'TTY vs PTS: What''s the Real Difference?'
+description: >-
+  Kernel virtual consoles vs software-emulated pseudo-terminals, explained with
+  a real-life analogy and a boot-to-shell flow.
+date: 2026-07-05T00:00:00.000Z
+tags:
+  - terminal
+  - systems
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 ## What is TTY?

@@ -1,10 +1,17 @@
 ---
-title: "One Script to Update Everything on Ubuntu & Fedora"
-description: "A single command that updates apt/dnf, Flatpak, and GNOME extensions, with NVIDIA drivers skipped by default."
-date: 2026-05-24
-tags: [ubuntu, fedora, bash, maintenance]
+title: One Script to Update Everything on Ubuntu & Fedora
+description: >-
+  A single command that updates apt/dnf, Flatpak, and GNOME extensions, with
+  NVIDIA drivers skipped by default.
+date: 2026-05-24T00:00:00.000Z
+tags:
+  - ubuntu
+  - fedora
+  - bash
+  - maintenance
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 Unified, clean update scripts for **Ubuntu** and **Fedora**. Both scripts update the system, Flatpak, and GNOME extensions, and **skip NVIDIA drivers by default** (NVIDIA updates can occasionally break things mid-session, so it's safer to opt in explicitly).

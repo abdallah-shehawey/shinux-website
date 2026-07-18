@@ -1,10 +1,16 @@
 ---
-title: "Wildcards & Globbing in Linux: A Deep CLI Guide"
-description: "How shell globbing actually works, where it differs from regex, and the safety habits that prevent painful mistakes."
-date: 2026-06-17
-tags: [terminal, bash, cli]
+title: 'Wildcards & Globbing in Linux: A Deep CLI Guide'
+description: >-
+  How shell globbing actually works, where it differs from regex, and the safety
+  habits that prevent painful mistakes.
+date: 2026-06-17T00:00:00.000Z
+tags:
+  - terminal
+  - bash
+  - cli
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 A practical, system-level guide to understanding **wildcards (globbing)** in the Linux command line — how globbing really works, how shells differ, and the pitfalls worth knowing.

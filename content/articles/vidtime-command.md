@@ -1,10 +1,15 @@
 ---
-title: "vidtime: A Tiny CLI Tool for Video Durations"
-description: "A Unix-style Bash script that prints the HH:MM:SS duration of one or many video files using ffprobe."
-date: 2026-05-31
-tags: [bash, cli]
+title: 'vidtime: A Tiny CLI Tool for Video Durations'
+description: >-
+  A Unix-style Bash script that prints the HH:MM:SS duration of one or many
+  video files using ffprobe.
+date: 2026-05-31T00:00:00.000Z
+tags:
+  - bash
+  - cli
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 `vidtime` is a lightweight, Unix-style command-line utility that prints the **duration of video files** in a clean `HH:MM:SS` format. It's designed to work naturally with shell arguments, wildcards, and filenames containing spaces.

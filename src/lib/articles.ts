@@ -43,6 +43,10 @@ export interface ArticleMeta {
   cover?: string;
   draft: boolean;
   readingMinutes: number; // default-language reading time
+  // Optional `author: <username>` frontmatter — a real account's username,
+  // resolved to a live display_name/avatar via src/lib/authors.ts. Falls back
+  // to the hardcoded siteAuthor (src/lib/site.ts) when absent or unresolved.
+  author?: string;
 }
 
 export interface Article extends ArticleMeta {
@@ -159,6 +163,7 @@ function readAll(): Article[] {
         date: toISODate(data.date),
         tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
         cover: typeof data.cover === "string" ? data.cover : undefined,
+        author: typeof data.author === "string" && data.author.trim() ? data.author.trim() : undefined,
         draft: data.draft === true,
         readingMinutes: def.readingMinutes,
         body: def.body,
@@ -196,6 +201,29 @@ export function getAllTags(): string[] {
   const set = new Set<string>();
   for (const a of readAll()) a.tags.forEach((t) => set.add(t));
   return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Case-insensitive search across an article's title, description, tags, and
+ * full body — every language's translation is checked, so a word inside the
+ * Arabic half of a bilingual article still matches. Returns metas (no
+ * bodies) sorted newest-first, same as getArticles().
+ */
+export function searchArticles(query: string): ArticleMeta[] {
+  const term = query.trim().toLowerCase();
+  if (!term) return getArticles();
+
+  return readAll()
+    .filter((a) => {
+      const haystacks = [
+        a.title,
+        a.description,
+        ...a.tags,
+        ...Object.values(a.translations).flatMap((t) => [t.title, t.description, t.body]),
+      ];
+      return haystacks.some((h) => h.toLowerCase().includes(term));
+    })
+    .map(stripBody);
 }
 
 /** Related articles by tag overlap (most shared tags first), excluding self. */

@@ -1,10 +1,16 @@
 ---
-title: "Enabling Hibernate on Linux (Debian-based & Fedora)"
-description: "Configure swap, GRUB, and initramfs so your machine can hibernate and resume exactly where you left off."
-date: 2026-04-26
-tags: [debian, fedora, power-management]
+title: Enabling Hibernate on Linux (Debian-based & Fedora)
+description: >-
+  Configure swap, GRUB, and initramfs so your machine can hibernate and resume
+  exactly where you left off.
+date: 2026-04-26T00:00:00.000Z
+tags:
+  - debian
+  - fedora
+  - power-management
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 ## Overview

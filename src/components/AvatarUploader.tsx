@@ -77,6 +77,41 @@ export default function AvatarUploader({
     router.refresh();
   }
 
+  async function onRemove() {
+    setStatus("loading");
+    setErrorMessage("");
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Actually delete the stored file (not just the profile's reference to
+    // it) so removing a photo frees the space instead of leaving it orphaned.
+    const { error: removeError } = await supabase.storage
+      .from("avatars")
+      .remove([`${user.id}/avatar`]);
+    if (removeError) {
+      setStatus("error");
+      setErrorMessage(removeError.message);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: null })
+      .eq("id", user.id);
+    if (updateError) {
+      setStatus("error");
+      setErrorMessage(updateError.message);
+      return;
+    }
+
+    setPreview(null);
+    setStatus("idle");
+    router.refresh();
+  }
+
   return (
     <div className="flex items-center gap-4">
       <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-mono text-xl font-bold text-accent-fg">
@@ -88,14 +123,26 @@ export default function AvatarUploader({
         )}
       </div>
       <div>
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={status === "loading"}
-          className="btn-ghost"
-        >
-          {status === "loading" ? "Uploading..." : "Change photo"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={status === "loading"}
+            className="btn-ghost"
+          >
+            {status === "loading" ? "Uploading..." : "Change photo"}
+          </button>
+          {preview && (
+            <button
+              type="button"
+              onClick={onRemove}
+              disabled={status === "loading"}
+              className="btn-ghost"
+            >
+              Remove
+            </button>
+          )}
+        </div>
         <input
           ref={inputRef}
           type="file"

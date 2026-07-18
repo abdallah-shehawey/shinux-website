@@ -1,10 +1,17 @@
 ---
-title: "Fedora + Distrobox + Arch + AUR Setup Guide"
-description: "Run an Arch Linux container inside Fedora with Distrobox, enable NVIDIA GPU support, and install AUR packages."
-date: 2026-04-19
-tags: [fedora, arch, distrobox, containers]
+title: Fedora + Distrobox + Arch + AUR Setup Guide
+description: >-
+  Run an Arch Linux container inside Fedora with Distrobox, enable NVIDIA GPU
+  support, and install AUR packages.
+date: 2026-04-19T00:00:00.000Z
+tags:
+  - fedora
+  - arch
+  - distrobox
+  - containers
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 This guide explains how to:

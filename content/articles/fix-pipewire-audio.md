@@ -1,15 +1,22 @@
 ---
 title:
-  en: "Fixing No Audio After a PipeWire Update"
-  ar: "حل مشكلة الصوت في Arch Linux"
+  en: Fixing No Audio After a PipeWire Update
+  ar: حل مشكلة الصوت في Arch Linux
 description:
-  en: "The three commands that fix 90% of 'no sound' issues on PipeWire."
-  ar: "الثلاث أوامر اللي بتحل 90% من مشاكل اختفاء الصوت بعد تحديث PipeWire."
-date: 2026-07-10
-tags: [audio, pipewire, troubleshooting, arch]
-locales: [en, ar]
+  en: The three commands that fix 90% of 'no sound' issues on PipeWire.
+  ar: الثلاث أوامر اللي بتحل 90% من مشاكل اختفاء الصوت بعد تحديث PipeWire.
+date: 2026-07-10T00:00:00.000Z
+tags:
+  - audio
+  - pipewire
+  - troubleshooting
+  - arch
+locales:
+  - en
+  - ar
 defaultLocale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 <!-- lang:en -->

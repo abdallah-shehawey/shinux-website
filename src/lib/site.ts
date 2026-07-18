@@ -4,7 +4,10 @@
 
 export interface SocialLink {
   label: string;
-  href: string;
+  /** A direct link. Omit and use `links` instead when a platform has more than one account. */
+  href?: string;
+  /** Multiple accounts on the same platform (e.g. two Facebook profiles) — rendered as a small expandable group. */
+  links?: { label: string; href: string }[];
 }
 
 export interface Author {
@@ -24,9 +27,25 @@ export const site = {
     name: "Abdallah Shehawey",
     username: "abdallah-shehawey",
   } satisfies Author,
+  // Kept in sync with linkora-rouge.vercel.app/abdallahshehawey (his
+  // link-in-bio page) and abdallahshehawey.vercel.app (his portfolio) —
+  // update both places by hand if a link there changes.
   socials: [
+    { label: "Portfolio", href: "https://abdallahshehawey.vercel.app/" },
     { label: "GitHub", href: "https://github.com/abdallah-shehawey" },
-    { label: "LinkedIn", href: "https://linkedin.com/in/abdallah-shehawey" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/abdallah-shehawey" },
+    { label: "X (Twitter)", href: "https://x.com/abdallashehawey" },
+    { label: "Instagram", href: "https://www.instagram.com/abdallah_shehawey" },
+    { label: "Telegram", href: "https://t.me/abdullah_shehawey" },
+    {
+      label: "Facebook",
+      links: [
+        { label: "Abdallah Shehawey", href: "https://www.facebook.com/share/1D5FvK4NSg/" },
+        { label: "Facebook (For Fun)", href: "https://www.facebook.com/share/1JgfzcvfHQ/" },
+      ],
+    },
+    { label: "WhatsApp", href: "https://wa.me/201501899476" },
+    { label: "Email", href: "mailto:shehawey9@gmail.com" },
   ] as SocialLink[],
 } as const;
 

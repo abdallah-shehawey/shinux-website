@@ -17,6 +17,21 @@ export default async function Header() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  let isAdmin = false;
+  let unreadCount = 0;
+  if (user) {
+    const [{ data: profile }, { count }] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", user.id).single(),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false),
+    ]);
+    isAdmin = profile?.role === "admin";
+    unreadCount = count ?? 0;
+  }
+
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
       <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-8 lg:px-12">
@@ -38,12 +53,22 @@ export default async function Header() {
               {l.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link href="/admin" className="text-muted transition-colors hover:text-fg">
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
           {user ? (
-            <Link href="/me" className="btn-ghost">
+            <Link href="/me" className="btn-ghost relative">
               My account
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -end-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-fg">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </Link>
           ) : (
             <Link href="/login" className="btn-ghost">

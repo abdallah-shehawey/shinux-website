@@ -1,10 +1,15 @@
 ---
-title: "Journaling in Linux Filesystems: A Deep Systems Guide"
-description: "Why journaling exists, what it does and doesn't protect, and how ext4, XFS, and Btrfs approach it differently."
-date: 2026-06-24
-tags: [filesystems, systems]
+title: 'Journaling in Linux Filesystems: A Deep Systems Guide'
+description: >-
+  Why journaling exists, what it does and doesn't protect, and how ext4, XFS,
+  and Btrfs approach it differently.
+date: 2026-06-24T00:00:00.000Z
+tags:
+  - filesystems
+  - systems
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 A systems-level guide to journaling in Linux filesystems: why it exists, how it works internally, what is (and isn't) protected, and how ext4, XFS, and Btrfs make different trade-offs.

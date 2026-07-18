@@ -1,22 +1,44 @@
 import type { Metadata } from "next";
 import { site, siteAuthor } from "@/lib/site";
+import { getAuthorProfile } from "@/lib/authors";
 import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = { title: "About" };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // Live name/avatar from the site's own account (settable via /me), same
+  // source as the article bylines — falls back to the hardcoded siteAuthor
+  // if migration 0006 isn't applied yet or the lookup fails.
+  const author = (await getAuthorProfile(siteAuthor.username).catch(() => null)) ?? siteAuthor;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-8">
       <h1 className="mb-6 text-3xl font-bold tracking-tight">About</h1>
 
       <div className="mb-8">
-        <AuthorCard author={siteAuthor} label="Find me online" />
+        <AuthorCard author={author} label="Find me online" />
       </div>
 
-      <p className="text-lg leading-relaxed text-muted">
-        Hi, I&apos;m {siteAuthor.name} — I write about Linux, the terminal, and
-        whatever breaks (and gets fixed) along the way.
-      </p>
+      <div className="flex flex-col gap-4 text-lg leading-relaxed text-muted">
+        <p>
+          Hi, I&apos;m {author.name} — an Electronics &amp; Communication Engineering
+          graduate from Al-Azhar University (Cairo, 2026) who fell in love with what
+          happens below the operating system. I write firmware in C/C++, build device
+          drivers from the datasheet up, and care about deterministic, real-time code.
+        </p>
+        <p>
+          My focus is automotive-grade embedded software: RTOS-based architectures,
+          communication protocols (CAN, LIN, UART, SPI, I2C), and the AUTOSAR layered
+          architecture. My graduation project was a V2X collision-avoidance vehicle, and
+          these days I&apos;m digging deeper into Embedded Linux — kernel fundamentals,
+          Yocto, and Buildroot. This blog is where I write that part down.
+        </p>
+        <p>
+          When I&apos;m not shipping firmware, I teach — I&apos;ve trained 200+ students in
+          C and embedded systems through AZEX and Google Developer Student Club at my
+          university — and I sharpen my skills in coding competitions and hackathons.
+        </p>
+      </div>
 
       {site.socials.length > 0 && (
         <div className="mt-8">
@@ -24,18 +46,42 @@ export default function AboutPage() {
             Find me online
           </h2>
           <ul className="flex flex-wrap gap-3">
-            {site.socials.map((s) => (
-              <li key={s.href}>
-                <a
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-ghost"
-                >
-                  {s.label}
-                </a>
-              </li>
-            ))}
+            {site.socials.map((s) =>
+              s.links ? (
+                <li key={s.label}>
+                  <details className="group relative">
+                    <summary className="btn-ghost cursor-pointer select-none list-none">
+                      {s.label} <span className="ms-1 text-muted">&darr;</span>
+                    </summary>
+                    <ul className="absolute start-0 top-full z-10 mt-1 flex min-w-max flex-col gap-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
+                      {s.links.map((l) => (
+                        <li key={l.href}>
+                          <a
+                            href={l.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block rounded-md px-3 py-1.5 text-sm text-fg hover:bg-bg"
+                          >
+                            {l.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                </li>
+              ) : (
+                <li key={s.href}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost"
+                  >
+                    {s.label}
+                  </a>
+                </li>
+              ),
+            )}
           </ul>
         </div>
       )}

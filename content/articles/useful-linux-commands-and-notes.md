@@ -1,10 +1,15 @@
 ---
-title: "Useful Linux Commands & Notes"
-description: "A running collection of handy one-liners: Bluetooth, GPU switching, clang-format, coredumps, and more."
-date: 2026-05-10
-tags: [tips, cli]
+title: Useful Linux Commands & Notes
+description: >-
+  A running collection of handy one-liners: Bluetooth, GPU switching,
+  clang-format, coredumps, and more.
+date: 2026-05-10T00:00:00.000Z
+tags:
+  - tips
+  - cli
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 A grab-bag of small commands that come up often enough to be worth keeping in one place.

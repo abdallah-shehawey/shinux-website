@@ -1,10 +1,16 @@
 ---
-title: "Magic Numbers in Linux: A Deep Systems Guide"
-description: "How Linux really identifies file types by content instead of extension — from libmagic internals to ELF headers."
-date: 2026-06-14
-tags: [systems, filesystems, security]
+title: 'Magic Numbers in Linux: A Deep Systems Guide'
+description: >-
+  How Linux really identifies file types by content instead of extension — from
+  libmagic internals to ELF headers.
+date: 2026-06-14T00:00:00.000Z
+tags:
+  - systems
+  - filesystems
+  - security
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 A low-level, systems-oriented guide to understanding how Linux determines file types using **magic numbers** — going beyond basic definitions into kernel vs. user-space behavior, libmagic internals, binary layouts, and security implications.

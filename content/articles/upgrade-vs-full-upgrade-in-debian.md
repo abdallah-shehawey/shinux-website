@@ -1,10 +1,16 @@
 ---
-title: "apt upgrade vs apt full-upgrade"
-description: "The dependency-handling difference between a safe upgrade and an aggressive one, with a worked example."
-date: 2026-07-13
-tags: [debian, ubuntu, apt]
+title: apt upgrade vs apt full-upgrade
+description: >-
+  The dependency-handling difference between a safe upgrade and an aggressive
+  one, with a worked example.
+date: 2026-07-13T00:00:00.000Z
+tags:
+  - debian
+  - ubuntu
+  - apt
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 In Debian-based systems (Ubuntu, Debian, Kali, Mint), package upgrades go through `apt`. Two common commands — `apt upgrade` and `apt full-upgrade` — both upgrade packages, but behave very differently around dependencies.

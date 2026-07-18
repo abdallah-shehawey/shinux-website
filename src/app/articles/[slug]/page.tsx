@@ -9,7 +9,8 @@ import {
   type ArticleMeta,
 } from "@/lib/articles";
 import { renderMarkdown } from "@/lib/markdown";
-import { siteAuthor } from "@/lib/site";
+import { site, siteAuthor } from "@/lib/site";
+import { getAuthorProfiles } from "@/lib/authors";
 import AuthorCard from "@/components/AuthorCard";
 import ArticleCard from "@/components/ArticleCard";
 import ArticleReader, { type RenderedLocale } from "@/components/ArticleReader";
@@ -104,8 +105,33 @@ export default async function ArticlePage({
   const { prev, next } = getPrevNext(slug);
   const related = getRelatedArticles(slug);
 
+  const authors = await getAuthorProfiles(
+    [article.author, ...related.map((a) => a.author)].filter((a): a is string => Boolean(a)),
+  );
+  // Falls back to the hardcoded siteAuthor when the article has no `author`
+  // frontmatter, or the username doesn't resolve to a live admin profile.
+  const author = (article.author && authors[article.author]) || siteAuthor;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    datePublished: article.date,
+    inLanguage: article.locale,
+    keywords: article.tags.join(", "),
+    author: { "@type": "Person", name: author.name },
+    mainEntityOfPage: `${siteUrl}/articles/${slug}`,
+  };
+
   return (
     <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <Link href="/articles" className="text-sm text-muted hover:text-accent">
         &larr; Back to articles
       </Link>
@@ -118,7 +144,7 @@ export default async function ArticlePage({
         rendered={rendered}
       >
         <div className="mt-10">
-          <AuthorCard author={siteAuthor} label="Written by" />
+          <AuthorCard author={author} label="Written by" />
         </div>
 
         {(prev || next) && (
@@ -137,6 +163,7 @@ export default async function ArticlePage({
                   key={a.slug}
                   article={a}
                   readingLabel={readingLabel(a.readingMinutes)}
+                  author={a.author ? authors[a.author] : null}
                 />
               ))}
             </div>

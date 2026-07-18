@@ -1,10 +1,16 @@
 ---
-title: "A Practical Git & GitHub Workflow"
-description: "Clone, branch, commit, push, and open a pull request — the day-to-day Git workflow in one guide."
-date: 2026-05-03
-tags: [git, github, workflow]
+title: A Practical Git & GitHub Workflow
+description: >-
+  Clone, branch, commit, push, and open a pull request — the day-to-day Git
+  workflow in one guide.
+date: 2026-05-03T00:00:00.000Z
+tags:
+  - git
+  - github
+  - workflow
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 This guide walks you through the complete workflow for pulling a repository, making changes, and pushing them back up to GitHub.

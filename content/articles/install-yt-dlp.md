@@ -1,10 +1,15 @@
 ---
-title: "Installing and Using yt-dlp"
-description: "Install yt-dlp on Ubuntu, Fedora, and Windows, and the handful of commands you'll actually use."
-date: 2026-06-07
-tags: [tools, cli]
+title: Installing and Using yt-dlp
+description: >-
+  Install yt-dlp on Ubuntu, Fedora, and Windows, and the handful of commands
+  you'll actually use.
+date: 2026-06-07T00:00:00.000Z
+tags:
+  - tools
+  - cli
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 **yt-dlp** is an advanced command-line tool for downloading videos and audio from YouTube and hundreds of other sites — a feature-rich fork of `youtube-dl` with frequent updates and better performance. This guide covers installing it on Ubuntu/Debian, Fedora, and Windows.

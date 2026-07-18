@@ -90,6 +90,11 @@ kbd,
   background: var(--card);
   border-color: var(--accent);
 }
+.btn-ghost[data-active="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
 
 .card {
   border-radius: 0.75rem;

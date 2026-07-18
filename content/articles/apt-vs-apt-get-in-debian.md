@@ -1,10 +1,16 @@
 ---
-title: "apt vs apt-get: What's the Difference?"
-description: "Why Ubuntu introduced apt, how it differs from apt-get and apt-cache, and which one to reach for."
-date: 2026-07-11
-tags: [debian, ubuntu, apt]
+title: 'apt vs apt-get: What''s the Difference?'
+description: >-
+  Why Ubuntu introduced apt, how it differs from apt-get and apt-cache, and
+  which one to reach for.
+date: 2026-07-11T00:00:00.000Z
+tags:
+  - debian
+  - ubuntu
+  - apt
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 `apt` and `apt-get` are both package management tools on Debian-based systems like Ubuntu. They serve similar purposes, but differ in design and intended use.

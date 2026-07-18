@@ -1,10 +1,16 @@
 ---
-title: "Clang-Format Setup & Integration Guide"
-description: "Install, configure, and integrate clang-format for consistent C/C++ style across Ubuntu, Fedora, and your editor."
-date: 2026-04-12
-tags: [c, tooling, editor]
+title: Clang-Format Setup & Integration Guide
+description: >-
+  Install, configure, and integrate clang-format for consistent C/C++ style
+  across Ubuntu, Fedora, and your editor.
+date: 2026-04-12T00:00:00.000Z
+tags:
+  - c
+  - tooling
+  - editor
 locale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 This guide explains how to install, configure, and integrate **clang-format** to enforce a consistent C/C++ coding style across Linux environments (Ubuntu, Fedora) and editors such as **VS Code**.

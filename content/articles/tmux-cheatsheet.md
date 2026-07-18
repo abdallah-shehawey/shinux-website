@@ -1,15 +1,21 @@
 ---
 title:
-  en: "A tmux Cheatsheet I Actually Use"
-  ar: "ورقة غش لـ tmux بستخدمها فعلاً"
+  en: A tmux Cheatsheet I Actually Use
+  ar: ورقة غش لـ tmux بستخدمها فعلاً
 description:
-  en: "The handful of tmux commands that cover 95% of daily terminal multiplexing."
-  ar: "أوامر tmux القليلة اللي بتغطي 95% من استخدامك اليومي للطرفية."
-date: 2026-06-20
-tags: [terminal, tmux, productivity]
-locales: [en, ar]
+  en: The handful of tmux commands that cover 95% of daily terminal multiplexing.
+  ar: أوامر tmux القليلة اللي بتغطي 95% من استخدامك اليومي للطرفية.
+date: 2026-06-20T00:00:00.000Z
+tags:
+  - terminal
+  - tmux
+  - productivity
+locales:
+  - en
+  - ar
 defaultLocale: en
 draft: false
+author: abdallah-shehawey
 ---
 
 <!-- lang:en -->
