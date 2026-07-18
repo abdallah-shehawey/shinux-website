@@ -41,7 +41,7 @@ export default async function PublicProfilePage({
   const initial = profile.displayName.trim().charAt(0).toUpperCase();
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-16 sm:px-8">
+    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
       <div className="card flex items-center gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-mono text-2xl font-bold text-accent-fg">
           {profile.avatarUrl ? (
