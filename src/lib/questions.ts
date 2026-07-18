@@ -25,6 +25,8 @@ export interface QuestionSummary {
   author_id: string | null;
   author_display: string;
   author_avatar: string | null;
+  /** Null when anonymous, same as author_id — never link an anonymous asker. */
+  author_username: string | null;
 }
 
 export interface QuestionDetail extends QuestionSummary {
@@ -55,7 +57,7 @@ export interface OwnQuestion {
 }
 
 const SUMMARY_COLUMNS =
-  "id, title, locale, status, slug, tags, created_at, is_anonymous, upvote_count, answer_count, author_id, author_display, author_avatar";
+  "id, title, locale, status, slug, tags, created_at, is_anonymous, upvote_count, answer_count, author_id, author_display, author_avatar, author_username";
 
 /** Published/answered questions, newest first, with optional search + tag filter. */
 export async function getPublicQuestions(opts: {
@@ -134,6 +136,77 @@ export async function getAnswersForQuestion(questionId: string): Promise<AnswerR
     .order("created_at", { ascending: true });
   if (error) throw error;
   return (data ?? []) as AnswerRecord[];
+}
+
+/**
+ * A user's own published/answered questions, for their public profile page.
+ * Naturally excludes anonymous questions of theirs — questions_public nulls
+ * author_id for those, so they never match `.eq("author_id", authorId)`.
+ */
+export async function getQuestionsByAuthor(authorId: string): Promise<QuestionSummary[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("questions_public")
+    .select(SUMMARY_COLUMNS)
+    .eq("author_id", authorId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as QuestionSummary[];
+}
+
+export interface AnswerWithQuestion extends AnswerRecord {
+  question_title: string;
+  question_slug: string;
+}
+
+/** A user's public answers, with the parent question's title/slug for linking. */
+export async function getAnswersByAuthor(authorId: string): Promise<AnswerWithQuestion[]> {
+  const supabase = await createClient();
+  const { data: answers, error } = await supabase
+    .from("answers_public")
+    .select("id, question_id, body, is_accepted, created_at, author_id, author_display, author_avatar, author_username")
+    .eq("author_id", authorId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  if (!answers || answers.length === 0) return [];
+
+  const questionIds = [...new Set(answers.map((a) => a.question_id))];
+  const { data: questions, error: qError } = await supabase
+    .from("questions_public")
+    .select("id, title, slug")
+    .in("id", questionIds);
+  if (qError) throw qError;
+
+  const bySlug = new Map((questions ?? []).map((q) => [q.id, q]));
+  return (answers as AnswerRecord[])
+    .map((a) => {
+      const q = bySlug.get(a.question_id);
+      return q ? { ...a, question_title: q.title, question_slug: q.slug } : null;
+    })
+    .filter((a): a is AnswerWithQuestion => a !== null);
+}
+
+export interface ReplyRecord {
+  id: string;
+  answer_id: string;
+  body: string;
+  created_at: string;
+  author_id: string;
+  author_display: string | null;
+  author_avatar: string | null;
+  author_username: string | null;
+}
+
+/** Lightweight replies to a single answer, oldest first. */
+export async function getRepliesForAnswer(answerId: string): Promise<ReplyRecord[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("answer_replies_public")
+    .select("id, answer_id, body, created_at, author_id, author_display, author_avatar, author_username")
+    .eq("answer_id", answerId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ReplyRecord[];
 }
 
 /** Whether a given user has already upvoted a question. */

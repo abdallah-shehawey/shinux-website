@@ -60,7 +60,7 @@ export default async function MePage() {
         socialLinks={profile?.social_links ?? []}
       />
 
-      <div className="mt-8">
+      <div id="notifications" className="mt-8 scroll-mt-20">
         <h2 className="mb-3 text-lg font-semibold">Notifications</h2>
         <NotificationsList initial={notifications} />
       </div>

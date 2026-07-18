@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { getArticles } from "@/lib/articles";
-import { getLatestAnsweredQuestions } from "@/lib/questions";
+import { getPublicQuestions } from "@/lib/questions";
 import { getAuthorProfiles } from "@/lib/authors";
 import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
+import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
 import ArticleCard from "@/components/ArticleCard";
 import QuestionCard from "@/components/QuestionCard";
 
@@ -11,14 +12,22 @@ function readingLabel(minutes: number) {
 }
 
 export default async function HomePage() {
-  // The admin's pin order (see /admin/articles) drives this section too, so
-  // "Latest" doubles as a lightweight "Featured" pick once they've used it.
-  const articleOrder = await getArticleOrder();
-  const latestArticles = applyCustomOrder(getArticles(), articleOrder).slice(0, 3);
-  const [latestQuestions, authors] = await Promise.all([
-    getLatestAnsweredQuestions(3),
-    getAuthorProfiles(latestArticles.map((a) => a.author).filter((a): a is string => Boolean(a))),
+  // The admin's pin order (see the "Reorder" button on /articles and
+  // /questions) drives both of these sections too, so "Latest" doubles as a
+  // lightweight "Featured" pick once they've used it.
+  const [articleOrder, allQuestions, questionOrder] = await Promise.all([
+    getArticleOrder(),
+    getPublicQuestions(),
+    getQuestionOrder(),
   ]);
+  const latestArticles = applyCustomOrder(getArticles(), articleOrder).slice(0, 3);
+  const latestQuestions = applyQuestionOrder(
+    allQuestions.filter((q) => q.status === "answered"),
+    questionOrder,
+  ).slice(0, 3);
+  const authors = await getAuthorProfiles(
+    latestArticles.map((a) => a.author).filter((a): a is string => Boolean(a)),
+  );
 
   return (
     <div className="mx-auto w-full px-4 sm:px-8 lg:px-12">

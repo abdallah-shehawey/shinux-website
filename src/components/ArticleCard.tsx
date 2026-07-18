@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ArticleMeta } from "@/lib/articles";
 import type { Author } from "@/lib/site";
+import AuthorInline from "./AuthorInline";
 
 export default function ArticleCard({
   article,
@@ -23,10 +24,15 @@ export default function ArticleCard({
         : null;
 
   return (
-    <Link
-      href={`/articles/${article.slug}`}
-      className="card flex flex-col gap-2 transition-colors hover:border-accent"
-    >
+    // Relative + a full-cover link underneath so the whole card still opens
+    // the article, while the author footer's own link (above it, z-10) stays
+    // independently clickable to their profile.
+    <div className="card relative flex flex-col gap-2 transition-colors hover:border-accent">
+      <Link
+        href={`/articles/${article.slug}`}
+        className="absolute inset-0 z-0"
+        aria-label={article.title}
+      />
       <p className="flex items-center gap-2 font-mono text-xs text-muted">
         <span>
           {article.date} · {readingLabel}
@@ -49,20 +55,10 @@ export default function ArticleCard({
         </div>
       )}
       {author && (
-        <div className="mt-1 flex items-center gap-2 border-t border-border pt-2">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-mono text-[10px] font-bold text-accent-fg">
-            {author.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={author.avatar} alt={author.name} className="h-full w-full object-cover" />
-            ) : (
-              author.name.trim().charAt(0).toUpperCase()
-            )}
-          </div>
-          <span className="text-xs text-muted">
-            {author.name} <span className="text-muted/70">@{author.username}</span>
-          </span>
+        <div className="mt-1 border-t border-border pt-2 text-xs text-muted">
+          <AuthorInline name={author.name} username={author.username} avatar={author.avatar} />
         </div>
       )}
-    </Link>
+    </div>
   );
 }

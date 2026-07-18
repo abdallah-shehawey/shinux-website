@@ -57,7 +57,13 @@ supabase/migrations/      0001_init.sql — schema, questions_public view, RLS, 
                           0002/0003/0004 — avatars, onboarding, social links
                           0005 — multi-answer answers RLS, counters, notification triggers
                           0006 — author_profiles view (DB-driven article bylines)
-                          0007 — article_order table (admin-controlled article ordering)
+                          0007 — article_order table (admin pin-order for articles)
+                          0008 — profiles_public view + author_username on questions_public
+                                  (public profile pages, linkable question authors)
+                          0009 — question_order table, answer_replies (+ view + notify
+                                  trigger), notifies every admin on a new pending question
+                          0010 — emails a copy of every notification via Resend + pg_net
+                                  (needs a Vault secret — see SETUP.md)
 tests/rls/                anonymous-question.test.ts — the mandatory privacy test (vitest)
 src/
   proxy.ts                 refreshes the Supabase session cookie on every request
@@ -65,11 +71,14 @@ src/
     articles.ts             reads content/articles, frontmatter, drafts, related, prev/next,
                             search (title/description/tags/body, every locale)
     article-order.ts         admin pin-order lookup + the fallback-to-date-order merge
+    question-order.ts        same, for questions (question_order table, keyed by id)
     authors.ts                resolves an article's `author: <username>` (or /about's own
                             author) to a live display_name/avatar via author_profiles
-    questions.ts             Q&A data layer — reads questions_public/answers_public views
+    profiles.ts               a user's public profile (profiles_public) for /u/[username]
+    questions.ts             Q&A data layer — questions_public/answers_public/
+                            answer_replies_public views, per-author question/answer lookups
     notifications.ts         a user's own notifications (server-only)
-    notification-types.ts    shared type + label map (client-safe, no "server-only")
+    notification-types.ts    shared type + label/href maps (client-safe, no "server-only")
     markdown.ts              reusable Markdown -> sanitized HTML pipeline (Shiki, TOC, slugs)
     slug.ts                  slugify() for question titles (Unicode-aware NFC, keeps Arabic)
     site.ts                  site/author config + social links (used by AuthorCard, /about,
@@ -78,7 +87,7 @@ src/
     supabase/server.ts       Supabase client for Server Components/Route Handlers (cookies)
   app/
     layout.tsx               html/body, fonts, theme, header/footer, metadata, Analytics
-    page.tsx                 homepage (latest/pinned articles + latest answered questions)
+    page.tsx                 homepage (pinned/latest articles + questions)
     error.tsx                generic error boundary
     not-found.tsx            404
     manifest.ts              PWA web app manifest
@@ -91,22 +100,25 @@ src/
     auth/callback/route.ts   exchanges the OAuth/magic-link code for a session
     welcome/page.tsx         first-sign-in review of name/username/avatar
     me/page.tsx               account page: profile editor, notifications, your questions
-    articles/page.tsx            list + search (?q=, title/description/tags/body) + tag
-                                  filter (?tag=...); admin pin-order applied when not searching
+    u/[username]/page.tsx     a user's public profile — avatar/name/socials + their public
+                                  questions (skipped for the admin — see the file) + answers
+    articles/page.tsx            list + search (?q=) + tag filter (?tag=...); admin-only
+                                  drag-to-reorder toggle on the default (unfiltered) view
     articles/[slug]/page.tsx     article page — TOC, reading time, prev/next, related,
                                   Article JSON-LD, per-article OG image
-    questions/page.tsx           archive — search (?q=) + tag filter (?tag=...)
-    questions/[slug]/page.tsx    question + all answers, upvote button, answer form,
-                                  QAPage JSON-LD, per-question OG image
+    questions/page.tsx           archive — search (?q=) + tag filter; same admin reorder toggle
+    questions/[slug]/page.tsx    question + all answers (+ replies, + reply form), upvote
+                                  button, answer form, QAPage JSON-LD, per-question OG image
     ask/page.tsx                 ask form (redirects to /login?next=/ask if signed out)
-    admin/page.tsx                admin-only index: links to the two sections below
     admin/questions/page.tsx     admin-only review queue: publish / reject
-    admin/articles/page.tsx      admin-only: reorder articles with up/down buttons
-  components/               Header, Footer, ThemeToggle, ThemeScript, LoginForm,
-                            SignOutButton, ServiceWorkerRegister, ArticleCard,
-                            AuthorCard, TableOfContents, CopyCodeButtons,
-                            QuestionCard, AskForm, AnswerForm, UpvoteButton,
-                            NotificationsList, AdminQuestionsQueue, ArticleOrderEditor
+  components/               Header (nav + notification bell + admin link), Footer,
+                            ThemeToggle, ThemeScript, LoginForm, SignOutButton,
+                            ServiceWorkerRegister, ArticleCard, AuthorCard,
+                            AuthorInline (small linked avatar+name, used across Q&A),
+                            TableOfContents, CopyCodeButtons, QuestionCard, AskForm,
+                            AnswerForm, ReplyForm, UpvoteButton, NotificationsList,
+                            AdminQuestionsQueue, DragReorderList (generic drag-and-drop),
+                            ArticleReorderGrid, QuestionReorderGrid
 ```
 
 ## Article language vs. site language
@@ -186,7 +198,19 @@ Notes:
    `0006_author_profiles.sql` (a public, admin-scoped view so article bylines
    can resolve a real `author: <username>` from the database — see below) →
    `0007_article_order.sql` (`article_order`: an optional explicit position
-   per article slug, admin-writable, backing `/admin/articles`).
+   per article slug, admin-writable, drives the drag-to-reorder toggle on
+   `/articles`) → `0008_public_profiles.sql` (`profiles_public` view for
+   `/u/[username]`, plus `author_username` on `questions_public` so a
+   question's byline links somewhere) → `0009_question_order_replies_and_submit_notify.sql`
+   (`question_order` — same pin-order idea as articles, for `/questions`;
+   `answer_replies` + `answer_replies_public` — one-level-deep replies on an
+   answer, with a notification trigger; a trigger notifying every admin when
+   a question is actually submitted for review) →
+   `0010_email_notifications.sql` (emails a copy of every notification via
+   Resend, called directly from a trigger through the `pg_net` extension —
+   no Edge Function needed. Inert until you run
+   `select vault.create_secret('re_your_key', 'resend_api_key');` with your
+   own Resend API key; see SETUP.md for the full walkthrough).
 3. Enable the GitHub and Google providers under Authentication → Providers,
    pointing their OAuth app callback URLs at the Callback URL Supabase shows you.
 4. After your first sign-in, promote yourself to admin:
@@ -211,6 +235,22 @@ Full step-by-step instructions (in Arabic, written for the site owner) are in
 - `question_upvotes` backs the "Same question here" button; `answers_public`
   is the public-read view for answers (joins `profiles` for the answerer's
   name/avatar, same `security_invoker = off` trick as `questions_public`).
+- Any signed-in user can **reply** to a specific answer (`answer_replies`) —
+  a one-level-deep comment, not a second full answer. The answer's author
+  gets notified.
+- Every asker/answerer/replier's name+avatar is a link to their public
+  profile at `/u/[username]` (`profiles_public`), which lists their public
+  questions and answers. The admin's own profile skips "Questions asked" —
+  the admin only ever asks a question as scaffolding to write its answer, so
+  it's not a genuine personal question (see `src/app/u/[username]/page.tsx`).
+- Both `/articles` and `/questions` have an admin-only **"Reorder"** toggle
+  that switches the grid into a drag-and-drop list; the resulting order is
+  what everyone sees (homepage + the listing page itself), and only applies
+  to the default, unfiltered view — search/tag results stay in their natural
+  order.
+- Every notification (published/answered/rejected/submitted/reply) also gets
+  emailed via Resend (see the Supabase setup steps above) — in-app
+  notifications work regardless of whether that's configured.
 
 ### Verifying the anonymous-question privacy guarantee
 

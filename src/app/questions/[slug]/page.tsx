@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   getQuestionBySlug,
   getAnswersForQuestion,
+  getRepliesForAnswer,
   hasUserUpvoted,
   type AnswerRecord,
 } from "@/lib/questions";
@@ -11,6 +12,8 @@ import { renderMarkdown } from "@/lib/markdown";
 import { createClient } from "@/lib/supabase/server";
 import UpvoteButton from "@/components/UpvoteButton";
 import AnswerForm from "@/components/AnswerForm";
+import ReplyForm from "@/components/ReplyForm";
+import AuthorInline from "@/components/AuthorInline";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -45,14 +48,54 @@ export async function generateMetadata({
   };
 }
 
-async function AnswerBlock({ answer }: { answer: AnswerRecord }) {
-  const { html } = await renderMarkdown(answer.body);
+async function AnswerBlock({
+  answer,
+  isLoggedIn,
+  loginNext,
+}: {
+  answer: AnswerRecord;
+  isLoggedIn: boolean;
+  loginNext: string;
+}) {
+  const [{ html }, replies] = await Promise.all([
+    renderMarkdown(answer.body),
+    getRepliesForAnswer(answer.id),
+  ]);
+
   return (
     <div className="card">
-      <p className="mb-3 font-mono text-xs text-muted">
-        {answer.author_display ?? "Deleted user"} &middot; {formatDate(answer.created_at)}
+      <p className="mb-3 flex items-center gap-2 font-mono text-xs text-muted">
+        <AuthorInline
+          name={answer.author_display ?? "Deleted user"}
+          username={answer.author_username}
+          avatar={answer.author_avatar}
+        />
+        <span>&middot;</span>
+        <span>{formatDate(answer.created_at)}</span>
       </p>
       <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
+
+      <div className="mt-4 border-t border-border pt-3">
+        {replies.length > 0 && (
+          <div className="mb-3 flex flex-col gap-2">
+            {replies.map((r) => (
+              <div key={r.id} className="ps-3" style={{ borderInlineStart: "2px solid var(--border)" }}>
+                <p className="flex items-center gap-2 font-mono text-xs text-muted">
+                  <AuthorInline
+                    name={r.author_display ?? "Deleted user"}
+                    username={r.author_username}
+                    avatar={r.author_avatar}
+                  />
+                  <span>&middot;</span>
+                  <span>{formatDate(r.created_at)}</span>
+                </p>
+                <p className="mt-0.5 text-sm text-fg">{r.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+        <ReplyForm answerId={answer.id} isLoggedIn={isLoggedIn} loginNext={loginNext} />
+      </div>
     </div>
   );
 }
@@ -116,7 +159,11 @@ export default async function QuestionDetailPage({
       </Link>
 
       <div className="mt-4 mb-2 flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
-        <span>{question.author_display}</span>
+        <AuthorInline
+          name={question.author_display}
+          username={question.author_username}
+          avatar={question.author_avatar}
+        />
         <span>&middot;</span>
         <span>{formatDate(question.created_at)}</span>
         {question.locale === "ar" && <span className="tag-chip">AR</span>}
@@ -167,7 +214,12 @@ export default async function QuestionDetailPage({
         ) : (
           <div className="flex flex-col gap-4">
             {answers.map((answer) => (
-              <AnswerBlock key={answer.id} answer={answer} />
+              <AnswerBlock
+                key={answer.id}
+                answer={answer}
+                isLoggedIn={Boolean(user)}
+                loginNext={currentPath}
+              />
             ))}
           </div>
         )}

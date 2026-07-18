@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublicQuestions, getAllQuestionTags } from "@/lib/questions";
-import QuestionCard from "@/components/QuestionCard";
+import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
+import { createClient } from "@/lib/supabase/server";
+import QuestionReorderGrid from "@/components/QuestionReorderGrid";
 
 export const metadata: Metadata = { title: "Questions" };
 
@@ -12,10 +14,25 @@ export default async function QuestionsPage({
 }) {
   const { q, tag } = await searchParams;
 
-  const [questions, tags] = await Promise.all([
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    isAdmin = profile?.role === "admin";
+  }
+
+  const [rawQuestions, tags, order] = await Promise.all([
     getPublicQuestions({ search: q, tag }),
     getAllQuestionTags(),
+    getQuestionOrder(),
   ]);
+  // Same rule as articles: the admin's pin order only applies to the default,
+  // unfiltered browse view — search/tag results stay in their natural order.
+  const isDefaultView = !q && !tag;
+  const questions = isDefaultView ? applyQuestionOrder(rawQuestions, order) : rawQuestions;
 
   const tagHref = (t?: string) => {
     const params = new URLSearchParams();
@@ -71,11 +88,7 @@ export default async function QuestionsPage({
           {q || tag ? "No questions match your search." : "No questions yet — be the first to ask."}
         </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {questions.map((question) => (
-            <QuestionCard key={question.id} question={question} />
-          ))}
-        </div>
+        <QuestionReorderGrid initialItems={questions} isAdmin={isAdmin && isDefaultView} />
       )}
 
       <div className="mt-10">

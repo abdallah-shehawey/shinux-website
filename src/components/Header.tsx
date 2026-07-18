@@ -54,21 +54,43 @@ export default async function Header() {
             </Link>
           ))}
           {isAdmin && (
-            <Link href="/admin" className="text-muted transition-colors hover:text-fg">
+            <Link href="/admin/questions" className="text-muted transition-colors hover:text-fg">
               Admin
             </Link>
           )}
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
-          {user ? (
-            <Link href="/me" className="btn-ghost relative">
-              My account
+          {user && (
+            <Link
+              href="/me#notifications"
+              aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
+              className="btn-ghost relative px-2.5"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
               {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -end-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-fg">
+                <span className="absolute -top-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-fg">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
+            </Link>
+          )}
+          {user ? (
+            <Link href="/me" className="btn-ghost">
+              My account
             </Link>
           ) : (
             <Link href="/login" className="btn-ghost">

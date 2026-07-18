@@ -1,8 +1,9 @@
+import Link from "next/link";
 import type { Author } from "@/lib/site";
 
 // Generic author card: takes an Author as props rather than assuming a single
 // hard-coded writer, so it keeps working if the site grows multiple authors
-// later (spec §12).
+// later (spec §12). Links to the author's public profile.
 export default function AuthorCard({
   author,
   label,
@@ -13,7 +14,7 @@ export default function AuthorCard({
   const initial = author.name.trim().charAt(0).toUpperCase();
 
   return (
-    <div className="card flex items-center gap-3">
+    <Link href={`/u/${author.username}`} className="card flex items-center gap-3 hover:border-accent">
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-mono text-lg font-bold text-accent-fg">
         {author.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -30,6 +31,6 @@ export default function AuthorCard({
         <p className="text-xs text-muted">{label}</p>
         <p className="font-semibold text-fg">{author.name}</p>
       </div>
-    </div>
+    </Link>
   );
 }

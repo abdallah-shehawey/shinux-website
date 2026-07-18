@@ -3,13 +3,10 @@ import Link from "next/link";
 import { getArticles, getAllTags, searchArticles } from "@/lib/articles";
 import { getAuthorProfiles } from "@/lib/authors";
 import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
-import ArticleCard from "@/components/ArticleCard";
+import { createClient } from "@/lib/supabase/server";
+import ArticleReorderGrid from "@/components/ArticleReorderGrid";
 
 export const metadata: Metadata = { title: "Articles" };
-
-function readingLabel(minutes: number) {
-  return `${minutes} min read`;
-}
 
 export default async function ArticlesPage({
   searchParams,
@@ -18,13 +15,23 @@ export default async function ArticlesPage({
 }) {
   const { tag, q } = await searchParams;
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    isAdmin = profile?.role === "admin";
+  }
+
   const tags = getAllTags();
-  // The admin's explicit "pin order" (see /admin/articles) only makes sense
-  // when browsing/filtering by category — an active search should rank by
-  // match relevance/date, not by unrelated curation.
-  const base = q
-    ? searchArticles(q)
-    : applyCustomOrder(getArticles(), await getArticleOrder());
+  // The admin's explicit pin order only makes sense when browsing/filtering
+  // by category — an active search should rank by match relevance, not by
+  // unrelated curation. Drag-to-reorder is also only offered on that default,
+  // unfiltered view (reordering a filtered subset would be ambiguous).
+  const isDefaultView = !q && !tag;
+  const base = q ? searchArticles(q) : applyCustomOrder(getArticles(), await getArticleOrder());
   const articles = tag ? base.filter((a) => a.tags.includes(tag)) : base;
   const authors = await getAuthorProfiles(
     articles.map((a) => a.author).filter((a): a is string => Boolean(a)),
@@ -84,16 +91,11 @@ export default async function ArticlesPage({
           {q || tag ? "No articles match your search." : "No articles yet."}
         </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article) => (
-            <ArticleCard
-              key={article.slug}
-              article={article}
-              readingLabel={readingLabel(article.readingMinutes)}
-              author={article.author ? authors[article.author] : null}
-            />
-          ))}
-        </div>
+        <ArticleReorderGrid
+          initialItems={articles}
+          authors={authors}
+          isAdmin={isAdmin && isDefaultView}
+        />
       )}
     </div>
   );

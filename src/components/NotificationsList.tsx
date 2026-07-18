@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { notificationLabel, type NotificationRecord } from "@/lib/notification-types";
+import { notificationLabel, notificationHref, type NotificationRecord } from "@/lib/notification-types";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -44,7 +44,7 @@ export default function NotificationsList({ initial }: { initial: NotificationRe
       )}
       <div className="flex flex-col gap-2">
         {notifications.map((n) => {
-          const href = n.payload.question_slug ? `/questions/${n.payload.question_slug}` : null;
+          const href = notificationHref(n);
           const onOpen = () => {
             if (!n.is_read) markRead(n.id);
           };

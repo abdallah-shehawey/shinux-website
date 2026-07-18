@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { NotificationRecord } from "@/lib/notification-types";
 
 export type { NotificationRecord } from "@/lib/notification-types";
-export { notificationLabel } from "@/lib/notification-types";
+export { notificationLabel, notificationHref } from "@/lib/notification-types";
 
 /** A user's own notifications, newest first (RLS restricts this to their own). */
 export async function getUserNotifications(

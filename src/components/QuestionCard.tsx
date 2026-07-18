@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { QuestionSummary } from "@/lib/questions";
+import AuthorInline from "./AuthorInline";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -15,12 +16,21 @@ function timeAgo(iso: string): string {
 export default function QuestionCard({ question }: { question: QuestionSummary }) {
   const isRtl = question.locale === "ar";
   return (
-    <Link
-      href={`/questions/${question.slug}`}
-      className="card flex flex-col gap-2 transition-colors hover:border-accent"
-    >
+    // Relative + a full-cover link underneath so the whole card still opens
+    // the question, while AuthorInline's own link (above it, z-10) stays
+    // independently clickable to the asker's profile.
+    <div className="card relative flex flex-col gap-2 transition-colors hover:border-accent">
+      <Link
+        href={`/questions/${question.slug}`}
+        className="absolute inset-0 z-0"
+        aria-label={question.title}
+      />
       <p className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
-        <span>{question.author_display}</span>
+        <AuthorInline
+          name={question.author_display}
+          username={question.author_username}
+          avatar={question.author_avatar}
+        />
         <span>&middot;</span>
         <span>{timeAgo(question.created_at)}</span>
         {question.locale === "ar" && <span className="tag-chip">AR</span>}
@@ -50,6 +60,6 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
         {question.answer_count} {question.answer_count === 1 ? "answer" : "answers"} &middot;{" "}
         {question.upvote_count} {question.upvote_count === 1 ? "upvote" : "upvotes"}
       </p>
-    </Link>
+    </div>
   );
 }

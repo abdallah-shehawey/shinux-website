@@ -31,12 +31,6 @@ export const site = {
   // link-in-bio page) and abdallahshehawey.vercel.app (his portfolio) —
   // update both places by hand if a link there changes.
   socials: [
-    { label: "Portfolio", href: "https://abdallahshehawey.vercel.app/" },
-    { label: "GitHub", href: "https://github.com/abdallah-shehawey" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/in/abdallah-shehawey" },
-    { label: "X (Twitter)", href: "https://x.com/abdallashehawey" },
-    { label: "Instagram", href: "https://www.instagram.com/abdallah_shehawey" },
-    { label: "Telegram", href: "https://t.me/abdullah_shehawey" },
     {
       label: "Facebook",
       links: [
@@ -45,7 +39,13 @@ export const site = {
       ],
     },
     { label: "WhatsApp", href: "https://wa.me/201501899476" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/abdallah-shehawey" },
+    { label: "GitHub", href: "https://github.com/abdallah-shehawey" },
+    { label: "Portfolio", href: "https://abdallahshehawey.vercel.app/" },
     { label: "Email", href: "mailto:shehawey9@gmail.com" },
+    { label: "X (Twitter)", href: "https://x.com/abdallashehawey" },
+    { label: "Instagram", href: "https://www.instagram.com/abdallah_shehawey" },
+    { label: "Telegram", href: "https://t.me/abdullah_shehawey" },
   ] as SocialLink[],
 } as const;
 
