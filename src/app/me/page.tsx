@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "@/components/SignOutButton";
-import UsernameForm from "@/components/UsernameForm";
-import DisplayNameForm from "@/components/DisplayNameForm";
-import AvatarUploader from "@/components/AvatarUploader";
+import ProfileEditor from "@/components/ProfileEditor";
 
 export const metadata: Metadata = { title: "My account" };
 
@@ -18,7 +16,7 @@ export default async function MePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, display_name, avatar_url, created_at")
+    .select("username, display_name, avatar_url, social_links, created_at")
     .eq("id", user.id)
     .single();
 
@@ -36,7 +34,18 @@ export default async function MePage() {
       <h1 className="mb-8 text-3xl font-bold tracking-tight">My account</h1>
 
       <div className="card flex items-center gap-4">
-        <AvatarUploader avatarUrl={profile?.avatar_url ?? null} initial={initial} />
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-mono text-xl font-bold text-accent-fg">
+          {profile?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.avatar_url}
+              alt={displayName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            initial
+          )}
+        </div>
         <div>
           <p className="text-lg font-semibold text-fg">{displayName}</p>
           <p className="text-sm text-muted">@{profile?.username ?? "—"}</p>
@@ -48,17 +57,14 @@ export default async function MePage() {
         <p className="mt-4 text-sm text-muted">Member since {memberSince}</p>
       )}
 
-      <div className="mt-8 card">
-        <h2 className="mb-1 text-lg font-semibold">Display name</h2>
-        <DisplayNameForm initialDisplayName={profile?.display_name ?? ""} />
-      </div>
-
-      <div className="mt-8 card">
-        <h2 className="mb-1 text-lg font-semibold">Username</h2>
-        <p className="text-sm text-muted">
-          This is how you appear across the site. Must be unique.
-        </p>
-        <UsernameForm initialUsername={profile?.username ?? ""} />
+      <div className="mt-6">
+        <ProfileEditor
+          avatarUrl={profile?.avatar_url ?? null}
+          initial={initial}
+          displayName={profile?.display_name ?? ""}
+          username={profile?.username ?? ""}
+          socialLinks={profile?.social_links ?? []}
+        />
       </div>
 
       <div className="mt-8 card">

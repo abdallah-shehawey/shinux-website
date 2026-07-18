@@ -140,7 +140,9 @@ Notes:
    Then `supabase/migrations/0003_profile_onboarding.sql` — adds the
    `onboarded` flag that routes first-time sign-ins through `/welcome` to
    review/edit the name, username, and avatar pulled from their provider
-   before it's saved as final.
+   before it's saved as final. Then `supabase/migrations/0004_profile_social_links.sql`
+   — adds `social_links` (a free-form list, any platform, any number of
+   entries) editable from `/me`.
 3. Enable the GitHub and Google providers under Authentication → Providers,
    pointing their OAuth app callback URLs at the Callback URL Supabase shows you.
 4. After your first sign-in, promote yourself to admin:
