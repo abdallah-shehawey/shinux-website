@@ -1,0 +1,166 @@
+---
+title: Ansible Configuration Guide (ansible.cfg)
+description: >-
+  It is the main configuration file for Ansible. It allows you to customize
+  default behaviors so you don't have to provide flags (like -i or -u) every
+  time you run a command.
+order: 3
+tags:
+  - devops
+draft: false
+author: abdallah-shehawey
+---
+## 1. What is `ansible.cfg`?
+
+It is the main configuration file for Ansible. It allows you to customize default behaviors so you don't have to provide flags (like `-i` or `-u`) every time you run a command.
+
+**It controls settings such as:**
+
+- Inventory location (default path for `hosts`).
+
+- Remote user (the SSH user).
+
+- Privilege escalation (sudo settings).
+
+- SSH connection settings (timeouts, key checking).
+
+## 2. Configuration File Precedence (Order of Operations)
+
+Ansible looks for a configuration file in the following order. It uses the **first one it finds** and ignores the rest.
+
+1. **`ANSIBLE_CONFIG` (Environment Variable):**
+
+    - _Highest Priority._ Useful for temporary overrides.
+
+2. **`./ansible.cfg` (Current Directory):**
+
+    - _Most Common (Recommended)._ Used for project-specific configurations.
+
+3. **`~/.ansible.cfg` (User Home Directory):**
+
+    - User-specific defaults.
+
+4. **`/etc/ansible/ansible.cfg` (System-wide):**
+
+    - The global default (often created during installation).
+
+## 3. How to Check Which Config is Active?
+
+You can verify which configuration file Ansible is currently using by running the version command.
+
+**Scenario A: Project Config Found (Recommended)** If you are in a directory that contains an `ansible.cfg`:
+
+```bash
+ansible --version
+```
+
+**Output:**
+
+```bash
+ansible [core 2.18.12]
+  config file = /home/user/ansible-project/ansible.cfg
+```
+
+**Scenario B: Default Config Found** If no local file exists:
+
+```bash
+ansible [core 2.18.12]
+  config file = /etc/ansible/ansible.cfg
+```
+
+**Scenario C: No Config Found** If no file exists in any search path:
+
+```bash
+config file = None
+```
+
+## 4. Common Configuration Sections
+
+Here is a standard template for a project-level `ansible.cfg`.
+
+### Section: `[defaults]`
+
+General settings for Ansible execution.
+
+```bash
+[defaults]
+# Location of the inventory file
+inventory = ./hosts
+
+# Default user to connect as (SSH user)
+remote_user = ec2-user
+
+# Disable SSH host key checking (useful for labs/automation)
+host_key_checking = False
+
+# Disable creation of .retry files when a job fails
+retry_files_enabled = False
+
+# for remove the warning that come after run playbook or module from another machine
+interpreter_python=auto_silent
+
+# SSH Connection timeout in seconds
+timeout = 30
+```
+
+### Section: `[privilege_escalation]`
+
+Settings for switching users (e.g., becoming root).
+
+```bash
+[privilege_escalation]
+# Automatically switch user (sudo)
+become = True
+
+# Method to switch user
+become_method = sudo
+
+# User to switch to (usually root)
+become_user = root
+```
+
+## 5. Essential Helper Commands
+
+### Documentation (`ansible-doc`)
+
+Ansible comes with built-in documentation for all modules. This is your offline manual.
+
+- **List all available modules:**
+
+    ```bash
+    ansible-doc -l
+    ```
+
+- **Read documentation for a specific module (e.g., `user`):**
+
+    ```bash
+    ansible-doc user
+    ```
+
+- **Advanced Search (Filter for specific info like "AUTHOR"):**
+
+    ```
+    ansible-doc user | grep -i -A 2 "AUTHOR"
+    ```
+
+### Inventory Verification
+
+Before running playbooks, verify that Ansible can see your hosts and groups correctly through the config.
+
+- **List hosts in a specific group:**
+
+    ```bash
+    ansible <group_name> --list-hosts
+    ```
+
+    _Example:_
+
+    ```bash
+    ansible web --list-hosts
+    ```
+
+- **List all hosts in the inventory:**
+
+    ```bash
+    ansible all --list-hosts
+    ```

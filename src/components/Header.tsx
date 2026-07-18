@@ -8,6 +8,7 @@ import NotificationsBell from "./NotificationsBell";
 const links = [
   { href: "/", label: "Home" },
   { href: "/articles", label: "Articles" },
+  { href: "/tutorials", label: "Tutorials" },
   { href: "/questions", label: "Questions" },
   { href: "/ask", label: "Ask" },
   { href: "/about", label: "About" },
