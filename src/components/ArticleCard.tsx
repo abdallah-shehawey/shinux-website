@@ -40,9 +40,13 @@ export default function ArticleCard({
         {langBadge && <span className="tag-chip">{langBadge}</span>}
       </p>
       <div dir={isRtl ? "rtl" : "ltr"} lang={article.locale}>
-        <h3 className="text-lg font-semibold text-fg">{article.title}</h3>
+        <h3 className="text-lg font-semibold text-fg" dir="auto">
+          {article.title}
+        </h3>
         {article.description && (
-          <p className="text-sm text-muted">{article.description}</p>
+          <p className="text-sm text-muted" dir="auto">
+            {article.description}
+          </p>
         )}
       </div>
       {article.tags.length > 0 && (

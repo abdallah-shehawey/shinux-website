@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getUserNotifications } from "@/lib/notifications";
 import ThemeToggle from "./ThemeToggle";
 import NotificationsBell from "./NotificationsBell";
@@ -15,14 +15,12 @@ const links = [
 ] as const;
 
 export default async function Header() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   let isAdmin = false;
   let notifications: Awaited<ReturnType<typeof getUserNotifications>> = [];
   if (user) {
+    const supabase = await createClient();
     const [{ data: profile }, notifs] = await Promise.all([
       supabase.from("profiles").select("role").eq("id", user.id).single(),
       getUserNotifications(user.id, 8),

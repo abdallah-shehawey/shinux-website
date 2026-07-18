@@ -85,7 +85,9 @@ export default async function PublicProfilePage({
                   href={`/questions/${q.slug}`}
                   className="card flex items-center justify-between gap-3 hover:border-accent"
                 >
-                  <span className="text-sm font-medium text-fg">{q.title}</span>
+                  <span className="text-sm font-medium text-fg" dir="auto">
+                    {q.title}
+                  </span>
                   <span className="tag-chip shrink-0">
                     {q.answer_count} {q.answer_count === 1 ? "answer" : "answers"}
                   </span>
@@ -110,8 +112,12 @@ export default async function PublicProfilePage({
                 href={`/questions/${a.question_slug}`}
                 className="card hover:border-accent"
               >
-                <p className="text-sm font-medium text-fg">{a.question_title}</p>
-                <p className="mt-1 truncate text-xs text-muted">{a.body}</p>
+                <p className="text-sm font-medium text-fg" dir="auto">
+                  {a.question_title}
+                </p>
+                <p className="mt-1 truncate text-xs text-muted" dir="auto">
+                  {a.body}
+                </p>
               </Link>
             ))}
           </div>

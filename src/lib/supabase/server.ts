@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -31,3 +32,20 @@ export async function createClient() {
     },
   );
 }
+
+// Request-deduped auth lookup: the Header, pages and generateMetadata all
+// share ONE Supabase Auth round trip per request instead of each paying their
+// own. Anonymous visitors (no auth cookie at all) skip the network entirely.
+export const getCurrentUser = cache(async () => {
+  const cookieStore = await cookies();
+  const hasAuthCookie = cookieStore
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+  if (!hasAuthCookie) return null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

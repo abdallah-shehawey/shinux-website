@@ -68,7 +68,7 @@ function AdjacentCard({
       </p>
       <p
         className="mt-1 font-medium"
-        dir={isRtl ? "rtl" : "ltr"}
+        dir="auto"
         lang={article.locale}
         style={isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined}
       >
@@ -88,19 +88,18 @@ export default async function ArticlePage({
   const article = getArticle(slug);
   if (!article) notFound();
 
-  // Render every available language's Markdown up front; the in-page toggle in
-  // <ArticleReader> just swaps between these pre-rendered HTML strings.
-  const rendered: Record<string, RenderedLocale> = {};
-  for (const loc of article.locales) {
-    const t = article.translations[loc];
-    const { html, toc } = await renderMarkdown(t.body);
-    rendered[loc] = {
-      title: t.title,
-      html,
-      toc,
-      readingMinutes: t.readingMinutes,
-    };
-  }
+  // Render every available language's Markdown up front (in parallel); the
+  // in-page toggle in <ArticleReader> just swaps between these pre-rendered
+  // HTML strings.
+  const rendered: Record<string, RenderedLocale> = Object.fromEntries(
+    await Promise.all(
+      article.locales.map(async (loc) => {
+        const t = article.translations[loc];
+        const { html, toc } = await renderMarkdown(t.body);
+        return [loc, { title: t.title, html, toc, readingMinutes: t.readingMinutes }] as const;
+      }),
+    ),
+  );
 
   const { prev, next } = getPrevNext(slug);
   const related = getRelatedArticles(slug);

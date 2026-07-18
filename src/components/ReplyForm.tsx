@@ -78,6 +78,7 @@ export default function ReplyForm({
     <form onSubmit={onSubmit} className="flex flex-col gap-2">
       <textarea
         required
+        dir="auto"
         rows={2}
         value={body}
         onChange={(e) => setBody(e.target.value)}

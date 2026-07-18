@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getArticles, getAllTags, searchArticles } from "@/lib/articles";
 import { getAuthorProfiles } from "@/lib/authors";
 import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import ArticleReorderGrid from "@/components/ArticleReorderGrid";
 
 export const metadata: Metadata = { title: "Articles" };
@@ -15,12 +15,10 @@ export default async function ArticlesPage({
 }) {
   const { tag, q } = await searchParams;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   let isAdmin = false;
   if (user) {
+    const supabase = await createClient();
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
     isAdmin = profile?.role === "admin";
   }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import AvatarUploader from "@/components/AvatarUploader";
 import DisplayNameForm from "@/components/DisplayNameForm";
 import UsernameForm from "@/components/UsernameForm";
@@ -16,13 +16,10 @@ export default async function WelcomePage({
   const { next: rawNext } = await searchParams;
   const next = rawNext && rawNext.startsWith("/") ? rawNext : "/";
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getCurrentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/welcome?next=${next}`)}`);
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("username, display_name, avatar_url, onboarded")

@@ -126,6 +126,7 @@ export default function AskForm() {
         <input
           id="title"
           required
+          dir="auto"
           maxLength={200}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -163,6 +164,7 @@ export default function AskForm() {
           <textarea
             id="body"
             required
+            dir="auto"
             rows={8}
             value={body}
             onChange={(e) => setBody(e.target.value)}

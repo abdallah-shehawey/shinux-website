@@ -113,6 +113,7 @@ export default function AnswerForm({
       {mode === "write" ? (
         <textarea
           required
+          dir="auto"
           rows={6}
           value={body}
           onChange={(e) => setBody(e.target.value)}

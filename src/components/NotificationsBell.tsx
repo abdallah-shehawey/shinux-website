@@ -98,7 +98,9 @@ export default function NotificationsBell({ initial }: { initial: NotificationRe
                       {!n.is_read && <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />}
                     </div>
                     {n.payload.question_title && (
-                      <p className="mt-0.5 truncate text-xs text-muted">{n.payload.question_title}</p>
+                      <p className="mt-0.5 truncate text-xs text-muted" dir="auto">
+                        {n.payload.question_title}
+                      </p>
                     )}
                     <p className="mt-0.5 font-mono text-[10px] text-muted">{formatDate(n.created_at)}</p>
                   </div>

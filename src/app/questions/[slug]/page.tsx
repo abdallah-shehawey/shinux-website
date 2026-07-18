@@ -4,12 +4,14 @@ import Link from "next/link";
 import {
   getQuestionBySlug,
   getAnswersForQuestion,
-  getRepliesForAnswer,
+  getRepliesForAnswers,
   hasUserUpvoted,
   type AnswerRecord,
+  type ReplyRecord,
 } from "@/lib/questions";
 import { renderMarkdown } from "@/lib/markdown";
-import { createClient } from "@/lib/supabase/server";
+import { detectDirection } from "@/lib/bidi";
+import { getCurrentUser } from "@/lib/supabase/server";
 import UpvoteButton from "@/components/UpvoteButton";
 import AnswerForm from "@/components/AnswerForm";
 import ReplyForm from "@/components/ReplyForm";
@@ -50,17 +52,16 @@ export async function generateMetadata({
 
 async function AnswerBlock({
   answer,
+  replies,
   isLoggedIn,
   loginNext,
 }: {
   answer: AnswerRecord;
+  replies: ReplyRecord[];
   isLoggedIn: boolean;
   loginNext: string;
 }) {
-  const [{ html }, replies] = await Promise.all([
-    renderMarkdown(answer.body),
-    getRepliesForAnswer(answer.id),
-  ]);
+  const { html } = await renderMarkdown(answer.body);
 
   return (
     <div className="card">
@@ -73,7 +74,11 @@ async function AnswerBlock({
         <span>&middot;</span>
         <span>{formatDate(answer.created_at)}</span>
       </p>
-      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
+      <div
+        className="prose max-w-none"
+        dir={detectDirection(answer.body)}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
 
       <div className="mt-4 border-t border-border pt-3">
         {replies.length > 0 && (
@@ -89,7 +94,9 @@ async function AnswerBlock({
                   <span>&middot;</span>
                   <span>{formatDate(r.created_at)}</span>
                 </p>
-                <p className="mt-0.5 text-sm text-fg">{r.body}</p>
+                <p className="mt-0.5 text-sm text-fg" dir="auto">
+                  {r.body}
+                </p>
               </div>
             ))}
           </div>
@@ -107,19 +114,18 @@ export default async function QuestionDetailPage({
 }) {
   const { slug } = await params;
 
-  const question = await getQuestionBySlug(slug);
+  // The auth lookup doesn't depend on the question — run both together.
+  const [question, user] = await Promise.all([getQuestionBySlug(slug), getCurrentUser()]);
   if (!question) notFound();
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const [answers, upvoted, { html: bodyHtml }] = await Promise.all([
     getAnswersForQuestion(question.id),
     user ? hasUserUpvoted(question.id, user.id) : Promise.resolve(false),
     renderMarkdown(question.body),
   ]);
+
+  // One round trip for every answer's replies instead of one per answer.
+  const repliesByAnswer = await getRepliesForAnswers(answers.map((a) => a.id));
 
   // Built from question.slug (straight from the DB) rather than the route
   // param — Next.js hands dynamic segments to this component still
@@ -171,7 +177,7 @@ export default async function QuestionDetailPage({
 
       <h1
         className="mb-4 text-3xl font-bold tracking-tight"
-        dir={isRtl ? "rtl" : "ltr"}
+        dir="auto"
         lang={question.locale}
       >
         {question.title}
@@ -217,6 +223,7 @@ export default async function QuestionDetailPage({
               <AnswerBlock
                 key={answer.id}
                 answer={answer}
+                replies={repliesByAnswer.get(answer.id) ?? []}
                 isLoggedIn={Boolean(user)}
                 loginNext={currentPath}
               />

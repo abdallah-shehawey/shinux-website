@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/server";
 import AskForm from "@/components/AskForm";
 
 export const metadata: Metadata = { title: "Ask a question" };
 
 export default async function AskPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getCurrentUser();
   if (!user) redirect("/login?next=/ask");
 
   return (

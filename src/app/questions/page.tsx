@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublicQuestions, getAllQuestionTags } from "@/lib/questions";
 import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import QuestionReorderGrid from "@/components/QuestionReorderGrid";
 
 export const metadata: Metadata = { title: "Questions" };
@@ -14,21 +14,21 @@ export default async function QuestionsPage({
 }) {
   const { q, tag } = await searchParams;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  let isAdmin = false;
-  if (user) {
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    isAdmin = profile?.role === "admin";
-  }
-
-  const [rawQuestions, tags, order] = await Promise.all([
+  // Everything up front in one parallel burst; the admin-role lookup below
+  // only runs for signed-in users.
+  const [user, rawQuestions, tags, order] = await Promise.all([
+    getCurrentUser(),
     getPublicQuestions({ search: q, tag }),
     getAllQuestionTags(),
     getQuestionOrder(),
   ]);
+
+  let isAdmin = false;
+  if (user) {
+    const supabase = await createClient();
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    isAdmin = profile?.role === "admin";
+  }
   // Same rule as articles: the admin's pin order only applies to the default,
   // unfiltered browse view — search/tag results stay in their natural order.
   const isDefaultView = !q && !tag;

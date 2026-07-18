@@ -93,7 +93,6 @@ export default function AdminQuestionsQueue({ initial }: { initial: PendingQuest
       {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
       {queue.map((q) => {
         const authorName = q.profiles?.display_name || q.profiles?.username || "Unknown user";
-        const isRtl = q.locale === "ar";
         return (
           <div key={q.id} className="card">
             <div className="mb-2 flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
@@ -107,16 +106,12 @@ export default function AdminQuestionsQueue({ initial }: { initial: PendingQuest
               <span>{formatDate(q.created_at)}</span>
               {q.locale === "ar" && <span className="tag-chip">AR</span>}
             </div>
-            <h3
-              className="mb-1 text-lg font-semibold text-fg"
-              dir={isRtl ? "rtl" : "ltr"}
-              lang={q.locale}
-            >
+            <h3 className="mb-1 text-lg font-semibold text-fg" dir="auto" lang={q.locale}>
               {q.title}
             </h3>
             <p
               className="mb-3 whitespace-pre-wrap text-sm text-muted"
-              dir={isRtl ? "rtl" : "ltr"}
+              dir="auto"
               lang={q.locale}
             >
               {q.body}

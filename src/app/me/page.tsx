@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getOwnQuestions } from "@/lib/questions";
 import { getUserNotifications } from "@/lib/notifications";
 import SignOutButton from "@/components/SignOutButton";
@@ -18,13 +18,10 @@ const STATUS_LABEL: Record<string, string> = {
 export const metadata: Metadata = { title: "My account" };
 
 export default async function MePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getCurrentUser();
   if (!user) redirect("/login?next=/me");
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("username, display_name, avatar_url, social_links, created_at")
@@ -84,7 +81,7 @@ export default async function MePage() {
                 className={`card flex items-center justify-between gap-3 ${q.slug ? "hover:border-accent" : "pointer-events-none opacity-70"}`}
               >
                 <div>
-                  <p className="text-sm font-medium text-fg">
+                  <p className="text-sm font-medium text-fg" dir="auto">
                     {q.title} {q.is_anonymous && <span title="Posted anonymously">🕶️</span>}
                   </p>
                   {q.status === "answered" && (

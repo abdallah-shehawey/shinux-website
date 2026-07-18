@@ -79,7 +79,9 @@ export default function ArticleReader({
               </div>
             )}
           </div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{current.title}</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl" dir="auto">
+            {current.title}
+          </h1>
           {tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5" dir="ltr">
               {tags.map((tag) => (

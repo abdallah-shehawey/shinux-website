@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getPendingQuestions } from "@/lib/questions";
 import AdminQuestionsQueue from "@/components/AdminQuestionsQueue";
 
 export const metadata: Metadata = { title: "Admin · Questions" };
 
 export default async function AdminQuestionsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) notFound();
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")

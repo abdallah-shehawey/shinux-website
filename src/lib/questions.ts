@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 // ------------------------------------------------------------------------------
@@ -108,8 +109,11 @@ export async function getAllQuestionTags(): Promise<string[]> {
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 
-/** A single published/answered question with its full body. */
-export async function getQuestionBySlug(slug: string): Promise<QuestionDetail | null> {
+/**
+ * A single published/answered question with its full body. Wrapped in React
+ * cache() so generateMetadata and the page share ONE query per request.
+ */
+export const getQuestionBySlug = cache(async (slug: string): Promise<QuestionDetail | null> => {
   const supabase = await createClient();
   // Next.js dynamic route params for non-ASCII segments (Arabic slugs) arrive
   // here still percent-encoded rather than decoded — decode defensively so
@@ -123,7 +127,7 @@ export async function getQuestionBySlug(slug: string): Promise<QuestionDetail | 
     .maybeSingle();
   if (error) throw error;
   return (data as QuestionDetail | null) ?? null;
-}
+});
 
 /** All answers for a question, oldest first (accepted answer pinned to top). */
 export async function getAnswersForQuestion(questionId: string): Promise<AnswerRecord[]> {
@@ -197,16 +201,31 @@ export interface ReplyRecord {
   author_username: string | null;
 }
 
-/** Lightweight replies to a single answer, oldest first. */
-export async function getRepliesForAnswer(answerId: string): Promise<ReplyRecord[]> {
+/**
+ * Replies for MANY answers in one query, grouped by answer id — the question
+ * page loads a whole thread with a single round trip instead of one per
+ * answer. Answers with no replies simply have no map entry.
+ */
+export async function getRepliesForAnswers(
+  answerIds: string[],
+): Promise<Map<string, ReplyRecord[]>> {
+  const grouped = new Map<string, ReplyRecord[]>();
+  if (answerIds.length === 0) return grouped;
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("answer_replies_public")
     .select("id, answer_id, body, created_at, author_id, author_display, author_avatar, author_username")
-    .eq("answer_id", answerId)
+    .in("answer_id", answerIds)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as ReplyRecord[];
+
+  for (const reply of (data ?? []) as ReplyRecord[]) {
+    const list = grouped.get(reply.answer_id);
+    if (list) list.push(reply);
+    else grouped.set(reply.answer_id, [reply]);
+  }
+  return grouped;
 }
 
 /** Whether a given user has already upvoted a question. */

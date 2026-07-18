@@ -53,7 +53,9 @@ export default function NotificationsList({ initial }: { initial: NotificationRe
               <div>
                 <p className="text-sm font-medium text-fg">{notificationLabel(n.type)}</p>
                 {n.payload.question_title && (
-                  <p className="mt-0.5 text-sm text-muted">{n.payload.question_title}</p>
+                  <p className="mt-0.5 text-sm text-muted" dir="auto">
+                    {n.payload.question_title}
+                  </p>
                 )}
                 <p className="mt-1 font-mono text-xs text-muted">{formatDate(n.created_at)}</p>
               </div>

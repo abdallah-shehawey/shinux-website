@@ -51,6 +51,9 @@ npm run test:rls    # integration test: verifies anonymous questions never
 
 ```
 content/articles/         All articles, flat — one .md file per article (see below)
+content/tutorials/        Tutorial TRACKS — one folder per track (_index.md = track
+                          meta, every other .md = one ordered lesson); imported from
+                          the owner's notes repos by scripts/import-tutorials.mjs
 public/                   icons, manifest source SVGs, service worker (sw.js)
 scripts/seed-faq.mjs      one-off script: publishes the owner's FAQ notes as real Q&A
 supabase/migrations/      0001_init.sql — schema, questions_public view, RLS, triggers
@@ -106,6 +109,9 @@ src/
                                   drag-to-reorder toggle on the default (unfiltered) view
     articles/[slug]/page.tsx     article page — TOC, reading time, prev/next, related,
                                   Article JSON-LD, per-article OG image
+    tutorials/page.tsx           tutorials hub: track cards + "More resources" repo strip
+    tutorials/[track]/           track page (ordered lesson list) and
+      [lesson]/page.tsx          lesson reader (TOC, prev/next within the track)
     questions/page.tsx           archive — search (?q=) + tag filter; same admin reorder toggle
     questions/[slug]/page.tsx    question + all answers (+ replies, + reply form), upvote
                                   button, answer form, QAPage JSON-LD, per-question OG image

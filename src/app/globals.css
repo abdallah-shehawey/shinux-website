@@ -56,6 +56,17 @@ kbd,
   font-family: var(--font-jetbrains-mono), ui-monospace, "Cascadia Code", monospace;
 }
 
+/* ---- Bidi safety net ----
+   Every free-text field follows the language being typed (Arabic ⇄ English),
+   even fields added in the future that forget an explicit dir="auto". Rendered
+   Markdown gets per-block dir="auto" from src/lib/markdown.ts instead. */
+textarea,
+input[type="text"],
+input[type="search"],
+input:not([type]) {
+  unicode-bidi: plaintext;
+}
+
 /* Small reusable component classes (plain CSS to stay Tailwind-v4 safe). */
 .btn-primary {
   display: inline-flex;

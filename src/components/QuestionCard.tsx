@@ -14,7 +14,6 @@ function timeAgo(iso: string): string {
 }
 
 export default function QuestionCard({ question }: { question: QuestionSummary }) {
-  const isRtl = question.locale === "ar";
   return (
     // Relative + a full-cover link underneath so the whole card still opens
     // the question, while AuthorInline's own link (above it, z-10) stays
@@ -40,11 +39,7 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
           </span>
         )}
       </p>
-      <h3
-        className="text-lg font-semibold text-fg"
-        dir={isRtl ? "rtl" : "ltr"}
-        lang={question.locale}
-      >
+      <h3 className="text-lg font-semibold text-fg" dir="auto" lang={question.locale}>
         {question.title}
       </h3>
       {question.tags.length > 0 && (
