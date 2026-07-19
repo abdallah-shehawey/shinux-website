@@ -90,13 +90,23 @@ const TRACKS = [
     optional: true,
   },
   {
-    slug: "linux-fundamentals",
-    title: "Linux Fundamentals",
+    slug: "linux-desktop-setup",
+    title: "Linux Desktop & Dev Environment",
     description:
-      "Linux from an embedded angle: the boot process, shells, permissions, users & groups, networking, SSH, LVM, package management, MQTT, TTY/PTS and more.",
+      "Day-to-day Linux desktop tooling: system update automation, Distrobox/AUR, hibernate, a practical Git workflow, GRUB/swap/zram tuning, GNOME customization, and small CLI utilities.",
     tag: "Linux",
     order: 8,
-    src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Linux Adminstrtion",
+    src: "/media/Local-Disk2/Embedded_Linux/dotfiles-linux/Website_Notes",
+    optional: true,
+  },
+  {
+    slug: "system-programming",
+    title: "System Programming in C",
+    description:
+      "From-scratch C systems training: filesystems and permissions, the build process, fork() and a hand-built shell, Unix utility clones, memory allocation, static/dynamic linking, OOP patterns in C, FreeRTOS concepts, and building a minimal Linux distro.",
+    tag: "Systems",
+    order: 9,
+    src: "/media/Local-Disk2/System_Programming_under_Linux/Website_Notes",
     optional: true,
   },
 ];

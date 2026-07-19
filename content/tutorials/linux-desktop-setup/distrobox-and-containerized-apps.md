@@ -1,0 +1,135 @@
+---
+title: Distrobox & Containerized Apps on Fedora
+description: >-
+  Distrobox lets you run a full container of another distro — Arch, Ubuntu,
+  Debian, whatever — fully integrated with your host: shared home directory,
+  shared GPU, shared themes, apps exported straight…
+order: 2
+tags:
+  - linux
+draft: false
+author: abdallah-shehawey
+---
+Distrobox lets you run a full container of another distro — Arch, Ubuntu, Debian, whatever — fully integrated with your host: shared home directory, shared GPU, shared themes, apps exported straight into your host's app menu. It's the practical way to get AUR packages on Fedora, or a Debian toolchain on Arch, without dual-booting or babysitting a VM. This guide covers installing it on Fedora, creating an Arch container with NVIDIA GPU passthrough, using AUR inside it, and exporting GUI apps back to the host.
+
+## 1. Install Distrobox on Fedora
+
+```bash
+sudo dnf install distrobox
+sudo dnf install podman
+distrobox --version
+```
+
+## 2. Create an Arch Linux container
+
+```bash
+distrobox create --name arch --image archlinux:latest
+```
+
+For NVIDIA GPU support (CUDA, AI workloads, gaming, GPU rendering), pass `--nvidia` explicitly:
+
+```bash
+distrobox create \
+  --name arch \
+  --image archlinux:latest \
+  --nvidia
+```
+
+`--nvidia` mounts the NVIDIA device files into the container and shares the host's driver libraries, enabling CUDA/OpenGL/Vulkan acceleration inside Arch. Before using it:
+
+- NVIDIA drivers must already be correctly installed on the Fedora host.
+- `nvidia-smi` must work on the host.
+- Don't run `distrobox create` with `sudo` — rootless is the supported mode.
+
+Verify the host GPU first:
+
+```bash
+nvidia-smi
+```
+
+If that works on Fedora, the GPU will work inside the container too. Enter it with:
+
+```bash
+distrobox enter arch
+```
+
+## 3. First-time Arch setup
+
+```bash
+sudo pacman -Syu
+sudo pacman -S base-devel git
+```
+
+## 4. Install yay (AUR helper)
+
+```bash
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+yay -S google-chrome   # test it
+```
+
+## 5. Installing an AUR package (example: WhatsApp)
+
+```bash
+yay -S whatsapp-for-linux
+```
+
+If prompted for a clean build: choose `A` for a clean build, `q` to exit the diff view, then confirm with `Y`. Launch with:
+
+```bash
+whatsapp-for-linux
+```
+
+## 6. Exporting Arch apps back to Fedora
+
+```bash
+distrobox-export --app whatsapp-for-linux
+```
+
+This adds the app to Fedora's own application menu, even though it's actually running inside the Arch container.
+
+## 7. NVIDIA GPU usage inside the container
+
+```bash
+nvidia-smi                      # confirm the host driver works
+sudo pacman -S nvidia-utils      # install matching utils inside Arch
+nvidia-smi                       # confirm again, inside the container
+```
+
+On hybrid GPU (Optimus) laptops, force the NVIDIA GPU for a specific program:
+
+```bash
+__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia program-name
+```
+
+## 8. Common mistakes & troubleshooting
+
+**Don't delete `~/.cache` during setup.** Distrobox stores required state in `~/.cache/distrobox/`. If it does get corrupted:
+
+```bash
+distrobox rm arch
+rm -rf ~/.cache/distrobox
+```
+
+Then recreate the container.
+
+**Error: `crun: ptsname: Inappropriate ioctl for device`** — usually an interrupted setup or stale terminal session. Fix with:
+
+```bash
+podman system reset
+```
+
+Or just reboot / log out and back in.
+
+## 9. Removing the container
+
+```bash
+distrobox rm arch
+```
+
+> **Key notes:**
+>
+> - Arch inside Distrobox does not affect the Fedora host system.
+> - The home directory, GPU, sound, and themes are all shared/integrated automatically.
+> - You can experiment freely inside the container — a broken Arch install is a two-command fix (`distrobox rm` + recreate).

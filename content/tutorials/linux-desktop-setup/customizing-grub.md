@@ -1,0 +1,113 @@
+---
+title: Customizing GRUB
+description: >-
+  GRUB's default look is purely functional. Installing a theme and tuning a
+  couple of settings makes boot feel intentional instead of accidental, and
+  along the way it's worth knowing how to regenerate…
+order: 10
+tags:
+  - linux
+draft: false
+author: abdallah-shehawey
+---
+GRUB's default look is purely functional. Installing a theme and tuning a couple of settings makes boot feel intentional instead of accidental, and along the way it's worth knowing how to regenerate the GRUB config correctly on both Ubuntu and Fedora, since the two differ.
+
+## 1. Download a theme
+
+Sites like [GNOME-Look.org](https://www.gnome-look.org/browse?cat=109) host GRUB themes. Always check the theme's README first — many ship an `install.sh` that automates the rest.
+
+## 2. Extract it
+
+```bash
+tar -xvf theme-file.tar.gz
+```
+
+A typical theme (e.g. Vimix) extracts to something like:
+
+```text
+Vimix-4k/
+├── install.sh
+├── LICENSE
+└── Vimix/
+```
+
+## 3. Install via `install.sh` (preferred, when available)
+
+```bash
+cd Vimix-4k
+chmod +x install.sh
+sudo ./install.sh
+```
+
+The installer typically copies theme files to `/usr/share/grub/themes/`, asks which resolution variant to use, and regenerates the GRUB config automatically.
+
+## 4. Picking the right resolution variant
+
+Getting this wrong stretches or blurs the GRUB UI. Check the actual screen resolution first:
+
+```bash
+xrandr | grep '*'
+```
+
+| Screen Resolution | Recommended Theme |
+| --- | --- |
+| 1366×768 | 1080p |
+| 1920×1080 | 1080p |
+| 2560×1440 | 2k |
+| 3840×2160 | 4k |
+
+If asked to pick, always choose the closest resolution **at or below** the actual screen resolution — never higher.
+
+## 5. Manual installation (no `install.sh`)
+
+```bash
+sudo cp -r theme-folder-name /usr/share/grub/themes/
+sudo nvim /etc/default/grub
+```
+
+Add or update:
+
+```bash
+GRUB_THEME="/usr/share/grub/themes/theme-folder-name/theme.txt"
+```
+
+## 6. Regenerating the GRUB config
+
+Ubuntu/Debian:
+
+```bash
+sudo update-grub
+```
+
+Fedora does **not** use `update-grub`:
+
+```bash
+# BIOS systems
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# UEFI systems (most modern laptops)
+sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+```
+
+Check which mode a system is running in:
+
+```bash
+[ -d /sys/firmware/efi ] && echo UEFI || echo BIOS
+```
+
+On Fedora, themes commonly live under `/usr/share/grub/themes/` — double-check `theme.txt` actually exists there and that `GRUB_THEME` points at it exactly.
+
+## 7. If the theme doesn't show up
+
+Usual suspects: Secure Boot blocking custom themes, a wrong `theme.txt` path, or a config that was never regenerated after the edit. Re-running the regenerate command for the relevant boot mode is the first thing to try:
+
+```bash
+sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+```
+
+> **Fedora + HiDPI tip:** if GRUB renders too small on a 4K screen, add to `/etc/default/grub` and regenerate:
+>
+> ```bash
+> GRUB_GFXMODE=1920x1080
+> GRUB_GFXPAYLOAD_LINUX=keep
+> ```
