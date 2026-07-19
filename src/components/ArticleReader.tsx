@@ -49,9 +49,15 @@ export default function ArticleReader({
   const isRtl = locale === "ar";
   const langStyle = isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined;
 
+  // RTL: TOC on the left, content on the right (natural Arabic reading flow).
+  // LTR: content on the left, TOC on the right (standard English layout).
+  const gridCls = isRtl
+    ? "mt-6 grid gap-10 lg:grid-cols-[17rem_1fr]"
+    : "mt-6 grid gap-10 lg:grid-cols-[1fr_17rem]";
+
   return (
-    <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_17rem]">
-      <div>
+    <article className={gridCls}>
+      <div className={isRtl ? "lg:order-2" : ""}>
         <header className="mb-8" dir={isRtl ? "rtl" : "ltr"} lang={locale} style={langStyle}>
           <div className="mb-3 flex flex-wrap items-center gap-3" dir="ltr">
             <p className="font-mono text-xs text-muted">
@@ -83,7 +89,7 @@ export default function ArticleReader({
             {current.title}
           </h1>
           {tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5" dir="ltr">
+            <div className="mt-3 flex flex-wrap gap-1.5" dir={isRtl ? "rtl" : "ltr"}>
               {tags.map((tag) => (
                 <Link
                   key={tag}
@@ -113,7 +119,7 @@ export default function ArticleReader({
         {children}
       </div>
 
-      <aside className="hidden lg:block">
+      <aside className={`hidden lg:block ${isRtl ? "lg:order-1" : ""}`}>
         <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TableOfContents
             items={current.toc}

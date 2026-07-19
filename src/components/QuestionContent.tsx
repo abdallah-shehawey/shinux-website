@@ -179,7 +179,7 @@ export default function QuestionContent({
           </h1>
 
           {tags.length > 0 && (
-            <div className="mb-6 flex flex-wrap gap-1.5">
+            <div className="mb-6 flex flex-wrap gap-1.5" dir={isRtl ? "rtl" : "ltr"}>
               {tags.map((tag) => (
                 <Link key={tag} href={`/questions?tag=${encodeURIComponent(tag)}`} className="tag-chip">
                   {tag}
