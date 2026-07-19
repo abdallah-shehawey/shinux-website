@@ -68,7 +68,7 @@ export default async function TutorialsPage({
           {tracks.map((track) => (
             <div
               key={track.slug}
-              className="card active:scale-[0.98] active:opacity-90 relative flex h-full flex-col gap-2 transition-colors hover:border-accent"
+              className="card active:scale-[0.98] active:opacity-90 relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-colors hover:border-accent"
             >
               <Link
                 href={`/tutorials/${track.slug}`}
@@ -80,7 +80,7 @@ export default async function TutorialsPage({
                 {track.tag && <span className="tag-chip">{track.tag}</span>}
               </div>
               {track.description ? (
-                <p className="line-clamp-2 flex-1 text-sm text-muted">{track.description}</p>
+                <p className="line-clamp-3 flex-1 overflow-hidden text-sm text-muted">{track.description}</p>
               ) : (
                 <div className="flex-1" />
               )}
@@ -117,13 +117,13 @@ export default async function TutorialsPage({
               href={repo.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="card active:scale-[0.98] active:opacity-90 flex h-full flex-col gap-2 transition-colors hover:border-accent"
+              className="card active:scale-[0.98] active:opacity-90 flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-colors hover:border-accent"
             >
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold text-fg">{repo.title}</h3>
                 <span className="tag-chip">{repo.tag}</span>
               </div>
-              <p className="line-clamp-2 flex-1 text-sm text-muted">{repo.description}</p>
+              <p className="line-clamp-3 flex-1 overflow-hidden text-sm text-muted">{repo.description}</p>
               <p className="mt-1 font-mono text-xs text-accent">View on GitHub &rarr;</p>
             </a>
           ))}

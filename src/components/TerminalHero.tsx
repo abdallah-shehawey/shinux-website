@@ -79,20 +79,20 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
   }, [authorName]);
 
   return (
-    <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card font-mono text-sm shadow-lg">
+    <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card font-mono text-xs sm:text-sm shadow-lg">
       <div className="flex items-center gap-1.5 border-b border-border px-3.5 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
         <span className="ms-2 text-xs text-muted">bash</span>
       </div>
-      <div className="px-4 py-4">
-        <p className="h-[1.25rem] text-start" dir="ltr">
+      <div className="px-3 py-3 sm:px-4 sm:py-4">
+        <p className="min-h-[1.25rem] text-start" dir="ltr">
           <span className="text-muted">$</span>{" "}
           <span className="text-accent">{command}</span>
           <span className="animate-pulse text-accent">█</span>
         </p>
-        <p className="mt-2 h-[3.25rem] whitespace-pre-wrap text-start text-muted" dir="ltr">
+        <p className="mt-2 min-h-[2.5rem] sm:min-h-[3.25rem] whitespace-pre-wrap text-start text-muted" dir="ltr">
           {output}
         </p>
       </div>
