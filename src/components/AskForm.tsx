@@ -131,7 +131,7 @@ export default function AskForm() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="A short, specific question"
-          className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+          className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
         />
       </div>
 
@@ -169,7 +169,7 @@ export default function AskForm() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="What have you tried? What did you expect vs. what happened? Markdown is supported."
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
           />
         ) : (
           <div className="prose card min-h-40 max-w-none">
@@ -191,7 +191,7 @@ export default function AskForm() {
             id="locale"
             value={locale}
             onChange={(e) => setLocale(e.target.value as "ar" | "en")}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
           >
             <option value="ar">Arabic</option>
             <option value="en">English</option>
@@ -206,7 +206,7 @@ export default function AskForm() {
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
             placeholder="arch, networking"
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
           />
         </div>
       </div>

@@ -149,7 +149,7 @@ export default async function HomePage() {
           {latestArticles.length === 0 ? (
             <p className="text-sm text-muted">Coming soon&hellip;</p>
           ) : (
-            <div className="grid auto-rows-fr gap-4 sm:grid-cols-3">
+            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {latestArticles.map((article) => (
                 <ArticleCard
                   key={article.slug}
@@ -183,7 +183,7 @@ export default async function HomePage() {
               </p>
             </div>
           ) : (
-            <div className="grid auto-rows-fr gap-4 sm:grid-cols-3">
+            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {latestQuestions.map((question) => (
                 <QuestionCard key={question.id} question={question} />
               ))}

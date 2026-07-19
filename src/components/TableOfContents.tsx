@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { TocItem } from "@/lib/markdown";
+import { useActiveHeading } from "@/components/useActiveHeading";
 
 // Generic table-of-contents renderer — takes plain TocItem[] as props, no
 // coupling to how the Markdown was sourced (spec §12: reusable pieces).
@@ -23,7 +24,7 @@ export default function TableOfContents({
   dir?: "ltr" | "rtl";
   lang?: string;
 }) {
-  const [activeId, setActiveId] = useState<string>(items[0]?.id ?? "");
+  const activeId = useActiveHeading(items);
   const navRef = useRef<HTMLElement>(null);
 
   // Auto-scroll the sidebar so the active link stays visible.
@@ -32,31 +33,6 @@ export default function TableOfContents({
     const activeEl = navRef.current.querySelector<HTMLElement>(`a[aria-current="location"]`);
     activeEl?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [activeId]);
-
-  useEffect(() => {
-    if (items.length === 0) return;
-
-    const headingEls = items
-      .map((item) => document.getElementById(item.id))
-      .filter(Boolean) as HTMLElement[];
-
-    if (headingEls.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Pick the first entry that is intersecting — that gives us the
-        // topmost visible heading which is the natural "current" section.
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length > 0) {
-          setActiveId(visible[0].target.id);
-        }
-      },
-      { rootMargin: "0px 0px -60% 0px", threshold: 0.1 },
-    );
-
-    headingEls.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [items]);
 
   if (items.length === 0) return null;
 

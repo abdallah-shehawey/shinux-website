@@ -43,7 +43,7 @@ export default function Loading() {
           <div className="h-6 w-32 rounded bg-card" />
           <div className="h-4 w-28 rounded bg-card" />
         </div>
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-3">
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5">
               <div className="h-3.5 w-24 rounded bg-border/40" />
@@ -62,7 +62,7 @@ export default function Loading() {
           <div className="h-6 w-52 rounded bg-card" />
           <div className="h-4 w-32 rounded bg-card" />
         </div>
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-3">
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5">
               <div className="h-5 w-4/5 rounded bg-border" />

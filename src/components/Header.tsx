@@ -3,6 +3,7 @@ import { site } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
 import HeaderAuth from "./HeaderAuth";
 import AdminNavLink from "./AdminNavLink";
+import MobileNav from "./MobileNav";
 
 // Deliberately a sync, cookie-free server component: it renders in the root
 // layout, so any cookies()/auth lookup here would force EVERY page in the
@@ -43,6 +44,7 @@ export default function Header() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
+          <MobileNav links={links} />
           <HeaderAuth />
           <ThemeToggle />
         </div>

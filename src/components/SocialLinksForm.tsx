@@ -109,7 +109,7 @@ export default function SocialLinksForm({
           <select
             value={row.platform}
             onChange={(e) => updateRow(row.key, { platform: e.target.value })}
-            className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
           >
             {PLATFORMS.map((p) => (
               <option key={p.value} value={p.value}>
@@ -124,7 +124,7 @@ export default function SocialLinksForm({
               onChange={(e) => updateRow(row.key, { label: e.target.value })}
               placeholder="Name"
               maxLength={30}
-              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent sm:w-32"
+              className="rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent sm:w-32"
             />
           )}
           <input
@@ -132,7 +132,7 @@ export default function SocialLinksForm({
             value={row.url}
             onChange={(e) => updateRow(row.key, { url: e.target.value })}
             placeholder="https://…"
-            className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
           />
           <button
             type="button"

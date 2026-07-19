@@ -18,7 +18,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label="Toggle theme"
       title="Toggle theme"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition hover:text-fg hover:border-accent active:scale-90"
+      className="inline-flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-border text-muted transition hover:text-fg hover:border-accent active:scale-90"
     >
       {/* Sun shown in dark mode (click -> light) */}
       <svg

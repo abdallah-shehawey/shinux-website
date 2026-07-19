@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import TableOfContents from "@/components/TableOfContents";
+import OnThisPageFab from "@/components/OnThisPageFab";
 import CopyCodeButtons from "@/components/CopyCodeButtons";
 import CodeTabs from "@/components/CodeTabs";
 import type { TocItem } from "@/lib/markdown";
@@ -87,7 +88,7 @@ export default function ArticleReader({
       </div>
 
       <div className={gridCls}>
-        <div className={isRtl ? "lg:order-2" : ""}>
+        <div className={isRtl ? "min-w-0 lg:order-2" : "min-w-0"}>
           <header className="mb-8" dir={isRtl ? "rtl" : "ltr"} lang={locale} style={langStyle}>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl" dir="auto">
               {current.title}
@@ -135,6 +136,8 @@ export default function ArticleReader({
           </div>
         </aside>
       </div>
+
+      <OnThisPageFab items={current.toc} isRtl={isRtl} lang={locale} />
     </article>
   );
 }

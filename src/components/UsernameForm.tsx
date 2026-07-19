@@ -84,8 +84,8 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
       >
         {status === "loading" ? "Saving..." : "Save username"}
       </button>
-      {status === "error" && <p className="text-sm text-red-400 sm:ml-2">{errorMessage}</p>}
-      {status === "saved" && <p className="text-sm text-accent sm:ml-2">Saved.</p>}
+      {status === "error" && <p className="text-sm text-red-400 sm:ms-2">{errorMessage}</p>}
+      {status === "saved" && <p className="text-sm text-accent sm:ms-2">Saved.</p>}
     </form>
   );
 }

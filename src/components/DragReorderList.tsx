@@ -104,14 +104,30 @@ export default function DragReorderList<T>({
     persist(next);
   }
 
+  // Touch-friendly primary reordering path — native HTML5 drag-and-drop
+  // doesn't work on touch devices, and the admin administers from a phone.
+  function move(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= items.length) return;
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(targetIndex, 0, moved);
+    setItems(next);
+    persist(next);
+  }
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={() => setReordering((v) => !v)} className="btn-ghost">
+        <button
+          type="button"
+          onClick={() => setReordering((v) => !v)}
+          className="btn-ghost min-h-11"
+        >
           {reordering ? "Done reordering" : "Reorder"}
         </button>
         {reordering && (
-          <p className="text-xs text-muted">
+          <p className="text-sm text-muted">
             {saving
               ? "Saving…"
               : "Drag cards to set the order everyone sees. Drag near the top/bottom edge to scroll."}
@@ -137,6 +153,26 @@ export default function DragReorderList<T>({
                 aria-hidden
               >
                 ⠿
+              </span>
+              <span className="absolute start-2 top-2 z-10 flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => move(i, -1)}
+                  disabled={i === 0}
+                  aria-label="Move up"
+                  className="flex h-11 w-11 items-center justify-center rounded-md bg-bg/90 font-mono text-muted shadow-sm disabled:opacity-30"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  onClick={() => move(i, 1)}
+                  disabled={i === items.length - 1}
+                  aria-label="Move down"
+                  className="flex h-11 w-11 items-center justify-center rounded-md bg-bg/90 font-mono text-muted shadow-sm disabled:opacity-30"
+                >
+                  ↓
+                </button>
               </span>
               {renderCard(item)}
             </div>

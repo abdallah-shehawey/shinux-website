@@ -131,7 +131,7 @@ export default function AnswerContent({
             onChange={(e) => setBodyValue(e.target.value)}
             dir="auto"
             rows={6}
-            className="rounded-lg border border-border bg-bg px-3 py-2 font-mono text-sm text-fg outline-none focus:border-accent"
+            className="rounded-lg border border-border bg-bg px-3 py-2 font-mono text-base sm:text-sm text-fg outline-none focus:border-accent"
           />
           {status === "error" && <p className="text-sm text-red-400">{errorMessage}</p>}
           <div className="flex gap-2">

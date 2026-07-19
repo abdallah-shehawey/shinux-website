@@ -1,6 +1,7 @@
 "use client";
 
 import TableOfContents from "@/components/TableOfContents";
+import OnThisPageFab from "@/components/OnThisPageFab";
 import TutorialSidebar from "@/components/TutorialSidebar";
 import CopyCodeButtons from "@/components/CopyCodeButtons";
 import CodeTabs from "@/components/CodeTabs";
@@ -53,7 +54,7 @@ export default function TutorialReader({
       </aside>
 
       {/* 2. Main Content */}
-      <div className={isRtl ? "lg:order-2" : ""}>
+      <div className={isRtl ? "min-w-0 lg:order-2" : "min-w-0"}>
         <div className="mb-6 lg:hidden">
           <TutorialSidebar
             track={track}
@@ -102,6 +103,8 @@ export default function TutorialReader({
           />
         </div>
       </aside>
+
+      <OnThisPageFab items={toc} isRtl={isRtl} lang={isRtl ? "ar" : "en"} />
     </article>
   );
 }

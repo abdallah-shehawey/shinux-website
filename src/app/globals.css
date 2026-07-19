@@ -78,6 +78,7 @@ input:not([type]) {
   padding: 0.55rem 1.1rem;
   font-size: 0.9rem;
   font-weight: 600;
+  min-height: 2.75rem;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .btn-primary:hover {
@@ -99,6 +100,7 @@ input:not([type]) {
   padding: 0.55rem 1.1rem;
   font-size: 0.9rem;
   font-weight: 600;
+  min-height: 2.75rem;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 .btn-ghost:hover {
@@ -154,6 +156,7 @@ input:not([type]) {
   color: var(--muted);
   background: transparent;
   cursor: pointer;
+  min-height: 2.75rem;
   transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .lang-toggle-btn + .lang-toggle-btn {
@@ -174,6 +177,7 @@ input:not([type]) {
 .prose {
   line-height: 1.8;
   color: var(--fg);
+  overflow-wrap: break-word;
 }
 .prose > * + * {
   margin-top: 1.15em;
@@ -303,6 +307,18 @@ input:not([type]) {
 .prose th {
   background: var(--card);
 }
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+@media (max-width: 640px) {
+  .prose table {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
 .prose code {
   font-size: 0.85em;
   background: var(--card);
@@ -357,6 +373,42 @@ input:not([type]) {
   font-weight: var(--shiki-dark-font-weight, inherit);
 }
 
+.prose .code-block {
+  margin: 1.3em 0;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  overflow: hidden; /* clip header corners; the pre scrolls, not the figure */
+}
+.prose .code-block > pre {
+  margin: 0;
+  border: none;
+  border-radius: 0; /* pre keeps its overflow-x:auto + padding */
+}
+.code-block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  direction: ltr; /* code is always LTR; keep dots left, copy right */
+  padding: 0.4rem 0.7rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.code-dots {
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
+  border-radius: 50%;
+  background: #ff5f56;
+  box-shadow: 1.05rem 0 #ffbd2e, 2.1rem 0 #27c93f; /* three macOS-style dots from one element */
+  flex: none;
+  margin-inline-end: 1.4rem;
+}
+.code-lang {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: lowercase;
+}
+
 .copy-code-btn {
   position: absolute;
   top: 0.5rem;
@@ -375,12 +427,24 @@ input:not([type]) {
 .copy-code-btn:focus-visible {
   opacity: 1;
 }
+@media (hover: none) {
+  .copy-code-btn {
+    opacity: 1;
+  }
+}
 .copy-code-btn:hover {
   color: var(--accent);
   border-color: var(--accent);
 }
 .copy-code-btn:active {
   transform: scale(0.92);
+}
+.prose .code-block .copy-code-btn {
+  position: static; /* was absolute */
+  opacity: 1; /* always visible — no hover needed */
+  margin-inline-start: auto; /* push to the trailing edge of the header */
+  min-height: 1.9rem;
+  padding: 0.25rem 0.6rem;
 }
 
 /* Tabbed code blocks — div.code-tabs wrappers from remarkCodeTabs, made

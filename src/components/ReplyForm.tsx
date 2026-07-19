@@ -85,17 +85,17 @@ export default function ReplyForm({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Reply…"
-        className="w-full rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent"
+        className="w-full rounded-lg border border-border bg-bg px-3 py-1.5 text-base sm:text-sm text-fg outline-none focus:border-accent"
       />
       {status === "error" && <p className="text-xs text-red-400">{errorMessage}</p>}
       <div className="flex gap-2">
-        <button type="submit" disabled={status === "loading"} className="btn-ghost px-3 py-1 text-xs">
+        <button type="submit" disabled={status === "loading"} className="btn-ghost px-3 py-2 text-sm">
           {status === "loading" ? "Posting…" : "Post reply"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="px-3 py-1 text-xs text-muted hover:text-fg"
+          className="px-3 py-2 text-sm text-muted hover:text-fg"
         >
           Cancel
         </button>

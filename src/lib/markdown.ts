@@ -202,6 +202,91 @@ function groupCodeTabs(parent: MdastParent) {
   }
 }
 
+// Wrap every standalone highlighted code block (skipping `.code-tabs` groups,
+// which render their own tab strip) in a <figure class="code-block"> with a
+// header showing three dots, the language, and a copy button — server
+// rendered so it's visible with no hover and no client JS on touch screens.
+// CopyCodeButtons.tsx wires up the button's click handler afterwards.
+//
+// The language comes from the `language-*` class Shiki's own
+// `addLanguageClass` option stamps on its output <code>, not from the
+// pre-Shiki fence: rehypeShiki replaces the whole <pre> node wholesale
+// (`parent.children[index] = fragment`), so anything set on the node before
+// highlighting is discarded and can't be read after.
+// @shikijs/rehype's `codeToHast()` returns a root-wrapped fragment, and its
+// plugin substitutes that root in place of the original <pre> node
+// (`parent.children[index] = fragment`) without unwrapping it — so every
+// highlighted code block ends up nested one level deeper than it looks,
+// inside a stray `root` node. Harmless for the final HTML (a root's children
+// render with no wrapping tag) but it breaks anything that inspects the
+// *real* parent, e.g. detecting a `.code-tabs` group below.
+function rehypeUnwrapShikiRoots() {
+  return (tree: Root) => {
+    visit(tree, (node) => node.type === "root", (node, index, parent) => {
+      if (!parent || index === undefined) return; // the tree's own root
+      const nestedChildren = (node as unknown as Root).children as typeof parent.children;
+      parent.children.splice(index, 1, ...nestedChildren);
+      return index; // re-visit at this index instead of skipping past it
+    });
+  };
+}
+
+function rehypeCodeChrome() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element, index, parent) => {
+      // `parent` is the hast root for any top-level code block, not an
+      // "element" — only .code-tabs-grouped blocks have an element parent.
+      if (node.tagName !== "pre" || !parent || index === undefined) return;
+      const parentCls =
+        parent.type === "element" ? ((parent.properties?.className as string[]) || []) : [];
+      if (parentCls.includes("code-tabs")) return; // leave tabbed blocks alone
+
+      const code = node.children.find(
+        (c) => c.type === "element" && c.tagName === "code",
+      ) as Element | undefined;
+      // Shiki's own hast output sets `class` (not hast's usual `className`)
+      // on the <code> it generates — check both.
+      const codeCls =
+        ((code?.properties?.className ?? code?.properties?.class) as string[]) || [];
+      const lang = codeCls.find((c) => c.startsWith("language-"))?.slice("language-".length) ?? "code";
+
+      parent.children[index] = {
+        type: "element",
+        tagName: "figure",
+        properties: { className: ["code-block"] },
+        children: [
+          {
+            type: "element",
+            tagName: "figcaption",
+            properties: { className: ["code-block-header"] },
+            children: [
+              {
+                type: "element",
+                tagName: "span",
+                properties: { className: ["code-dots"], "aria-hidden": "true" },
+                children: [],
+              },
+              {
+                type: "element",
+                tagName: "span",
+                properties: { className: ["code-lang"] },
+                children: [{ type: "text", value: lang }],
+              },
+              {
+                type: "element",
+                tagName: "button",
+                properties: { type: "button", className: ["copy-code-btn"] },
+                children: [{ type: "text", value: "Copy" }],
+              },
+            ],
+          },
+          node,
+        ],
+      } as Element;
+    });
+  };
+}
+
 // Collect h2/h3 headings (after slugs are assigned) into a table of contents.
 function rehypeCollectToc(toc: TocItem[]) {
   return (tree: Root) => {
@@ -283,7 +368,10 @@ async function renderMarkdownUncached(
     .use(rehypeShiki, {
       themes: { light: "catppuccin-latte", dark: "catppuccin-mocha" },
       defaultColor: false,
+      addLanguageClass: true,
     })
+    .use(rehypeUnwrapShikiRoots)
+    .use(rehypeCodeChrome)
     .use(rehypeStringify);
 
   const file = await processor.process(source);

@@ -63,7 +63,7 @@ export default async function AboutPage() {
                       <Icon className="h-4 w-4" aria-hidden />
                       {s.label} <span className="ms-1 text-muted">&darr;</span>
                     </summary>
-                    <ul className="absolute start-0 top-full z-10 mt-1 flex min-w-max flex-col gap-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
+                    <ul className="absolute start-0 top-full z-10 mt-1 flex w-56 max-w-[calc(100vw-2rem)] flex-col gap-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
                       {s.links.map((l) => (
                         <li key={l.href}>
                           <a

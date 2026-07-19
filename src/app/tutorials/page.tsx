@@ -32,7 +32,7 @@ export default async function TutorialsPage({
           name="q"
           defaultValue={q ?? ""}
           placeholder="Search lessons across every track&hellip;"
-          className="w-full max-w-sm rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+          className="w-full max-w-sm rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
         />
         <button type="submit" className="btn-ghost">
           Search

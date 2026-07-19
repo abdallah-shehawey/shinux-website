@@ -62,7 +62,7 @@ export default function DisplayNameForm({
           setStatus("idle");
         }}
         maxLength={60}
-        className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+        className="rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
       />
       <button
         type="submit"
@@ -71,8 +71,8 @@ export default function DisplayNameForm({
       >
         {status === "loading" ? "Saving..." : "Save name"}
       </button>
-      {status === "error" && <p className="text-sm text-red-400 sm:ml-2">{errorMessage}</p>}
-      {status === "saved" && <p className="text-sm text-accent sm:ml-2">Saved.</p>}
+      {status === "error" && <p className="text-sm text-red-400 sm:ms-2">{errorMessage}</p>}
+      {status === "saved" && <p className="text-sm text-accent sm:ms-2">Saved.</p>}
     </form>
   );
 }

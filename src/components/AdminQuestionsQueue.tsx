@@ -113,7 +113,7 @@ export default function AdminQuestionsQueue({ initial }: { initial: PendingQuest
               {q.title}
             </h3>
             <p
-              className="mb-3 whitespace-pre-wrap text-sm text-muted"
+              className="mb-3 whitespace-pre-wrap break-words text-sm text-muted"
               dir="auto"
               lang={q.locale}
             >
