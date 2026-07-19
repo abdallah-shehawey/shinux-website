@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPublicProfile } from "@/lib/profiles";
 import { getQuestionsByAuthor, getAnswersByAuthor } from "@/lib/questions";
-import QuestionCard from "@/components/QuestionCard";
 
 export async function generateMetadata({
   params,
@@ -40,43 +39,38 @@ export default async function ProfileQAPage({
         <h1 className="text-3xl font-bold tracking-tight">Q&amp;A by {profile.displayName}</h1>
       </header>
 
-      <div className="flex flex-col gap-10">
-        <section>
-          <h2 className="mb-4 text-lg font-semibold text-fg">Questions Asked</h2>
-          {questions.length === 0 ? (
-            <p className="text-muted">No public questions yet.</p>
+      <div className="grid grid-cols-2 gap-4">
+        {[
+          {
+            label: "Questions Asked",
+            count: questions.length,
+            href: `/u/${profile.username}/questions/asked`,
+          },
+          {
+            label: "Answers Given",
+            count: answers.length,
+            href: `/u/${profile.username}/questions/answered`,
+          },
+        ].map((stat) =>
+          stat.count > 0 ? (
+            <Link
+              key={stat.label}
+              href={stat.href}
+              className="card active:scale-[0.98] active:opacity-90 flex flex-col items-center gap-1 py-6 text-center transition-colors hover:border-accent"
+            >
+              <span className="font-mono text-2xl font-bold text-accent">{stat.count}</span>
+              <span className="text-sm text-muted">{stat.label}</span>
+            </Link>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {questions.map((q) => (
-                <QuestionCard key={q.id} question={q} />
-              ))}
+            <div
+              key={stat.label}
+              className="card flex flex-col items-center gap-1 py-6 text-center opacity-50"
+            >
+              <span className="font-mono text-2xl font-bold text-muted">0</span>
+              <span className="text-sm text-muted">{stat.label}</span>
             </div>
-          )}
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-lg font-semibold text-fg">Answers Given</h2>
-          {answers.length === 0 ? (
-            <p className="text-muted">No public answers yet.</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {answers.map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/questions/${a.question_slug}`}
-                  className="card active:scale-[0.98] active:opacity-90 transition-colors hover:border-accent"
-                >
-                  <p className="text-sm font-medium text-fg" dir="auto">
-                    {a.question_title}
-                  </p>
-                  <p className="mt-1 truncate text-xs text-muted" dir="auto">
-                    {a.body}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+          ),
+        )}
       </div>
     </div>
   );
