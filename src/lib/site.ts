@@ -23,6 +23,8 @@ export const site = {
   /** Production URL (env-overridable elsewhere via NEXT_PUBLIC_SITE_URL). */
   url: "https://shehaweyblog.vercel.app",
   repoUrl: "https://github.com/abdallah-shehawey/shehaweyblog",
+  /** My portfolio — cross-linked from the header nav and the About page CTA. */
+  portfolioUrl: "https://abdallahshehawey.vercel.app/",
   author: {
     name: "Abdallah Shehawey",
     username: "abdallah-shehawey",

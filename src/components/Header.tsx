@@ -16,6 +16,7 @@ const links = [
   { href: "/questions", label: "Questions" },
   { href: "/ask", label: "Ask" },
   { href: "/about", label: "About" },
+  { href: site.portfolioUrl, label: "Portfolio", external: true },
 ] as const;
 
 const navLinkClass =
@@ -34,11 +35,23 @@ export default function Header() {
         </Link>
 
         <nav className="ms-2 hidden items-center gap-4 text-sm sm:flex">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className={navLinkClass}>
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) =>
+            "external" in l && l.external ? (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={navLinkClass}
+              >
+                {l.label}
+              </a>
+            ) : (
+              <Link key={l.href} href={l.href} className={navLinkClass}>
+                {l.label}
+              </Link>
+            )
+          )}
           <AdminNavLink className={navLinkClass} />
         </nav>
 

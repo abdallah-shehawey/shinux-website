@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { site, siteAuthor } from "@/lib/site";
 import { getAuthorProfile } from "@/lib/authors";
 import AuthorCard from "@/components/AuthorCard";
+import PortfolioCta from "@/components/PortfolioCta";
 import { getSocialIcon } from "@/lib/social-icons";
 
 export const metadata: Metadata = { title: "About" };
@@ -95,6 +96,8 @@ export default async function AboutPage() {
           </ul>
         </div>
       )}
+
+      <PortfolioCta />
     </div>
   );
 }
