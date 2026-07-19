@@ -8,6 +8,7 @@ import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
 import { site, siteAuthor } from "@/lib/site";
 import ArticleCard from "@/components/ArticleCard";
 import QuestionCard from "@/components/QuestionCard";
+import TerminalHero from "@/components/TerminalHero";
 
 function readingLabel(minutes: number) {
   return `${minutes} min read`;
@@ -43,53 +44,39 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto w-full px-4 sm:px-8 lg:px-12">
-      <section className="py-20 text-center sm:text-start">
-        <div className="mx-auto mb-8 max-w-xl font-mono text-sm sm:mx-0">
-          <p>
-            <span className="text-muted">$</span> <span className="text-accent">whoami</span>
-          </p>
-          <p className="mb-3 text-muted">
-            {authorName} — embedded systems engineer, Linux tinkerer, open-source enthusiast
-          </p>
-          <p>
-            <span className="text-muted">$</span> <span className="text-accent">history | tail -3</span>
-          </p>
-          <p className="whitespace-pre text-muted">
-            {"  517  make menuconfig\n  518  dmesg | grep -i usb\n  519  git push origin main"}
-          </p>
-          <p aria-hidden className="text-accent">
-            <span className="text-muted">$</span> <span className="animate-pulse">█</span>
-          </p>
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="mx-auto mb-10 max-w-xl sm:mx-0">
+          <TerminalHero authorName={authorName} />
         </div>
-        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-          Notes from below the OS
-        </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-lg text-muted sm:mx-0">
-          Embedded Linux, RTOS internals, and everything else on the way from firmware to the
-          kernel — write-ups, hands-on tutorials, and a Q&amp;A archive.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
-          <Link href="/articles" className="btn-primary">
-            Browse articles
-          </Link>
-          <Link href="/tutorials" className="btn-ghost">
-            Explore tutorials
-          </Link>
-          <Link href="/ask" className="btn-ghost">
-            Ask a question
-          </Link>
-        </div>
-      </section>
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-14">
+          <div className="text-center sm:text-start">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+              Notes from below the OS
+            </h1>
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted sm:mx-0">
+              Embedded Linux, RTOS internals, and everything else on the way from firmware to the
+              kernel — write-ups, hands-on tutorials, and a Q&amp;A archive.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
+              <Link href="/articles" className="btn-primary">
+                Browse articles
+              </Link>
+              <Link href="/tutorials" className="btn-ghost">
+                Explore tutorials
+              </Link>
+              <Link href="/ask" className="btn-ghost">
+                Ask a question
+              </Link>
+            </div>
+          </div>
 
-      {/* Who's behind the writing — condensed from my portfolio */}
-      <section className="pb-12">
-        <div className="card max-w-4xl">
-          <p className="mb-1 font-mono text-xs uppercase tracking-wide text-accent">
-            // whoami
-          </p>
-          <h2 className="mb-3 text-xl font-semibold tracking-tight">{authorName}</h2>
-          <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-            <p className="max-w-2xl text-sm leading-relaxed text-muted">
+          {/* Who's behind the writing — condensed from my portfolio */}
+          <div className="card">
+            <p className="mb-1 font-mono text-xs uppercase tracking-wide text-accent">
+              // whoami
+            </p>
+            <h2 className="mb-3 text-xl font-semibold tracking-tight">{authorName}</h2>
+            <p className="text-sm leading-relaxed text-muted">
               Embedded software engineer and an Electronics &amp; Communication
               Engineering graduate of Al-Azhar University (2026). I write firmware in
               C/C++, build device drivers from the datasheet up, and care about
@@ -98,7 +85,7 @@ export default async function HomePage() {
               deeper into Embedded Linux — kernel fundamentals, Yocto, and Buildroot —
               and this blog is where I write that part down.
             </p>
-            <ul className="flex flex-row flex-wrap gap-5 sm:flex-col sm:gap-3">
+            <ul className="mt-5 flex flex-row flex-wrap gap-x-6 gap-y-3">
               {authorHighlights.map((h) => (
                 <li key={h.label}>
                   <div className="font-mono text-lg font-bold text-accent">{h.value}</div>
@@ -106,20 +93,20 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href={site.portfolioUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary inline-flex items-center gap-1.5"
-            >
-              <FaGlobe className="h-4 w-4" aria-hidden />
-              View My Portfolio
-            </a>
-            <Link href="/about" className="btn-ghost">
-              More about me
-            </Link>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href={site.portfolioUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-flex items-center gap-1.5"
+              >
+                <FaGlobe className="h-4 w-4" aria-hidden />
+                View My Portfolio
+              </a>
+              <Link href="/about" className="btn-ghost">
+                More about me
+              </Link>
+            </div>
           </div>
         </div>
       </section>
