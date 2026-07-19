@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { getPublicProfile } from "@/lib/profiles";
 import { getQuestionsByAuthor, getAnswersByAuthor } from "@/lib/questions";
 import { getArticlesByAuthor } from "@/lib/articles";
 import { getLessonsByAuthor } from "@/lib/tutorials";
 import { getSocialIcon } from "@/lib/social-icons";
+import ProfileStats from "@/components/ProfileStats";
 
 export async function generateMetadata({
   params,
@@ -79,36 +79,13 @@ export default async function PublicProfilePage({
         </ul>
       )}
 
-      <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {[
-          { label: "Articles", count: articles.length, href: `/u/${profile.username}/articles` },
-          { label: "Tutorials", count: lessons.length, href: `/u/${profile.username}/tutorials` },
-          {
-            label: "Q&A",
-            count: questions.length + answers.length,
-            href: `/u/${profile.username}/questions`,
-          },
-        ].map((stat) =>
-          stat.count > 0 ? (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className="card active:scale-[0.98] active:opacity-90 flex flex-col items-center gap-1 py-6 text-center transition-colors hover:border-accent"
-            >
-              <span className="font-mono text-2xl font-bold text-accent">{stat.count}</span>
-              <span className="text-sm text-muted">{stat.label}</span>
-            </Link>
-          ) : (
-            <div
-              key={stat.label}
-              className="card flex flex-col items-center gap-1 py-6 text-center opacity-50"
-            >
-              <span className="font-mono text-2xl font-bold text-muted">0</span>
-              <span className="text-sm text-muted">{stat.label}</span>
-            </div>
-          ),
-        )}
-      </div>
+      <ProfileStats
+        username={profile.username}
+        articlesCount={articles.length}
+        tutorialsCount={lessons.length}
+        questionsCount={questions.length}
+        answersCount={answers.length}
+      />
     </div>
   );
 }

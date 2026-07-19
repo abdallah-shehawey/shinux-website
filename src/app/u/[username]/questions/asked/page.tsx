@@ -29,8 +29,8 @@ export default async function ProfileQuestionsAskedPage({
 
   return (
     <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
-      <Link href={`/u/${profile.username}/questions`} className="text-sm text-muted hover:text-accent">
-        &larr; Back to Q&amp;A
+      <Link href={`/u/${profile.username}`} className="text-sm text-muted hover:text-accent">
+        &larr; Back to profile
       </Link>
 
       <header className="mb-8 mt-4">
