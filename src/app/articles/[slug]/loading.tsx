@@ -6,15 +6,15 @@ export default function Loading() {
       {/* ← Back to articles */}
       <div className="h-4 w-28 rounded bg-card" />
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_17rem]">
+      {/* Date · reading time */}
+      <div className="mt-4 mb-4 flex items-center gap-3">
+        <div className="h-3 w-28 rounded bg-card" />
+        <div className="h-6 w-24 rounded-lg bg-card/60" />
+      </div>
+
+      <div className="grid gap-10 lg:grid-cols-[1fr_17rem]">
         {/* ── Content column ── */}
         <div>
-          {/* Date · reading time */}
-          <div className="mb-3 flex items-center gap-3">
-            <div className="h-3 w-28 rounded bg-card" />
-            <div className="h-3 w-20 rounded bg-card" />
-          </div>
-
           {/* Title */}
           <div className="h-9 w-3/4 rounded bg-card" />
 
