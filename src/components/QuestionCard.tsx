@@ -39,9 +39,11 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
           </span>
         )}
       </p>
-      <h3 className="line-clamp-2 flex-1 text-lg font-semibold text-fg" dir="auto" lang={question.locale}>
-        {question.title}
-      </h3>
+      <div className="flex-grow flex-1 min-h-0">
+        <h3 className="line-clamp-2 text-lg font-semibold text-fg" dir="auto" lang={question.locale}>
+          {question.title}
+        </h3>
+      </div>
       {question.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {question.tags.map((tag) => (

@@ -72,8 +72,10 @@ export default async function TrackPage({
               <span className="flex h-full flex-1 flex-col gap-1">
                 <span className="line-clamp-2 font-medium text-fg">{lesson.title}</span>
                 {lesson.description ? (
-                  <span className="line-clamp-2 flex-1 text-sm text-muted">
-                    {lesson.description}
+                  <span className="flex-grow flex-1 min-h-0">
+                    <span className="line-clamp-2 block text-sm text-muted">
+                      {lesson.description}
+                    </span>
                   </span>
                 ) : (
                   <span className="flex-1" />

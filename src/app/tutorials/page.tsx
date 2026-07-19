@@ -80,7 +80,9 @@ export default async function TutorialsPage({
                 {track.tag && <span className="tag-chip">{track.tag}</span>}
               </div>
               {track.description ? (
-                <p className="line-clamp-3 flex-1 overflow-hidden text-sm text-muted">{track.description}</p>
+                <div className="flex-grow flex-1 min-h-0">
+                  <p className="line-clamp-3 text-sm text-muted">{track.description}</p>
+                </div>
               ) : (
                 <div className="flex-1" />
               )}
@@ -123,7 +125,9 @@ export default async function TutorialsPage({
                 <h3 className="text-lg font-semibold text-fg">{repo.title}</h3>
                 <span className="tag-chip">{repo.tag}</span>
               </div>
-              <p className="line-clamp-3 flex-1 overflow-hidden text-sm text-muted">{repo.description}</p>
+              <div className="flex-grow flex-1 min-h-0">
+                <p className="line-clamp-3 text-sm text-muted">{repo.description}</p>
+              </div>
               <p className="mt-1 font-mono text-xs text-accent">View on GitHub &rarr;</p>
             </a>
           ))}
