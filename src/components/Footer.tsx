@@ -1,7 +1,7 @@
 import { site } from "@/lib/site";
 
 const ASCII = String.raw`   .--.
-  |o_o |   linux-blog
+  |o_o |   shehaweyblog
   |:_/ |   $ echo "share & learn"`;
 
 export default function Footer() {

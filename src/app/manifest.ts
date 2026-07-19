@@ -4,8 +4,8 @@ import type { MetadataRoute } from "next";
 // Served at /manifest.webmanifest.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "linux-blog — Linux articles & Q&A",
-    short_name: "linux-blog",
+    name: "shehaweyblog — Linux articles & Q&A",
+    short_name: "shehaweyblog",
     description:
       "A personal Linux blog with articles and a Q&A archive. مدونة شخصية عن لينكس: مقالات، أوامر، وأرشيف أسئلة وأجوبة.",
     lang: "en",

@@ -18,7 +18,7 @@ export interface Author {
 }
 
 export const site = {
-  name: "linux-blog",
+  name: "shehaweyblog",
   tagline: "A personal blog about Linux: distros, commands, and troubleshooting.",
   /** Production URL (env-overridable elsewhere via NEXT_PUBLIC_SITE_URL). */
   url: "https://shehaweyblog.vercel.app",

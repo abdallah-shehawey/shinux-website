@@ -1,16 +1,25 @@
 import Link from "next/link";
+import { FaGlobe } from "react-icons/fa";
 import { getArticles } from "@/lib/articles";
 import { getCachedPublicQuestions } from "@/lib/questions";
 import { getAuthorProfile, getAuthorProfiles } from "@/lib/authors";
 import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
 import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
-import { siteAuthor } from "@/lib/site";
+import { site, siteAuthor } from "@/lib/site";
 import ArticleCard from "@/components/ArticleCard";
 import QuestionCard from "@/components/QuestionCard";
 
 function readingLabel(minutes: number) {
   return `${minutes} min read`;
 }
+
+// A few career highlights, mirrored from my portfolio (abdallahshehawey.vercel.app),
+// so the home page says who's behind the writing at a glance.
+const authorHighlights = [
+  { value: "20+", label: "Embedded projects" },
+  { value: "200+", label: "Students trained" },
+  { value: "5★", label: "HackerRank C" },
+];
 
 export default async function HomePage() {
   // The admin's pin order (see the "Reorder" button on /articles and
@@ -70,6 +79,49 @@ export default async function HomePage() {
           <Link href="/ask" className="btn-ghost">
             Ask a question
           </Link>
+        </div>
+      </section>
+
+      {/* Who's behind the writing — condensed from my portfolio */}
+      <section className="pb-12">
+        <div className="card">
+          <p className="mb-1 font-mono text-xs uppercase tracking-wide text-accent">
+            // whoami
+          </p>
+          <h2 className="mb-3 text-xl font-semibold tracking-tight">{authorName}</h2>
+          <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <p className="max-w-2xl text-sm leading-relaxed text-muted">
+              Embedded software engineer and an Electronics &amp; Communication
+              Engineering graduate of Al-Azhar University (2026). I write firmware in
+              C/C++, build device drivers from the datasheet up, and care about
+              deterministic, real-time code — automotive-grade, RTOS-based systems
+              (CAN, LIN, UART, SPI, I2C) and the AUTOSAR stack. Lately I&apos;m going
+              deeper into Embedded Linux — kernel fundamentals, Yocto, and Buildroot —
+              and this blog is where I write that part down.
+            </p>
+            <ul className="flex flex-row flex-wrap gap-5 sm:flex-col sm:gap-3">
+              {authorHighlights.map((h) => (
+                <li key={h.label}>
+                  <div className="font-mono text-lg font-bold text-accent">{h.value}</div>
+                  <div className="text-xs text-muted">{h.label}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a
+              href={site.portfolioUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary inline-flex items-center gap-1.5"
+            >
+              <FaGlobe className="h-4 w-4" aria-hidden />
+              View My Portfolio
+            </a>
+            <Link href="/about" className="btn-ghost">
+              More about me
+            </Link>
+          </div>
         </div>
       </section>
 
