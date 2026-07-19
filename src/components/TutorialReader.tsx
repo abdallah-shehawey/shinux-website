@@ -34,14 +34,14 @@ export default function TutorialReader({
   children?: React.ReactNode;
 }) {
   return (
-    <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_16rem_minmax(0,44rem)_17rem_1fr]">
-      <aside className="hidden lg:col-start-2 lg:block">
+    <article className="mt-6 grid gap-10 lg:grid-cols-[16rem_1fr_17rem]">
+      <aside className="hidden lg:block">
         <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TutorialSidebar track={track} lessons={lessons} currentSlug={currentSlug} />
         </div>
       </aside>
 
-      <div className="lg:col-start-3">
+      <div>
         <div className="mb-6 lg:hidden">
           <TutorialSidebar
             track={track}
@@ -75,7 +75,7 @@ export default function TutorialReader({
         {children}
       </div>
 
-      <aside className="hidden lg:col-start-4 lg:block">
+      <aside className="hidden lg:block">
         <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TableOfContents items={toc} title="On this page" />
         </div>

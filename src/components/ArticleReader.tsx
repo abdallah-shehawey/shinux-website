@@ -50,8 +50,8 @@ export default function ArticleReader({
   const langStyle = isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined;
 
   return (
-    <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_minmax(0,46rem)_17rem_1fr]">
-      <div className="lg:col-start-2">
+    <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_17rem]">
+      <div>
         <header className="mb-8" dir={isRtl ? "rtl" : "ltr"} lang={locale} style={langStyle}>
           <div className="mb-3 flex flex-wrap items-center gap-3" dir="ltr">
             <p className="font-mono text-xs text-muted">
@@ -113,8 +113,8 @@ export default function ArticleReader({
         {children}
       </div>
 
-      <aside className="hidden lg:col-start-3 lg:block">
-        <div className="sticky top-20">
+      <aside className="hidden lg:block">
+        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TableOfContents
             items={current.toc}
             title="On this page"

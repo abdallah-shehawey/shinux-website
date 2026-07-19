@@ -2,7 +2,7 @@
 // the real page's column widths so content doesn't jump when it arrives.
 export default function Loading() {
   return (
-    <div className="mx-auto w-full max-w-3xl animate-pulse px-4 py-12 sm:px-8">
+    <div className="mx-auto w-full animate-pulse px-4 py-12 sm:px-8 lg:px-12">
       <div className="h-4 w-32 rounded bg-card" />
       <div className="mt-6 h-4 w-44 rounded bg-card" />
       <div className="mt-3 h-9 w-3/4 rounded bg-card" />
