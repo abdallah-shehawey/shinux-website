@@ -10,7 +10,7 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## 1. What is `ansible.cfg`?
+## What is `ansible.cfg`?
 
 It is the main configuration file for Ansible. It allows you to customize default behaviors so you don't have to provide flags (like `-i` or `-u`) every time you run a command.
 
@@ -24,7 +24,7 @@ It is the main configuration file for Ansible. It allows you to customize defaul
 
 - SSH connection settings (timeouts, key checking).
 
-## 2. Configuration File Precedence (Order of Operations)
+## Configuration File Precedence (order of Operations)
 
 Ansible looks for a configuration file in the following order. It uses the **first one it finds** and ignores the rest.
 
@@ -44,37 +44,37 @@ Ansible looks for a configuration file in the following order. It uses the **fir
 
     - The global default (often created during installation).
 
-## 3. How to Check Which Config is Active?
+## How to Check Which Config is Active?
 
 You can verify which configuration file Ansible is currently using by running the version command.
 
 **Scenario A: Project Config Found (Recommended)** If you are in a directory that contains an `ansible.cfg`:
 
-```bash
+```text
 ansible --version
 ```
 
 **Output:**
 
-```bash
+```ini
 ansible [core 2.18.12]
   config file = /home/user/ansible-project/ansible.cfg
 ```
 
 **Scenario B: Default Config Found** If no local file exists:
 
-```bash
+```ini
 ansible [core 2.18.12]
   config file = /etc/ansible/ansible.cfg
 ```
 
 **Scenario C: No Config Found** If no file exists in any search path:
 
-```bash
+```ini
 config file = None
 ```
 
-## 4. Common Configuration Sections
+## Common Configuration Sections
 
 Here is a standard template for a project-level `ansible.cfg`.
 
@@ -107,7 +107,7 @@ timeout = 30
 
 Settings for switching users (e.g., becoming root).
 
-```bash
+```ini
 [privilege_escalation]
 # Automatically switch user (sudo)
 become = True
@@ -119,7 +119,7 @@ become_method = sudo
 become_user = root
 ```
 
-## 5. Essential Helper Commands
+## Essential Helper Commands
 
 ### Documentation (`ansible-doc`)
 

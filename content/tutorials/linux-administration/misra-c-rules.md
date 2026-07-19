@@ -1,5 +1,5 @@
 ---
-title: MISRA-C Guidelines — Detailed Cheat Sheet
+title: Misra-c Guidelines Detailed Cheat Sheet
 description: 'MISRA-C is widely used in:'
 order: 902
 tags:
@@ -7,127 +7,127 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-> **Target audience:** Embedded Systems & Safety-Critical Software Developers  
+> **Target audience:** Embedded Systems & Safety-Critical Software Developers
 > **Language:** C (especially Bare‑Metal / MCU development)
 
 ---
 
-## What is MISRA-C?
+## What is Misra-c?
 
 **MISRA-C (Motor Industry Software Reliability Association)** is a set of coding guidelines designed to:
 
 - Improve **code safety and reliability**
-    
+
 - Avoid **undefined / unspecified / implementation-defined behavior** in C
-    
+
 - Make code **predictable and analyzable**
-    
+
 - Reduce runtime failures in **embedded and safety‑critical systems**
-    
+
 
 MISRA-C is widely used in:
 
 - Automotive (AUTOSAR)
-    
+
 - Medical devices
-    
+
 - Aerospace
-    
+
 - Industrial controllers
-    
+
 
 ---
 
-## Common MISRA-C Versions
+## Common Misra-c Versions
 
 - MISRA-C:2004
-    
+
 - MISRA-C:2012 (most used in industry)
-    
+
 - MISRA-C:2023 (latest)
-    
+
 
 ---
 
-# Core MISRA-C Rules (Most Famous & Practical)
+# Core Misra-c Rules (most Famous & Practical)
 
 ---
 
-## 1. No Implicit Type Conversion
+## No Implicit Type Conversion
 
 ❌ Not recommended:
 
-```c
+```ini
 uint8_t x = 300;
 ```
 
 ✅ Recommended:
 
-```c
+```ini
 uint8_t x = (uint8_t)300;
 ```
 
 **Reason:**
 
 - Prevent overflow
-    
+
 - Prevent hidden truncation
-    
+
 - Make programmer intent explicit
-    
+
 
 ---
 
-## 2. Use Fixed-Width Integer Types
+## Use Fixed-width Integer Types
 
 ❌ Not recommended:
 
-```c
+```text
 int x;
 ```
 
 ✅ Recommended:
 
-```c
+```text
 uint32_t x;
 ```
 
 **Reason:**
 
 - `int` size is compiler-dependent
-    
+
 - Embedded systems require deterministic size
-    
+
 
 ---
 
-## 3. All Variables Must Be Initialized
+## All Variables Must be Initialized
 
 ❌
 
-```c
+```text
 int x;
 if (x > 5)
 ```
 
 ✅
 
-```c
+```ini
 int x = 0;
 ```
 
 **Reason:**
 
 - Uninitialized variables cause undefined behavior
-    
+
 
 ---
 
-## 4. No Use of Undefined Behavior
+## No Use of Undefined Behavior
 
 Examples of forbidden behavior:
 
-```c
+```ini
 int x = 10 / 0;        // division by zero
 *p = 5;                // NULL pointer dereference
 x = i++ + i++;         // multiple side effects
@@ -136,21 +136,21 @@ x = i++ + i++;         // multiple side effects
 **Reason:**
 
 - Compiler may generate unpredictable code
-    
+
 
 ---
 
-## 5. Avoid Multiple Side Effects in One Expression
+## Avoid Multiple Side Effects in One Expression
 
 ❌
 
-```c
+```ini
 a = i++ + i++;
 ```
 
 ✅
 
-```c
+```ini
 i++;
 a = i;
 i++;
@@ -159,11 +159,11 @@ a += i;
 
 ---
 
-## 6. Always Use Braces `{}`
+## Always Use Braces `{}`
 
 ❌
 
-```c
+```text
 if (x > 0)
     y++;
     z++;
@@ -171,7 +171,7 @@ if (x > 0)
 
 ✅
 
-```c
+```text
 if (x > 0)
 {
     y++;
@@ -181,13 +181,13 @@ if (x > 0)
 **Reason:**
 
 - Prevent logical errors
-    
+
 
 ---
 
-## 7. Every `if` Must Have an `else` (Recommended)
+## Every `if` Must Have an `else` (recommended)
 
-```c
+```ini
 if (status == OK)
 {
     handle_ok();
@@ -200,9 +200,9 @@ else
 
 ---
 
-## 8. Every `switch` Must Have a `default`
+## Every `switch` Must Have a `default`
 
-```c
+```text
 switch (state)
 {
     case INIT:
@@ -219,52 +219,52 @@ switch (state)
 **Reason:**
 
 - Protect against unexpected values
-    
+
 
 ---
 
-## 9. No `goto` Statement
+## No `goto` Statement
 
 ❌
 
-```c
+```text
 goto error;
 ```
 
 **Reason:**
 
 - Breaks control flow readability
-    
+
 
 (Allowed only with strong justification)
 
 ---
 
-## 10. No Dynamic Memory Allocation
+## No Dynamic Memory Allocation
 
 ❌
 
-```c
+```text
 malloc();
 free();
 ```
 
 ✅
 
-```c
+```text
 static uint8_t buffer[128];
 ```
 
 **Reason:**
 
 - Fragmentation
-    
+
 - Non-deterministic timing
-    
+
 
 ---
 
-## 11. No Recursion
+## No Recursion
 
 ❌
 
@@ -278,24 +278,24 @@ void func(void)
 **Reason:**
 
 - Stack overflow risk
-    
+
 - No predictability
-    
+
 
 ---
 
-## 12. One Return Statement per Function
+## One Return Statement Per Function
 
 ❌
 
-```c
+```text
 if (x) return 1;
 return 0;
 ```
 
 ✅
 
-```c
+```ini
 int ret = 0;
 
 if (x)
@@ -308,11 +308,11 @@ return ret;
 
 ---
 
-## 13. Function Prototypes Are Mandatory
+## Function Prototypes are Mandatory
 
 ❌
 
-```c
+```text
 func();
 ```
 
@@ -324,17 +324,17 @@ void func(void);
 
 ---
 
-## 14. No Magic Numbers
+## No Magic Numbers
 
 ❌
 
-```c
+```text
 if (speed > 120)
 ```
 
 ✅
 
-```c
+```text
 #define MAX_SPEED 120U
 
 if (speed > MAX_SPEED)
@@ -342,89 +342,89 @@ if (speed > MAX_SPEED)
 
 ---
 
-## 15. Explicit Boolean Expressions
+## Explicit Boolean Expressions
 
 ❌
 
-```c
+```text
 if (x)
 ```
 
 ✅
 
-```c
+```ini
 if (x != 0U)
 ```
 
 **Reason:**
 
 - Improves readability
-    
+
 - Avoids implicit conversions
-    
+
 
 ---
 
-## 16. Use `const` Whenever Possible
+## Use `const` Whenever Possible
 
-```c
+```ini
 const uint32_t MAX_SIZE = 64U;
 ```
 
 **Reason:**
 
 - Protect data from modification
-    
+
 - Enables compiler optimizations
-    
+
 
 ---
 
-## 17. Proper Use of `volatile`
+## Proper Use of `volatile`
 
 Used for:
 
 - Hardware registers
-    
-- ISR-shared variables
-    
 
-```c
+- ISR-shared variables
+
+
+```ini
 volatile uint32_t * const GPIO_ODR = (uint32_t *)0x40020014;
 ```
 
 ---
 
-## 18. Pointer Arithmetic Is Restricted
+## Pointer Arithmetic is Restricted
 
 ❌
 
-```c
+```ini
 ptr = ptr + 5;
 ```
 
 ✅
 
-```c
+```ini
 ptr = &array[5];
 ```
 
 ---
 
-## 19. No Implicit Function Declarations
+## No Implicit Function Declarations
 
 All functions must be declared before use.
 
 ---
 
-## 20. Header Files Rules
+## Header Files Rules
 
 - Header files contain **declarations only**
-    
+
 - No function definitions
-    
+
 - Use include guards
-    
+
 
 ```c
 #ifndef GPIO_H
@@ -437,40 +437,40 @@ void GPIO_Init(void);
 
 ---
 
-## 21. Avoid Macro Side Effects
+## Avoid Macro Side Effects
 
 ❌
 
-```c
+```text
 #define SQR(x) x*x
 ```
 
 ✅
 
-```c
+```text
 #define SQR(x) ((x) * (x))
 ```
 
 ---
 
-## 22. Use Standard Library Carefully
+## Use Standard Library Carefully
 
 Some standard library functions are restricted or forbidden:
 
 - printf (timing issues)
-    
+
 - strcpy / strcat (buffer overflow)
-    
+
 
 Preferred safer alternatives or custom drivers.
 
 ---
 
-## 23. No Mixing Signed and Unsigned Types
+## No Mixing Signed and Unsigned Types
 
 ❌
 
-```c
+```text
 uint32_t a;
 int32_t b;
 if (a > b)
@@ -478,13 +478,13 @@ if (a > b)
 
 ✅
 
-```c
+```text
 if (a > (uint32_t)b)
 ```
 
 ---
 
-## 24. Limit Scope of Variables
+## Limit Scope of Variables
 
 ```c
 void func(void)
@@ -495,12 +495,12 @@ void func(void)
 
 ---
 
-## 25. Use Enumerations Carefully
+## Use Enumerations Carefully
 
 - Do not assume enum size
-    
+
 - Do not mix enums with integers
-    
+
 
 ---
 
@@ -516,7 +516,7 @@ void func(void)
 
 # Important Industry Note
 
-✔ No real project follows MISRA 100%  
+✔ No real project follows MISRA 100%
 ✔ Violations must be documented using:
 
 > **MISRA Deviation Report**
@@ -532,22 +532,22 @@ MISRA-C is not about making code longer.
 It is about making code:
 
 - Predictable
-    
+
 - Reviewable
-    
+
 - Safe
-    
+
 - Maintainable
-    
+
 
 If you master MISRA-C, you are ready for:
 
 - Professional Embedded projects
-    
+
 - Automotive interviews
-    
+
 - Safety-critical firmware design
-    
+
 
 ---
 

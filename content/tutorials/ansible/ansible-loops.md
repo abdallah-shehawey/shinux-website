@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 Ansible Loops Guide"
+title: Ansible Loops Guide
 description: >-
   A comprehensive guide to understanding and using Loops in Ansible. This
   document covers everything from basic iteration to complex dictionary loops,
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 A comprehensive guide to understanding and using **Loops** in Ansible. This document covers everything from basic iteration to complex dictionary loops, designed for beginners and professionals.
 
-## 🧠 What are Loops in Ansible?
+## What are Loops in Ansible?
 
 Loops allow you to repeat a task multiple times without writing the same code over and over.
 
@@ -20,13 +20,13 @@ Loops allow you to repeat a task multiple times without writing the same code ov
 
 - **The Magic Variable:** `{{ item }}`. Inside a loop, Ansible uses this variable to represent the current value being processed.
 
-## 🚀 Part 1: Basic List Loops
+## Part 1: Basic List Loops
 
-### 1. Install Multiple Packages
+### Install Multiple Packages
 
 Instead of running `yum` five times, we pass a list to the module.
 
-```yaml
+```bash
 - name: Install essential packages
   hosts: all
   become: true  # Root access required for installation
@@ -49,7 +49,7 @@ Instead of running `yum` five times, we pass a list to the module.
 
 - **`loop`**: The modern keyword for looping (replaces `with_items`).
 
-### 2. Create Multiple Users
+### Create Multiple Users
 
 Creating users one by one is tedious. Loops make it instant.
 
@@ -72,11 +72,11 @@ Creating users one by one is tedious. Loops make it instant.
 
 - Scaling: If you need to add 50 users, you just add their names to the list. You don't change the logic code.
 
-### 3. Create Multiple Directories
+### Create Multiple Directories
 
 You can use loops to create standard folder structures on servers.
 
-```yaml
+```bash
 - name: Create directories
   hosts: all
   become: true
@@ -100,7 +100,7 @@ You can use loops to create standard folder structures on servers.
 
 - Creates `/opt/backup`
 
-### 4. Create Files with Content
+### Create Files with Content
 
 You can loop over strings to create simple files or data.
 
@@ -125,7 +125,7 @@ You can loop over strings to create simple files or data.
 
 - `/tmp/file2.txt` contains "This is file file2"
 
-## 🔧 Part 2: Complex Loops (Dictionaries)
+## Part 2: Complex Loops (dictionaries)
 
 Sometimes a simple list isn't enough. You might need to pair data (e.g., Username + UserID). We use **Dictionaries** (Key-Value pairs) for this.
 
@@ -158,9 +158,9 @@ Sometimes a simple list isn't enough. You might need to pair data (e.g., Usernam
 
     - `{{ item.uid }}` gives you `1101`.
 
-## 🕰️ Part 3: Legacy vs Modern
+## Part 3: Legacy vs Modern
 
-### Use `with_items` (Legacy Loop)
+### Use `with_items` (legacy Loop)
 
 Before Ansible 2.5, `with_items` was the standard. You will see this in older tutorials and existing codebases.
 
@@ -184,11 +184,11 @@ Before Ansible 2.5, `with_items` was the standard. You will see this in older tu
 
 - **Recommendation:** Use `loop` for new playbooks. Use `with_items` only when maintaining old code.
 
-## 🌟 Part 4: Advanced Loop Features (Must Know!)
+## Part 4: Advanced Loop Features (must Know!)
 
 Here are some advanced tricks that make your output cleaner and your playbooks smarter.
 
-### 1. Loop Control (Clean Output)
+### Loop Control (clean Output)
 
 When looping over complex dictionaries, the output on the screen can get messy/huge. Use `label` to show only what matters.
 
@@ -205,7 +205,7 @@ When looping over complex dictionaries, the output on the screen can get messy/h
 
 ```
 
-### 2. Retry Loops (Do-Until)
+### Retry Loops (do-until)
 
 Very useful for checking if a service is up (e.g., waiting for a Database to start).
 
@@ -221,15 +221,15 @@ Very useful for checking if a service is up (e.g., waiting for a Database to sta
 
 ```
 
-## 📁 Part 5: Looping over External Variables
+## Part 5: Looping Over External Variables
 
 Hardcoding lists in your playbook (as seen in Part 1) is fine for small tests, but for production, you should keep data separate from logic.
 
-### 1. The Variable File (`vars.yml`)
+### The Variable File (`vars.yml`)
 
 Create a file solely for your data:
 
-```yaml
+```bash
 # vars.yml
 my_packages_list:
   - git
@@ -239,7 +239,7 @@ my_packages_list:
 
 ```
 
-### 2. The Playbook (`main.yml`)
+### The Playbook (`main.yml`)
 
 Load the file using `vars_files` and pass the variable name to `loop`.
 
@@ -264,13 +264,13 @@ Load the file using `vars_files` and pass the variable name to `loop`.
 
 - **Security:** You can encrypt `vars.yml` with **Ansible Vault** if it contains sensitive data (like passwords), while keeping `main.yml` readable.
 
-### 3. Complex Dictionaries in Variables (with Loop Control)
+### Complex Dictionaries in Variables (with Loop Control)
 
 You can also move complex lists (dictionaries) to the variable file and use `loop_control` to keep the output clean.
 
 **The Variable File (`vars.yml`):**
 
-```yaml
+```text
 users_list:
   - name: devops
     uid: 1101
@@ -300,7 +300,7 @@ users_list:
         label: "{{ item.name }}" # Still works perfectly with variables!
 ```
 
-## 🎯 Summary Checklist
+## Summary Checklist
 
 | Keyword                 | Use Case                                                        |
 | ----------------------- | --------------------------------------------------------------- |

@@ -12,11 +12,11 @@ author: abdallah-shehawey
 ---
 Hibernate saves the entire contents of RAM to disk and powers the machine off completely; powering back on restores the session exactly where it was left, with no battery drain in between (unlike suspend-to-RAM). For it to work, three things need to be true: swap must exist, swap must be at least as large as RAM, and the kernel needs to be told where to find it at boot. The exact steps differ slightly between Debian-based distros and Fedora.
 
-## 1. Debian-based distributions (Ubuntu, Mint, Pop!_OS)
+## Debian-based Distributions (ubuntu, Mint, Pop!_os)
 
 **Check swap and RAM:**
 
-```bash
+```text
 swapon --show
 free -h
 ```
@@ -25,11 +25,11 @@ If `swapon --show` prints nothing, swap needs to be created first — see the sw
 
 **Find the swap UUID:**
 
-```bash
+```text
 blkid
 ```
 
-```
+```ini
 /dev/sda3: UUID="xxxx-xxxx" TYPE="swap"
 ```
 
@@ -41,13 +41,13 @@ sudo nano /etc/default/grub
 
 Change:
 
-```
+```ini
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
 ```
 
 to:
 
-```
+```ini
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash resume=UUID=YOUR_SWAP_UUID"
 ```
 
@@ -58,11 +58,11 @@ sudo update-grub
 systemctl hibernate
 ```
 
-## 2. Fedora
+## Fedora
 
 Fedora uses Dracut instead of `initramfs-tools`, so rebuilding the initramfs is a separate, explicit step.
 
-```bash
+```text
 swapon --show
 blkid
 ```
@@ -73,13 +73,13 @@ Edit GRUB:
 sudo nano /etc/default/grub
 ```
 
-```
+```ini
 GRUB_CMDLINE_LINUX="resume=UUID=YOUR_SWAP_UUID"
 ```
 
 Rebuild the GRUB config — the path differs between BIOS and UEFI systems:
 
-```bash
+```text
 # BIOS
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
@@ -95,11 +95,11 @@ sudo dracut -f
 
 Test:
 
-```bash
+```text
 systemctl hibernate
 ```
 
-## 3. Troubleshooting
+## Troubleshooting
 
 Check whether the kernel reports hibernate support at all:
 
@@ -109,7 +109,7 @@ cat /sys/power/state
 
 If `disk` appears in the output, hibernate is supported. If it fails to resume, check the boot log:
 
-```bash
+```text
 journalctl -b
 ```
 

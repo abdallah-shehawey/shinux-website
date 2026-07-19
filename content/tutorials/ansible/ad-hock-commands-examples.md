@@ -1,5 +1,5 @@
 ---
-title: Ansible Ad-Hoc Commands Guide
+title: Ansible Ad-hoc Commands Guide
 description: >-
   Ad-Hoc commands are quick, "one-liner" tasks used to perform a single action
   on multiple managed nodes without writing a full Playbook. They are great for
@@ -10,13 +10,13 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## 1. What are Ad-Hoc Commands?
+## What are Ad-hoc Commands?
 
 Ad-Hoc commands are quick, "one-liner" tasks used to perform a single action on multiple managed nodes without writing a full Playbook. They are great for quick checks, updates, or reboots.
 
 **Basic Syntax:**
 
-```bash
+```text
 ansible [group/host] -m [module] -a "[arguments]" -b
 ```
 
@@ -30,49 +30,49 @@ ansible [group/host] -m [module] -a "[arguments]" -b
 
 - **`-i [inventory]`**: Specifies the inventory file path (optional if defined in `ansible.cfg`).
 
-## 2. Connectivity & System Information
+## Connectivity & System Information
 
-### 🔹 Ping All Hosts
+### Ping All Hosts
 
 Checks if Ansible can connect to the hosts via SSH and find the Python interpreter.
 
-```bash
+```text
 ansible all -m ping
 ```
 
 - **Why important?**: First step to verify your inventory and keys are working.
 
-### 🔹 Check System Uptime
+### Check System Uptime
 
-```bash
+```text
 ansible all -m command -a "uptime"
 ```
 
 - **Module `command`**: The default module. It runs simple commands but **doesn't support** variables like `$HOME` or operations like `|` (pipe) or `>`.
 
-### 🔹 Gather Facts (System Details)
+### Gather Facts (system Details)
 
 Collects detailed info (IP, OS version, CPU, Memory) about remote hosts.
 
-```bash
+```text
 ansible all -m setup
 ```
 
 **Filter Specific Facts:** To see only specific info (e.g., only IP addresses):
 
-```bash
+```ini
 ansible all -m setup -a "filter=ansible_default_ipv4.address"
 ```
 
 - **Argument `filter`**: Limits the massive output to just what you need.
 
-## 3. Package Management (Yum/Dnf/Apt)
+## Package Management (yum/dnf/apt)
 
-### 🔹 Install a Package
+### Install a Package
 
 Installs Nginx using the `yum` module.
 
-```bash
+```ini
 ansible all -m yum -a "name=nginx state=present" -b
 ```
 
@@ -82,17 +82,17 @@ ansible all -m yum -a "name=nginx state=present" -b
 
 - **`-b`**: **Crucial.** You cannot install packages without root/sudo access.
 
-### 🔹 Remove a Package
+### Remove a Package
 
-```bash
+```ini
 ansible all -m yum -a "name=httpd state=absent" -b
 ```
 
 - **`state=absent`**: The standard Ansible way to say "Uninstall" or "Delete".
 
-### 🔹 Upgrade All Packages
+### Upgrade All Packages
 
-```bash
+```ini
 ansible all -m yum -a "name=* state=latest" -b
 ```
 
@@ -100,13 +100,13 @@ ansible all -m yum -a "name=* state=latest" -b
 
 - **`state=latest`**: Updates them to the newest version available.
 
-## 4. Service Management
+## Service Management
 
-### 🔹 Start & Enable a Service
+### Start & Enable a Service
 
 Starts Nginx and ensures it runs on boot.
 
-```bash
+```ini
 ansible all -m service -a "name=nginx state=started enabled=yes" -b
 ```
 
@@ -114,25 +114,25 @@ ansible all -m service -a "name=nginx state=started enabled=yes" -b
 
 - **`enabled=yes`**: Runs `systemctl enable`, checking the service starts after reboot.
 
-### 🔹 Restart a Service
+### Restart a Service
 
 Useful after configuration changes.
 
-```bash
+```ini
 ansible all -m service -a "name=nginx state=restarted" -b
 ```
 
-### 🔹 Stop a Service
+### Stop a Service
 
-```bash
+```ini
 ansible all -m service -a "name=nginx state=stopped" -b
 ```
 
-## 5. File & Directory Management
+## File & Directory Management
 
-### 🔹 Create a Directory
+### Create a Directory
 
-```bash
+```ini
 ansible all -m file -a "path=/tmp/testdir state=directory mode=0755"
 ```
 
@@ -140,19 +140,19 @@ ansible all -m file -a "path=/tmp/testdir state=directory mode=0755"
 
 - **`mode=0755`**: Sets Linux permissions (rwxr-xr-x).
 
-### 🔹 Create an Empty File (Touch)
+### Create an Empty File (touch)
 
-```bash
+```ini
 ansible all -m file -a "path=/tmp/demo.txt state=touch"
 ```
 
 - **`state=touch`**: Updates timestamp if file exists, or creates an empty one if it doesn't.
 
-### 🔹 Copy File to Remote Hosts
+### Copy File to Remote Hosts
 
 Uploads a file from your Controller to the Managed Nodes.
 
-```bash
+```ini
 ansible all -m copy -a "src=./local_file.txt dest=/tmp/remote_file.txt"
 ```
 
@@ -160,47 +160,47 @@ ansible all -m copy -a "src=./local_file.txt dest=/tmp/remote_file.txt"
 
 - **`dest`**: Path on the **Remote** (managed node).
 
-### 🔹 Fetch File from Remote Hosts
+### Fetch File From Remote Hosts
 
 Downloads a file from Managed Nodes to your Controller (Backup).
 
-```bash
+```ini
 ansible all -m fetch -a "src=/etc/hosts dest=./backups flat=yes"
 ```
 
 - **`flat=yes`**: Saves the file directly in the destination folder without creating a directory tree for every host.
 
-### 🔹 Change Permissions/Ownership
+### Change Permissions/ownership
 
-```bash
+```ini
 ansible all -m file -a "path=/tmp/demo.txt owner=ec2-user group=ec2-user mode=0644" -b
 ```
 
 - **Why `-b`?**: Changing ownership usually requires root if you don't own the file.
 
-### 🔹 Delete a File or Directory
+### Delete a File or Directory
 
-```bash
+```ini
 ansible all -m file -a "path=/tmp/file.txt state=absent"
 ```
 
 - **`state=absent`**: Recursively deletes directories or unlinks files.
 
-## 6. File Content Modification (Lineinfile)
+## File Content Modification (lineinfile)
 
-### 🔹 Append a Line
+### Append a Line
 
 Adds a line to a file if it doesn't exist.
 
-```bash
+```ini
 ansible all -m lineinfile -a "path=/etc/motd line='Welcome to the server!'" -b
 ```
 
-### 🔹 Replace a Line (Regex)
+### Replace a Line (regex)
 
 Search for a line and replace it (e.g., Disabling Root Login in SSH).
 
-```bash
+```ini
 ansible all -m lineinfile -a "path=/etc/ssh/sshd_config regexp='^PermitRootLogin' line='PermitRootLogin no'" -b
 ```
 
@@ -208,33 +208,33 @@ ansible all -m lineinfile -a "path=/etc/ssh/sshd_config regexp='^PermitRootLogin
 
 - **`line`**: The text that should replace the found line.
 
-## 7. User & Group Management
+## User & Group Management
 
-### 🔹 Create a Group
+### Create a Group
 
-```bash
+```ini
 ansible all -m group -a "name=devops state=present" -b
 ```
 
-### 🔹 Create a User
+### Create a User
 
-```bash
+```ini
 ansible all -m user -a "name=devops state=present" -b
 ```
 
-### 🔹 Add User to a Group
+### Add User to a Group
 
 Adds user `devops` to group `wheel` (sudoers) without removing them from other groups.
 
-```bash
+```ini
 ansible all -m user -a "name=devops groups=wheel append=yes" -b
 ```
 
 - **`append=yes`**: **Very Important!** If you forget this, the user will be removed from all other groups and _only_ be in `wheel`.
 
-## 8. Shell & Script Execution
+## Shell & Script Execution
 
-### 🔹 Shell Module (Complex Commands)
+### Shell Module (complex Commands)
 
 Use `shell` when you need pipes `|`, redirects `>`, or wildcards `*`.
 
@@ -244,7 +244,7 @@ ansible all -m shell -a "ls /var/log/*.log"
 
 - **Difference**: The `command` module would fail here because it doesn't understand `*`.
 
-### 🔹 Script Module (Run Local Scripts Remotely)
+### Script Module (run Local Scripts Remotely)
 
 Executes a script located on your **Controller** machine on the **Remote** nodes. It copies it automatically, runs it, and then deletes it.
 
@@ -259,6 +259,6 @@ sudo systemctl enable httpd
 
 **2. Run it via Ansible:**
 
-```bash
+```text
 ansible all -m script -a "./deploy.sh"
 ```

@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Everything from raw disk layout down to how a single file's data gets located on disk, as a working reference: partition tables (MBR and GPT), the Unix filesystem's internal structure, inodes and their pointer system, device files, and hard vs. symbolic links.
 
-## 1. MBR partition table layout
+## Mbr Partition Table Layout
 
 The classic Master Boot Record, read with `dd`:
 
@@ -33,9 +33,9 @@ Each of the (up to four) partition table entries is 16 bytes:
 | Start Sector | 4 B | LBA of the first sector |
 | Num Sectors | 4 B | Number of sectors |
 
-## 2. Working with disks and partitions
+## Working with Disks and Partitions
 
-```bash
+```text
 lsblk                          # simple view
 sudo fdisk -l                  # detailed view
 sudo fdisk -l /dev/sda         # a specific disk
@@ -63,9 +63,9 @@ sudo partprobe            # reload the partition table
 sudo kpartx -a /dev/sdX    # map partitions to device nodes
 ```
 
-## 3. Disk usage & UUIDs
+## Disk Usage & Uuids
 
-```bash
+```text
 df -h                          # mounted disk usage, human-readable
 df -i                          # inode usage
 du -sh /path/to/dir            # usage of a specific directory
@@ -84,11 +84,11 @@ sudo mount UUID=<uuid> /mnt/point
 
 Permanently, via `/etc/fstab`:
 
-```bash
+```ini
 UUID=<uuid> /mnt/point ext4 defaults 0 2
 ```
 
-## 4. GPT (GUID Partition Table)
+## Gpt (guid Partition Table)
 
 GPT replaces the MBR scheme on modern disks. Each LBA (Logical Block Address) is normally 512 bytes:
 
@@ -103,7 +103,7 @@ GPT replaces the MBR scheme on modern disks. Each LBA (Logical Block Address) is
 
 Because GPT keeps a full backup of both the header and the partition entries at the opposite end of the disk, a corrupted primary header is recoverable — this is the main practical advantage over MBR, beyond lifting the 4-partition and 2 TB limits.
 
-## 5. Unix filesystem structure
+## Unix Filesystem Structure
 
 **Level 1 — the disk:** the MBR/GPT sits in the first sector(s), describing how the disk is divided into partitions (P1, P2, …), each of which can hold an independent filesystem.
 
@@ -120,7 +120,7 @@ Inspect a filesystem's superblock-level details with:
 sudo tune2fs -l <partition_name>
 ```
 
-## 6. Inodes and the pointer system
+## Inodes and the Pointer System
 
 An inode holds everything about a file **except its name and its actual data**: mode (type + permissions), owner (UID/GID), size, and timestamps (`atime`/`mtime`/`ctime`) — plus a pointer system that locates the file's data blocks. Opening a file means: look up its name in a directory to get an inode number, read that inode for metadata and permission checks, then follow its pointers to the data.
 
@@ -135,7 +135,7 @@ Assuming a 4 KB block size and 4-byte pointers, the pointer tiers scale like thi
 
 The 12 direct pointers handle small files with no extra lookup; once a file outgrows them, the single indirect pointer adds a whole block's worth of *more pointers* rather than data, and the double/triple indirect tiers repeat that trick one and two levels deeper — trading one extra disk read per tier for several orders of magnitude more addressable space.
 
-## 7. Devices, character vs. block
+## Devices, Character vs. Block
 
 Hardware shows up in `/dev` as one of two kinds of special file:
 
@@ -148,17 +148,17 @@ less /proc/devices
 lsblk                  # block devices specifically, tree view
 ```
 
-## 8. Mounting
+## Mounting
 
-```bash
+```text
 findmnt                # cleaner, tree-like view of everything currently mounted
 man 8 mount             # the command-line utility
 man 2 mount             # the underlying system call
 ```
 
-## 9. File metadata: `stat` and `touch`
+## File Metadata: `stat` and `touch`
 
-```bash
+```text
 stat <filename>    # inode number, link count, atime/mtime/ctime, size, permissions
 man 2 stat
 touch newfile.txt   # create if missing, or bump atime/mtime if it exists
@@ -167,13 +167,13 @@ man 7 inode          # inode structure and file-type reference
 
 The first character of `ls -l`'s permission string encodes the file type: `-` regular file, `d` directory, `l` symlink, `b` block device, `c` character device.
 
-## 10. Hard links vs. symbolic links
+## Hard Links vs. Symbolic Links
 
 **Hard links** (`ln target link_name`) point to the exact same inode as the original — no distinction between "original" and "link" at all. They can't cross filesystems (an inode number is only unique within its own filesystem), can't target a directory (to avoid loops), and the data is only actually freed once the inode's link count drops to zero — so deleting the "original" name doesn't touch the data as long as another hard link still references it. This is exactly how tools like `rsnapshot` do space-efficient incremental backups: unchanged files across snapshots are hard-linked, not copied.
 
 **Symbolic links** (`ln -s target_path symlink_name`) are a separate file with their own inode that just stores a text path. They can point anywhere, including across filesystems and at directories, but go "dangling" if the target is ever moved or deleted.
 
-```bash
+```text
 readlink linkfile     # show what a symlink points to
 man ln || man link
 ```

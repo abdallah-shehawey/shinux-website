@@ -1,5 +1,5 @@
 ---
-title: 'Docker Environment Variables: The Ultimate Guide'
+title: 'Docker Environment Variables: the Ultimate Guide'
 description: >-
   This guide is designed to take you from a beginner to an expert in handling
   Environment Variables in Docker. It covers how to inject configuration data
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide is designed to take you from a beginner to an expert in handling **Environment Variables** in Docker. It covers how to inject configuration data into containers without changing the source code.
 
-## 1. Why Environment Variables?
+## Why Environment Variables?
 
 Before diving into commands, you must understand the **"Why"**. Imagine you have a Web Application connecting to a Database.
 
@@ -20,7 +20,7 @@ Before diving into commands, you must understand the **"Why"**. Imagine you have
 
 - **Environment Variables:** You write the code to look for a variable (e.g., `DB_PASSWORD`). You pass the actual password only when you run the container. **This is the Docker way.**
 
-## 2. Passing Variables: The `-e` Flag
+## Passing Variables: the `-e` Flag
 
 The most common way to pass a variable is using the `-e` (or `--env`) flag during `docker run`.
 
@@ -28,7 +28,7 @@ The most common way to pass a variable is using the `-e` (or `--env`) flag durin
 
 **Command:**
 
-```bash
+```ini
 docker run -e APP_COLOR=blue simple-webapp
 ```
 
@@ -36,7 +36,7 @@ docker run -e APP_COLOR=blue simple-webapp
 
 **Command:**
 
-```bash
+```ini
 docker run -e APP_COLOR=green -e DEBUG_MODE=true simple-webapp
 ```
 
@@ -44,7 +44,7 @@ docker run -e APP_COLOR=green -e DEBUG_MODE=true simple-webapp
 
 If you already have a variable exported in your current terminal (Host machine), you can pass it directly without typing the value. **Command:**
 
-```bash
+```ini
 export API_KEY=123456
 docker run -e API_KEY my-script
 ```
@@ -58,13 +58,13 @@ docker run -e API_KEY my-script
 |`-e`|`--env`|**Critical**|Sets a specific environment variable inside the container.|
 |`KEY=VALUE`|-|**Critical**|The format must be strictly `KEY=VALUE` (no spaces around `=`).|
 
-## 3. The Professional Way: `--env-file`
+## The Professional Way: `--env-file`
 
 If you have 10 or 20 variables, the `docker run` command becomes huge and messy. The solution is to use an environment file.
 
 **Step 1: Create a file named `.env`**
 
-```bash
+```ini
 APP_COLOR=pink
 DB_HOST=mysql
 DB_USER=root
@@ -73,7 +73,7 @@ DB_PASS=secret
 
 **Step 2: Run Docker with the file** **Command:**
 
-```bash
+```text
 docker run --env-file .env simple-webapp
 ```
 
@@ -83,13 +83,13 @@ docker run --env-file .env simple-webapp
 |---|---|---|
 |`--env-file`|**High**|Reads a local text file and injects all variables defined in it into the container. Keeps your CLI command clean and secure.|
 
-## 4. Inspecting Variables: `docker inspect`
+## Inspecting Variables: `docker Inspect`
 
 How do you check if the variables were successfully passed to a container? You use the `inspect` command (as shown in your screenshots).
 
 **Command:**
 
-```bash
+```text
 docker inspect <container_id_or_name>
 ```
 
@@ -97,7 +97,7 @@ docker inspect <container_id_or_name>
 
 **Example Snippet (from `docker inspect`):**
 
-```bash
+```ini
 "Config": {
     "Hostname": "35505f7810d1",
     "Env": [
@@ -112,13 +112,13 @@ docker inspect <container_id_or_name>
 
 - **Note:** The `Env` array lists all variables available to the application inside the container.
 
-## 5. Checking Inside the Container
+## Checking Inside the Container
 
 Sometimes `inspect` isn't enough. You want to see what the running container _actually_ sees.
 
 **Command:**
 
-```bash
+```text
 docker exec -it <container_id> env
 # OR
 docker exec -it <container_id> printenv
@@ -126,11 +126,11 @@ docker exec -it <container_id> printenv
 
 - **Explanation:** This runs the Linux command `env` or `printenv` _inside_ the container, listing all active variables immediately.
 
-## 6. Dockerfile: `ENV` vs `ARG` (Crucial Concept)
+## Dockerfile: `env` vs `arg` (crucial Concept)
 
 When building images, there are two ways to set variables. This is a common interview question and a source of confusion.
 
-### `ENV` (Environment Variable)
+### `env` (environment Variable)
 
 - **Usage:** `ENV APP_PORT=8080`
 
@@ -138,7 +138,7 @@ When building images, there are two ways to set variables. This is a common inte
 
 - **Overridable:** Yes, using `docker run -e APP_PORT=9090`.
 
-### `ARG` (Build Argument)
+### `arg` (build Argument)
 
 - **Usage:** `ARG VERSION=1.0`
 
@@ -148,7 +148,7 @@ When building images, there are two ways to set variables. This is a common inte
 
 **Summary Table:** | Instruction | Available at Build Time? | Available at Run Time? | Used for... | | :--- | :---: | :---: | :--- | | `ARG` | ✅ YES | ❌ NO | Version numbers, installer options. | | `ENV` | ✅ YES | ✅ YES | DB Hosts, API Keys, App Configuration. |
 
-## 7. Real World Scenario: The Python Flask App
+## Real World Scenario: the Python Flask App
 
 This example is based on the "Simple WebApp" from your PDF.
 
@@ -165,8 +165,8 @@ app = Flask(__name__)
 @app.route("/")
 def main():
     # Logic: Look for 'APP_COLOR'. If not found, default to 'red'
-    color = os.environ.get('APP_COLOR', 'red') 
-    
+    color = os.environ.get('APP_COLOR', 'red')
+
     return render_template('hello.html', color=color)
 
 if __name__ == "__main__":
@@ -193,7 +193,7 @@ ENTRYPOINT ["python", "/opt/app.py"]
 
 **Scenario 1: Default (Red)**
 
-```bash
+```text
 docker run -d -p 8080:8080 simple-webapp
 ```
 
@@ -201,7 +201,7 @@ docker run -d -p 8080:8080 simple-webapp
 
 **Scenario 2: Blue Override**
 
-```bash
+```ini
 docker run -d -p 8081:8080 -e APP_COLOR=blue simple-webapp
 ```
 
@@ -209,6 +209,6 @@ docker run -d -p 8081:8080 -e APP_COLOR=blue simple-webapp
 
 **Scenario 3: Green Override**
 
-```bash
+```ini
 docker run -d -p 8082:8080 -e APP_COLOR=green simple-webapp
 ```

@@ -1,5 +1,5 @@
 ---
-title: "The Ultimate Guide to Git LFS \U0001F680"
+title: The Ultimate Guide to Git Lfs
 description: >-
   Welcome to the Git LFS guide! If you already know the basics of Git and
   GitHub, you are fully ready to learn this tool. This file is designed to be
@@ -14,7 +14,7 @@ author: abdallah-shehawey
 
 Welcome to the **Git LFS** guide! If you already know the basics of Git and GitHub, you are fully ready to learn this tool. This file is designed to be your permanent, comprehensive reference for understanding and managing large files in your repositories.
 
-## 🧐 What is Git LFS? And why do we need it?
+## What is Git Lfs? and Why Do We Need It?
 
 Standard `Git` is perfectly designed for handling "code" (text files), as it tracks changes line by line. However, when it comes to **Large Binary Files** such as:
 
@@ -32,7 +32,7 @@ Git becomes extremely slow, and the repository size balloons terrifyingly with e
 
 **💡 The Solution: Git LFS** Git LFS solves this problem cleverly. Instead of storing the massive file itself inside the Git repository, LFS stores a tiny **"Pointer File"** (just a few bytes) containing metadata about the original file. The actual large file is uploaded to a specialized LFS server. When anyone clones, checks out, or pulls the repository, LFS automatically reads this "pointer" and downloads the real file from the server in the background.
 
-## 💻 How to Install Git LFS
+## How to Install Git Lfs
 
 Before using it, you need to install the Git LFS extension on your computer.
 
@@ -42,11 +42,11 @@ Before using it, you need to install the Git LFS extension on your computer.
 
 - **Linux (Ubuntu/Debian):** `sudo apt-get install git-lfs`
 
-## 🛠️ Step-by-Step Setup and Workflow (For Beginners)
+## Step-by-step Setup and Workflow (for Beginners)
 
 To start using Git LFS in any project, follow these exact steps:
 
-### 1. Initialize LFS on your machine (Do this only once)
+### Initialize Lfs on Your Machine (do This Only Once)
 
 Open your terminal and run the following command to set up LFS for your user account:
 
@@ -56,7 +56,7 @@ git lfs install
 
 _(Note: You only need to run this command once per computer, not every time you create a new project)._
 
-### 2. Track the large files
+### Track the Large Files
 
 Navigate to your project folder. Let's say you want LFS to handle all `.iso` image files in your project. Run:
 
@@ -64,9 +64,9 @@ Navigate to your project folder. Let's say you want LFS to handle all `.iso` ima
 git lfs track "*.iso"
 ```
 
-> **⚠️ CRITICAL NOTE:** The quotes `"` around the file extension are extremely important. They ensure the rule applies to all current _and future_ files in all directories.
+> **⚠ CRITICAL NOTE:** The quotes `"` around the file extension are extremely important. They ensure the rule applies to all current _and future_ files in all directories.
 
-### 3. Save the `.gitattributes` file (Do NOT skip this!)
+### Save the `.gitattributes` File (do Not Skip This!)
 
 When you run the `track` command, Git LFS creates or updates a hidden file called `.gitattributes`. This file tells Git to hand over these specific files to LFS. **You must add and commit this file.**
 
@@ -75,7 +75,7 @@ git add .gitattributes
 git commit -m "Add Git LFS tracking for .iso files"
 ```
 
-### 4. Work normally (Add, Commit, Push)
+### Work Normally (add, Commit, Push)
 
 Now, you can add your large files, commit, and push exactly like you normally do in Git:
 
@@ -87,7 +87,7 @@ git push
 
 _Git LFS will automatically intercept the push in the background, uploading the large file to the LFS server and pushing the pointer file/code to GitHub._
 
-## 📥 Cloning and Pulling an LFS Repository
+## Cloning and Pulling an Lfs Repository
 
 If you or a teammate want to download a project that uses Git LFS:
 
@@ -105,11 +105,11 @@ If you or a teammate want to download a project that uses Git LFS:
     git lfs pull
     ```
 
-## 📚 Git LFS Command Reference (Cheat Sheet)
+## Git Lfs Command Reference (cheat Sheet)
 
 High-level (Porcelain) commands, categorized for easy reference:
 
-### 🎯 1. Tracking & Status
+### Tracking & Status
 
 - **`git lfs track`**: View or add file extensions/paths managed by LFS (e.g., `git lfs track "*.mp4"`).
 
@@ -119,7 +119,7 @@ High-level (Porcelain) commands, categorized for easy reference:
 
 - **`git lfs status`**: Show the status of LFS files in your working tree (useful to see what's modified but not pushed).
 
-### 🔄 2. Syncing & Downloading
+### Syncing & Downloading
 
 - **`git lfs fetch`**: Download LFS files from the server to your local machine (does not update your working directory).
 
@@ -129,7 +129,7 @@ High-level (Porcelain) commands, categorized for easy reference:
 
 - **`git lfs push`**: Push queued large files to the Git LFS endpoint.
 
-### 🔒 3. File Locking (For Team Collaboration)
+### File Locking (for Team Collaboration)
 
 Since large binary files (like `.psd` Photoshop files) cannot be merged like code, LFS offers "locking" to prevent conflicts:
 
@@ -139,7 +139,7 @@ Since large binary files (like `.psd` Photoshop files) cannot be merged like cod
 
 - **`git lfs locks`**: List all currently locked files on the server and who locked them.
 
-### 🧹 4. Maintenance & Storage
+### Maintenance & Storage
 
 - **`git lfs prune`**: Delete old, unneeded LFS files from your local storage to free up disk space.
 
@@ -149,7 +149,7 @@ Since large binary files (like `.psd` Photoshop files) cannot be merged like cod
 
 - **`git lfs fsck`**: Check Git LFS files for internal consistency and errors.
 
-### ⚙️ 5. Advanced Setup & Environment
+### 5. Advanced Setup & Environment
 
 - **`git lfs env`**: Display the current LFS environment and settings (great for debugging).
 
@@ -165,7 +165,7 @@ Since large binary files (like `.psd` Photoshop files) cannot be merged like cod
 
 - **`git lfs completion`**: Generate shell scripts for command-line tab-completion.
 
-## 🔧 Plumbing Commands (Low-level / Advanced)
+## Plumbing Commands (low-level / Advanced)
 
 These commands work "behind the scenes". You will rarely need to use them manually:
 
@@ -183,7 +183,7 @@ These commands work "behind the scenes". You will rarely need to use them manual
 
 - **`git lfs standalone-file`**: Custom transfer adapter for local file paths.
 
-## 💡 The Golden Rule of Git LFS
+## The Golden Rule of Git Lfs
 
 Always make sure to track files (`git lfs track "*.ext"`) **BEFORE** you `git add` them.
 

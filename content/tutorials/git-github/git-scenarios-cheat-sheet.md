@@ -14,13 +14,13 @@ This repository contains a quick reference guide for common, yet specific, Git s
 ## Table of Contents
 
 1. Update a Forked Repository
-    
-2. Reset a Local Branch to Match Remote
-    
-3. Bring a Specific File from Another Branch
-    
 
-### 1. Update a Forked Repository from the Original
+2. Reset a Local Branch to Match Remote
+
+3. Bring a Specific File from Another Branch
+
+
+### Update a Forked Repository From the Original
 
 **Scenario:** You forked a repository, cloned it locally, and now you want to update your local version with the latest changes from the original (upstream) repository.
 
@@ -43,7 +43,7 @@ git merge upstream/main
 git push origin main
 ```
 
-### 2. Reset a Local Branch to Match the Remote Version
+### Reset a Local Branch to Match the Remote Version
 
 **Scenario:** You made updates or changes to a local branch and want to discard them completely, reverting the branch to look exactly like the version on GitHub (remote).
 
@@ -60,7 +60,7 @@ git checkout <branch>
 git reset --hard origin/<branch>
 ```
 
-### 3. Bring a Specific File from Another Branch Without Merging
+### Bring a Specific File From Another Branch Without Merging
 
 **Scenario:** You are on the `main` branch and you want to pull a specific file from another branch (e.g., `V2P`) without merging the entire branch.
 

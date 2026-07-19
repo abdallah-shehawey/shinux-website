@@ -1,5 +1,5 @@
 ---
-title: "\U0001F9E0 Mastering Vim — Deep & Practical Guide"
+title: Mastering Vim Deep & Practical Guide
 description: >-
   A complete, opinionated, and production-grade guide to Vim—from fundamentals
   to elite workflows. This document fills in all missing mental models, advanced
@@ -12,96 +12,96 @@ author: abdallah-shehawey
 ---
 A **complete, opinionated, and production-grade guide** to Vim—from fundamentals to elite workflows. This document fills in _all missing mental models_, advanced mechanics, real-world patterns, and professional practices used by power users.
 
-## 📌 Table of Contents
+## Table of Contents
 
 1. Philosophy of Vim
-    
-2. Vim Mental Model (Why Vim Feels Different)
-    
-3. Modes in Depth
-    
-4. Motions, Operators, and Text Objects (The Grammar of Vim)
-    
-5. Counts & Composability
-    
-6. Undo Tree & Time Travel
-    
-7. Insert Mode Power Techniques
-    
-8. Visual Mode Mastery
-    
-9. Advanced Navigation
-    
-10. Search, Replace & Regex Mastery
-    
-11. Buffers, Windows & Tabs (Real Truth)
-    
-12. Split Window Workflows
-    
-13. Vimdiff in Professional Use
-    
-14. Registers Explained (All of Them)
-    
-15. Clipboard Internals & Pitfalls
-    
-16. Marks, Jumps & Change Lists
-    
-17. Macros (Industrial Usage)
-    
-18. Command-Line Mode Power
-    
-19. Vimscript Fundamentals
-    
-20. Custom Commands & Functions
-    
-21. Plugin Ecosystem & Strategy
-    
-22. LSP, Completion & IDE Power
-    
-23. Git & Build System Integration
-    
-24. Performance & Scalability
-    
-25. Security & Safe Editing
-    
-26. Learning Path to Vim Mastery
-    
 
-## 1️⃣ Philosophy of Vim
+2. Vim Mental Model (Why Vim Feels Different)
+
+3. Modes in Depth
+
+4. Motions, Operators, and Text Objects (The Grammar of Vim)
+
+5. Counts & Composability
+
+6. Undo Tree & Time Travel
+
+7. Insert Mode Power Techniques
+
+8. Visual Mode Mastery
+
+9. Advanced Navigation
+
+10. Search, Replace & Regex Mastery
+
+11. Buffers, Windows & Tabs (Real Truth)
+
+12. Split Window Workflows
+
+13. Vimdiff in Professional Use
+
+14. Registers Explained (All of Them)
+
+15. Clipboard Internals & Pitfalls
+
+16. Marks, Jumps & Change Lists
+
+17. Macros (Industrial Usage)
+
+18. Command-Line Mode Power
+
+19. Vimscript Fundamentals
+
+20. Custom Commands & Functions
+
+21. Plugin Ecosystem & Strategy
+
+22. LSP, Completion & IDE Power
+
+23. Git & Build System Integration
+
+24. Performance & Scalability
+
+25. Security & Safe Editing
+
+26. Learning Path to Vim Mastery
+
+
+## Philosophy of Vim
 
 Vim is **not a text editor** in the traditional sense. It is a **language for manipulating text**.
 
 Key ideas:
 
 - You describe _what_ to edit, not _how_
-    
+
 - Editing is faster than thinking
-    
+
 - The keyboard is the primary interface
-    
+
 
 > "Vim rewards thinking in motions and transformations, not keystrokes."
 
-## 2️⃣ Vim Mental Model
+## Vim Mental Model
 
 ### Vim Grammar
 
-```
+```ini
 [count] + operator + motion = edit
 ```
 
 Examples:
 
 - `dw` → delete word
-    
+
 - `3j` → move down 3 lines
-    
+
 - `ci(` → change inside parentheses
-    
+
 
 This composability is Vim's true power.
 
-## 3️⃣ Modes in Depth
+## Modes in Depth
 
 |Mode|Purpose|
 |---|---|
@@ -114,53 +114,53 @@ This composability is Vim's true power.
 
 Mode switching is deliberate—**not accidental**.
 
-## 4️⃣ Motions, Operators & Text Objects
+## Motions, Operators & Text Objects
 
-### Motions (Navigation)
+### Motions (navigation)
 
 - `w`, `b`, `e` → Jump by words (forward, backward, end of word).
-    
+
 - `%` → Jump between matching pairs (like `( )` or `{ }`).
-    
+
 
 **Inline Jumps (Simplified):**
 
 - `f<char>` **(Find):** Press `f` then type any letter. The cursor will jump and land **directly on** the next matching letter on the same line. _(Example: Press `f` then `x` -> jumps exactly to the next 'x')._
-    
-- `t<char>` **(Till):** Press `t` then type any letter. The cursor will jump and land **just before** the next matching letter. _(Example: Press `t` then `x` -> jumps right before the next 'x')._
-    
 
-### Operators (Actions)
+- `t<char>` **(Till):** Press `t` then type any letter. The cursor will jump and land **just before** the next matching letter. _(Example: Press `t` then `x` -> jumps right before the next 'x')._
+
+
+### Operators (actions)
 
 - `d` → delete (cut)
-    
-- `y` → yank (copy)
-    
-- `c` → change (delete and enter Insert mode)
-    
-- `>`, `<` → indent / un-indent
-    
 
-### Text Objects (Context)
+- `y` → yank (copy)
+
+- `c` → change (delete and enter Insert mode)
+
+- `>`, `<` → indent / un-indent
+
+
+### Text Objects (context)
 
 - `iw`, `aw` → inner word, around word
-    
+
 - `i(`, `i{`, `i"` → inside parentheses, braces, quotes
-    
+
 
 **Example Combos:**
 
-```
+```text
 ci"  " Change inside quotes
 di(  " Delete inside parentheses
 yap  " Yank (copy) around paragraph
 ```
 
-## 5️⃣ Counts & Composability
+## Counts & Composability
 
 Everything is repeatable by typing a number first:
 
-```
+```text
 10dd  " Delete 10 lines
 5>>   " Indent 5 lines
 3ciw  " Change the next 3 words
@@ -168,38 +168,38 @@ Everything is repeatable by typing a number first:
 
 Vim scales with file size effortlessly.
 
-## 6️⃣ Undo Tree & Time Travel
+## Undo Tree & Time Travel
 
 Vim has a **non-linear undo tree**, meaning you never truly lose your edit history.
 
 **Key commands (Simplified):**
 
 - `u` → **Undo**: Press `u` to undo the last action.
-    
+
 - `<C-r>` → **Redo**: Press and hold `Ctrl` and then press `r`. This redoes the action you just undid.
-    
+
 - `:undolist` → View the branches of your undo history.
-    
+
 
 Persist undo history across restarts (add to `.vimrc`):
 
-```
+```ini
 set undofile
 set undodir=~/.vim/undo
 ```
 
-## 7️⃣ Insert Mode Power
+## Insert Mode Power
 
 - `ctrl` / `<C-p>` → Auto-completion (Next/Previous match) (Ctrl+n, Ctrl+p).
-    
+
 - `<C-r>0` → Paste from register `0` while in insert mode (Ctrl+r, then 0).
-    
+
 - `<C-o>` → Execute a single Normal mode command and immediately return to Insert mode.
-    
+
 
 _Rule of thumb: Avoid staying in Insert mode unless you are actively typing new text._
 
-## 8️⃣ Visual Mode Mastery
+## Visual Mode Mastery
 
 |Mode|Key|Action|
 |---|---|---|
@@ -209,28 +209,28 @@ _Rule of thumb: Avoid staying in Insert mode unless you are actively typing new 
 
 **Block editing example (Comment out multiple lines):**
 
-```
+```html
 <C-v>jjI// <Esc>
 ```
 
 _(Select block downwards with `jj`, press `I` to insert, type `//` , then hit `Esc` to apply to all selected lines)._
 
-## 9️⃣ Advanced Navigation
+## Advanced Navigation
 
 - `:jumps` → Show jump list
-    
-- `:changes` → Show change list
-    
-- `gg=G` → Re-indent the entire file automatically
-    
-- `zz`, `zt`, `zb` → Scroll screen so cursor is in the Middle (`zz`), Top (`zt`), or Bottom (`zb`) of the viewport.
-    
 
-## 🔟 Search, Replace & Regex
+- `:changes` → Show change list
+
+- `gg=G` → Re-indent the entire file automatically
+
+- `zz`, `zt`, `zb` → Scroll screen so cursor is in the Middle (`zz`), Top (`zt`), or Bottom (`zb`) of the viewport.
+
+
+## Search, Replace & Regex
 
 **Global replace:**
 
-```
+```text
 :%s/foo/bar/gc
 ```
 
@@ -238,17 +238,17 @@ _(Search for 'foo', replace with 'bar', `g` = global on line, `c` = ask for conf
 
 **Regex groups:**
 
-```
+```text
 :%s/\(foo\)/[\1]/g
 ```
 
 **Very magic mode (Simplified Regex):**
 
-```
+```text
 :%s\v(foo|bar)/baz/g
 ```
 
-## 1️⃣1️⃣ Buffers, Windows & Tabs
+## Buffers, Windows & Tabs
 
 |Concept|Meaning|
 |---|---|
@@ -258,41 +258,41 @@ _(Search for 'foo', replace with 'bar', `g` = global on line, `c` = ask for conf
 
 > **Golden rule:** Buffers are files; windows are views; tabs are workspaces.
 
-## 1️⃣2️⃣ Split Window Workflow
+## Split Window Workflow
 
 **Navigation:**
 
-```
+```ini
 <C-w> h j k l  " Move cursor Left, Down, Up, Right between splits(Ctrl+w) then any one of them.
 <C-w> =        " Equalize all split sizes
 ```
 
 **Resize:**
 
-```
+```html
 <C-w> +        " Increase height
 <C-w> <        " Decrease width
 ```
 
-## 1️⃣3️⃣ Vimdiff (Professional Use)
+## Vimdiff (professional Use)
 
 Great for:
 
 - Conflict resolution (Git merges)
-    
+
 - Configuration comparison
-    
+
 - Code reviews
-    
+
 
 **Diff modes commands:**
 
-```
+```text
 :diffget  " Pull changes from the other window
 :diffput  " Push changes to the other window
 ```
 
-## 1️⃣4️⃣ Registers (All of Them)
+## Registers (all of Them)
 
 Registers are like multiple clipboards.
 
@@ -304,36 +304,36 @@ Registers are like multiple clipboards.
 |`_`|Black hole register (deleting here doesn't overwrite your clipboard)|
 |`+`|System clipboard (Ctrl+C / Ctrl+V in other apps)|
 
-## 1️⃣5️⃣ Clipboard Internals
+## Clipboard Internals
 
 Never destroy your clipboard when deleting:
 
-```
+```text
 "_dd  " Deletes the line into the black hole register
 ```
 
 Recommended setting to sync Vim with OS clipboard:
 
-```
+```ini
 set clipboard=unnamedplus
 ```
 
-## 1️⃣6️⃣ Marks, Jumps & Change Lists
+## Marks, Jumps & Change Lists
 
 Power commands:
 
 - `mA` → Create a global mark named 'A'
-    
-- `'a` vs `` `a `` → Jump to line of mark 'a' vs jump to exact line AND column.
-    
-- `<C-i>` / `<C-o>` → Navigate forward/backward through your jump history (Ctrl+i / Ctrl+o).
-    
 
-## 1️⃣7️⃣ Macros at Scale
+- `'a` vs `` `a `` → Jump to line of mark 'a' vs jump to exact line AND column.
+
+- `<C-i>` / `<C-o>` → Navigate forward/backward through your jump history (Ctrl+i / Ctrl+o).
+
+
+## Macros at Scale
 
 Record reusable logic to automate repetitive tasks:
 
-```
+```text
 qa     " Start recording macro into register 'a'
 ...    " (do your edits)
 q      " Stop recording
@@ -342,110 +342,110 @@ q      " Stop recording
 
 **Editable macros:**
 
-```
+```ini
 :let @a='ddj'
 ```
 
-## 1️⃣8️⃣ Command-Line Mode Power
+## Command-line Mode Power
 
 **Command History Window:**
 
-```
+```yaml
 q:
 ```
 
 **Shell access from inside Vim:**
 
-```
+```text
 :!gcc %     " Compile current file
 :r !date    " Read output of 'date' command and paste it into buffer
 ```
 
-## 1️⃣9️⃣ Vimscript Fundamentals
+## Vimscript Fundamentals
 
 Basic structure:
 
-```
+```ini
 let g:var = 1
 if g:var == 1
   echo "Hello Vim"
 endif
 ```
 
-## 2️⃣0️⃣ Custom Commands & Functions
+## Custom Commands & Functions
 
-```
+```text
 command! Build make
 function! Run()
   echo "Running..."
 endfunction
 ```
 
-## 2️⃣1️⃣ Plugin Ecosystem
+## Plugin Ecosystem
 
 **Principles:**
 
 - Minimal plugins (Keep it fast)
-    
+
 - Learn native ways before installing a plugin
-    
+
 
 **Must-know plugins:**
 
 - `vim-fugitive` (Git integration)
-    
-- `fzf.vim` (Fuzzy file finder)
-    
-- `vim-surround` (Easily change quotes, brackets, tags)
-    
 
-## 2️⃣2️⃣ LSP & IDE Power
+- `fzf.vim` (Fuzzy file finder)
+
+- `vim-surround` (Easily change quotes, brackets, tags)
+
+
+## Lsp & Ide Power
 
 With `coc.nvim` or `nvim-lsp` (Neovim), Vim becomes a full IDE:
 
 - Go-to-definition
-    
+
 - Refactoring
-    
+
 - Diagnostics & Linting
-    
 
-## 2️⃣3️⃣ Git & Build Integration
 
-```
+## Git & Build Integration
+
+```text
 :Git status  " Requires vim-fugitive
 :make        " Run your build tool
 :copen       " Open quickfix window to see errors
 ```
 
-## 2️⃣4️⃣ Performance
+## Performance
 
 Speed tips:
 
 - Disable syntax highlighting for massive files.
-    
-- Lazy-load plugins so they only start when needed.
-    
 
-## 2️⃣5️⃣ Security
+- Lazy-load plugins so they only start when needed.
+
+
+## Security
 
 - Avoid executing modelines from unknown files.
-    
-- Always read scripts/plugins before sourcing them.
-    
 
-## 2️⃣6️⃣ Learning Path
+- Always read scripts/plugins before sourcing them.
+
+
+## Learning Path
 
 1. Motions & operators (The grammar)
-    
+
 2. Text objects (The context)
-    
+
 3. Macros (Automation)
-    
+
 4. Registers (Memory)
-    
+
 5. Vimscript (Customization)
-    
+
 
 > **Mastery comes from editing, not reading.**
 

@@ -15,17 +15,17 @@ author: abdallah-shehawey
 
 `apt` and `apt-get` are both package management tools on Debian-based systems like Ubuntu. They serve similar purposes, but differ in design and intended use.
 
-## 1. Overview
+## Overview
 
 **`apt-get`** was introduced first. It's designed for scripting and backward compatibility, provides low-level package management operations, and outputs more technical, verbose information.
 
 **`apt`** was introduced later (Ubuntu 16.04+), designed for interactive use by end users. It combines the common functions of `apt-get` and `apt-cache`, with cleaner, more user-friendly output.
 
-## 2. Output and user experience
+## Output and user experience
 
 `apt-get` gives traditional, verbose output — less readable day-to-day, but well suited to automation and scripts. `apt` gives clean, simplified output with progress bars and useful extras like package size and upgrade counts.
 
-## 3. Command differences
+## Command differences
 
 Both support installing, upgrading, and removing packages, with slightly different syntax:
 
@@ -41,13 +41,13 @@ Both support installing, upgrading, and removing packages, with slightly differe
 
 `apt` merges features from both `apt-get` and `apt-cache`.
 
-## 4. Recommended use
+## Recommended use
 
 **Use `apt` when** you're working interactively, want human-friendly output, or want the combined functionality of `apt-get` + `apt-cache`.
 
 **Use `apt-get` when** writing scripts (it's stable and backward-compatible), you need advanced flags not available in `apt`, or you require exact, predictable output.
 
-## 5. Summary
+## Summary
 
 | Feature             | `apt`                          | `apt-get`                              |
 | --------------------- | --------------------------------- | ------------------------------------------ |

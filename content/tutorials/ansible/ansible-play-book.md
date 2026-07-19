@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 Ansible Playbook Guide (playbook.yml)"
+title: Ansible Playbook Guide (playbook.yml)
 description: >-
   This document provides a comprehensive and detailed explanation of Ansible
   Playbooks. It breaks down the syntax, logic, execution methods, and every
@@ -12,9 +12,9 @@ author: abdallah-shehawey
 ---
 This document provides a **comprehensive and detailed explanation** of Ansible Playbooks. It breaks down the syntax, logic, execution methods, and every single module used, designed to be a reference for beginners and pros alike.
 
-## 🧠 Section 1: Introduction & Anatomy
+## Section 1: Introduction & Anatomy
 
-### Why Use Ansible? (The Benefits)
+### Why Use Ansible? (the Benefits)
 
 Based on core principles, here is why Ansible is powerful:
 
@@ -42,7 +42,7 @@ An Ansible Playbook is a **YAML** file that describes a set of automation steps.
 
 3. **Indentation**: **Critical in YAML.** Use 2 spaces for indentation. Never use tabs.
 
-### The "Play" Hierarchy
+### The "play" Hierarchy
 
 A Playbook contains one or more **Plays**.
 
@@ -54,11 +54,11 @@ A Playbook contains one or more **Plays**.
 
   - **Tasks**: _What_ are we doing? (The actual steps).
 
-## 🧩 Section 2: Local Automation Example (Understanding Syntax)
+## Section 2: Local Automation Example (understanding Syntax)
 
 This play runs locally on your machine, not on a remote server. It's great for testing.
 
-```yaml
+```text
 ---
 - name: Play 1 - Local Automation
   hosts: localhost
@@ -85,7 +85,7 @@ This play runs locally on your machine, not on a remote server. It's great for t
         state: started
 ```
 
-### 🔍 Deep Dive into Part 1
+### Deep Dive Into Part 1
 
 1. **`hosts: localhost`**: Tells Ansible to run this play on the machine you are currently typing on (the Control Node).
 
@@ -107,7 +107,7 @@ This play runs locally on your machine, not on a remote server. It's great for t
 
     - Takes a script from your **local** machine (Control Node), copies it to the **remote** node, runs it, and then deletes it.
 
-## 🧹 Section 3: The Logic of "Cleanup" (Decommissioning)
+## Section 3: the Logic of "cleanup" (decommissioning)
 
 This example teaches you how to logically remove software. You can't just delete files; you must stop the process first.
 
@@ -149,7 +149,7 @@ This example teaches you how to logically remove software. You can't just delete
         state: absent
 ```
 
-### 🔍 Deep Dive into Cleanup Logic
+### Deep Dive Into Cleanup Logic
 
 - **`state: stopped`**: Stops the process immediately.
 
@@ -169,11 +169,11 @@ This example teaches you how to logically remove software. You can't just delete
 
   - For `user`: Deletes the user account.
 
-## 📚 Section 4: Common Tasks Library
+## Section 4: Common Tasks Library
 
 This section explains the most used modules in real-world DevOps scenarios.
 
-### 🌐 Web & Services
+### Web & Services
 
 #### **1. Install Apache (httpd)**
 
@@ -194,7 +194,7 @@ This section explains the most used modules in real-world DevOps scenarios.
         enabled: true       # Ensures it starts automatically after reboot.
 ```
 
-#### **2. Restart SSH Service (Handler Pattern)
+#### **2. Restart Ssh Service (handler Pattern)
 
 ```yaml
 - name: Restart SSH service
@@ -209,7 +209,7 @@ This section explains the most used modules in real-world DevOps scenarios.
 
 - _Use Case:_ You typically run this after modifying `/etc/ssh/sshd_config`.
 
-#### **3. Configure Firewall (Firewalld)
+#### **3. Configure Firewall (firewalld)
 
 ```yaml
 - name: Open port 80 in firewalld
@@ -226,7 +226,7 @@ This section explains the most used modules in real-world DevOps scenarios.
 
 - _Note:_ Without `immediate: yes`, the rule would only apply after a firewall reload or reboot.
 
-#### **4. Start and Enable a Service (General)
+#### **4. Start and Enable a Service (general)
 
 ```yaml
 - name: Start and enable firewalld
@@ -240,7 +240,7 @@ This section explains the most used modules in real-world DevOps scenarios.
         enabled: true
 ```
 
-### 👤 User & Access Management
+### User & Access Management
 
 #### **5. Create a User
 
@@ -257,7 +257,7 @@ This section explains the most used modules in real-world DevOps scenarios.
         append: yes         # CRITICAL: If 'no', it removes user from all other groups!
 ```
 
-#### **6. Delete a User (Deep Clean)
+#### **6. Delete a User (deep Clean)
 
 ```yaml
 - name: Remove user 'testuser'
@@ -285,9 +285,9 @@ This section explains the most used modules in real-world DevOps scenarios.
         name: web01
 ```
 
-### 📂 File & Directory Management
+### File & Directory Management
 
-#### **8. Copy a File (Push)
+#### **8. Copy a File (push)
 
 ```yaml
 - name: Copy index.html to web server
@@ -302,7 +302,7 @@ This section explains the most used modules in real-world DevOps scenarios.
 
 #### **9. Create a Directory
 
-```yaml
+```bash
 - name: Create directory on remote host
   hosts: all
   become: true
@@ -343,7 +343,7 @@ This section explains the most used modules in real-world DevOps scenarios.
         state: absent       # Recursively deletes directory and contents.
 ```
 
-#### **12. Modify File Content (Idempotent Edit)
+#### **12. Modify File Content (idempotent Edit)
 
 ```yaml
 - name: Add banner to /etc/motd
@@ -358,7 +358,7 @@ This section explains the most used modules in real-world DevOps scenarios.
 
 - _Magic:_ `lineinfile` checks if the line exists first. If it does, it does nothing (Idempotent). If not, it adds it.
 
-#### **13. Create an Empty File (Touch)
+#### **13. Create an Empty File (touch)
 
 ```yaml
 - name: Create a log file
@@ -372,9 +372,9 @@ This section explains the most used modules in real-world DevOps scenarios.
         mode: '0644'
 ```
 
-### ⚙️ System Configuration
+### System Configuration
 
-#### **14. Install EPEL Repository
+#### **14. Install Epel Repository
 
 ```yaml
 - name: Install EPEL repository
@@ -418,7 +418,7 @@ This section explains the most used modules in real-world DevOps scenarios.
 
 - _Why?_ Servers should always be in UTC to avoid log confusion across timezones.
 
-#### **17. Add DNS Resolver
+#### **17. Add Dns Resolver
 
 ```yaml
 - name: Add DNS server to resolv.conf
@@ -473,53 +473,53 @@ This task involves multiple steps using `command` and `file`.
 
 - _Magic:_ Ansible disconnects, waits for the server to restart, reconnects, and then continues the playbook.
 
-## ⚡ Section 5: Advanced Execution Options
+## Section 5: Advanced Execution Options
 
 This section covers critical options for running playbooks efficiently and safely.
 
-### 1. Verification & Dry Runs
+### Verification & Dry Runs
 
 - **Syntax Check**: Checks for YAML errors without running.
 
-```bash
+```text
 ansible-playbook playbook.yml --syntax-check
 ```
 
 - **Dry Run / Check Mode**: Simulates execution.
 
-```bash
+```text
 ansible-playbook playbook.yml -C
 ```
 
-### 2. Debugging & Verbosity
+### Debugging & Verbosity
 
 - **`-v`**: Show task results.
 
 - **`-vvv`**: Show connection info (good for verifying SSH).
 
-### 3. Controlling Execution Scope
+### Controlling Execution Scope
 
 - **Limit**: Run only on specific hosts/groups.
 
-```bash
+```text
 ansible-playbook playbook.yml --limit db
 ```
 
 - **Forks**: Control parallelism (default is 5).
 
-```bash
+```text
 ansible-playbook playbook.yml --forks 20
 ```
 
-## 🚀 Section 6: Managing Multiple Playbooks & Workflows
+## Section 6: Managing Multiple Playbooks & Workflows
 
 As your infrastructure grows, putting everything in one file becomes messy. Here are the methods to manage complex workflows.
 
-### Method 1: Multi-Play in One YAML File
+### Method 1: Multi-play in One Yaml File
 
 You can define multiple plays in a single file (`multi_playbook.yml`), each targeting different groups.
 
-```yaml
+```text
 # Play 1: Target Web Servers
 - name: Install Apache on web servers
   hosts: web
@@ -541,13 +541,13 @@ You can define multiple plays in a single file (`multi_playbook.yml`), each targ
         state: present
 ```
 
-### Method 2: The Master Playbook (`import_playbook`)
+### Method 2: the Master Playbook (`import_playbook`)
 
 Use this to statically include other playbooks. It acts as a "Parent" playbook that calls "Child" playbooks.
 
 **File: `site.yml`**
 
-```yaml
+```text
 ---
 - import_playbook: web.yml
 - import_playbook: db.yml
@@ -555,7 +555,7 @@ Use this to statically include other playbooks. It acts as a "Parent" playbook t
 
 **Execution:**
 
-```bash
+```text
 ansible-playbook site.yml
 ```
 
@@ -625,7 +625,7 @@ Tags allow you to run specific parts of a large playbook without running everyth
 
 **Execution:** Run ONLY the web parts:
 
-```bash
+```text
 ansible-playbook site.yml --tags web
 ```
 
@@ -644,11 +644,11 @@ ansible-playbook firewall.yml
 
 **One-Liner:**
 
-```bash
+```text
 ansible-playbook web.yml && ansible-playbook db.yml
 ```
 
-### 🎯 Module Quick Reference Table
+### Module Quick Reference Table
 
 |Module|Use Case|Key Arguments|
 |---|---|---|

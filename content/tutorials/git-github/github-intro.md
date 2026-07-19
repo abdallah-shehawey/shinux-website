@@ -1,5 +1,5 @@
 ---
-title: What is GitHub?
+title: What is Github?
 description: >-
   GitHub is a cloud-based hosting service that helps developers store and manage
   their code, as well as track and control changes to their code. While Git is
@@ -12,11 +12,11 @@ author: abdallah-shehawey
 ---
 GitHub is a cloud-based hosting service that helps developers store and manage their code, as well as track and control changes to their code. While Git is the tool used to manage versions, GitHub is the **platform** where those versions live online.
 
-## ☁️ Online Hosting Platform
+## Online Hosting Platform
 
 GitHub acts as a remote server for your Git repositories. Instead of your project only living on your local machine (the "Local Limitation"), you "push" your code to GitHub, where it is stored safely in the cloud.
 
-## 👥 Team Collaboration & Access
+## Team Collaboration & Access
 
 The primary power of GitHub is enabling teamwork:
 
@@ -26,7 +26,7 @@ The primary power of GitHub is enabling teamwork:
 
 - **Visibility:** You can set projects to be **Public** (open to everyone) or **Private** (restricted to you and your team).
 
-## 🛠️ Git vs. GitHub: The Key Difference
+## Git vs. Github: the Key Difference
 
 It is important to understand that they are not the same thing:
 
@@ -34,7 +34,7 @@ It is important to understand that they are not the same thing:
 
 2. **GitHub:** The website/service where you upload your Git repositories to share them with others (The "Garage" or "Library").
 
-## 🌟 Why Use GitHub?
+## Why Use Github?
 
 - **Remote Backup:** If your computer crashes, your code is safe on GitHub.
 

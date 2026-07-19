@@ -1,5 +1,5 @@
 ---
-title: 6. Camera Module with Raspberry Pi
+title: Camera Module with Raspberry Pi
 description: >-
   This guide explains how to interface with the Raspberry Pi Camera Module using
   two different methods: the Command Line Interface (CLI) and Python.
@@ -17,62 +17,62 @@ This guide explains how to interface with the Raspberry Pi Camera Module using t
 Ensure your camera module is correctly connected to the Raspberry Pi's CSI port and that your system is up to date.
 
 ---
-## Method 1: Using the Terminal (CLI)
+## Method 1: Using the Terminal (cli)
 
 The modern Raspberry Pi OS uses the `rpicam-apps` suite (formerly `libcamera`).
 
-### 1. Basic Preview
+### Basic Preview
 
 To simply open the camera and see a live preview on your monitor:
 
-```bash
+```text
 rpicam-still
 ```
 
-### 2. Preview with Specific Duration
+### Preview with Specific Duration
 
 By default, the preview might close quickly or stay open depending on settings. To keep the preview open for a specific amount of time, use the `-t` flag followed by time in **milliseconds**.
 
-```bash
+```text
 # Open camera for 5 seconds (5000 ms)
 rpicam-still -t 5000
 ```
 
-### 3. Capturing an Image
+### Capturing an Image
 
 To save an image to a specific file, use the `-o` (output) flag.
 
-```bash
+```text
 rpicam-still -o path-to-pic.jpg
 ```
 
-### 4. Adjusting Resolution
+### Adjusting Resolution
 
 High-resolution images take up a lot of storage space. You can resize the image using `--width` and `--height`. Check the terminal logs when running the camera to see supported resolutions.
 
-```bash
+```text
 # Example: Resize to 1640x1232
 rpicam-still -o path-to-pic.jpg --width 1640 --height 1232
 ```
 
-### 5. Flipping the Image
+### Flipping the Image
 
 If your camera is mounted upside down or facing backwards, you can rotate the image using:
 
 - `--vflip`: Vertical flip
-    
-- `--hflip`: Horizontal flip
-    
 
-```bash
+- `--hflip`: Horizontal flip
+
+
+```text
 rpicam-still -o path-to-pic.jpg --width 1640 --height 1232 --vflip --hflip
 ```
 
-### 6. Recording Video
+### Recording Video
 
 To record a video, use the `rpicam-vid` command. The `-t` flag here determines the length of the recording.
 
-```bash
+```text
 # Record a 10-second video (10000 ms)
 rpicam-vid -t 10000 -o path-to-vid.mp4
 ```
@@ -82,7 +82,7 @@ rpicam-vid -t 10000 -o path-to-vid.mp4
 
 For programmatic control, we will use the `picamzero` library. This is a beginner-friendly wrapper for the camera.
 
-### 1. Installation
+### Installation
 
 This library is not installed by default. Update your repositories and install it:
 
@@ -91,19 +91,19 @@ sudo apt update
 sudo apt install python3-picamzero
 ```
 
-### 2. Create the Python Script
+### Create the Python Script
 
 Create a new file to write your code:
 
-```bash
+```text
 nvim camera.py
 ```
 
-### 3. Script: Taking a Photo
+### Script: Taking a Photo
 
 Here is a complete script to configure the camera and take a picture.
 
-```python
+```bash
 from picamzero import Camera
 from time import sleep
 
@@ -111,16 +111,16 @@ from time import sleep
 camera = Camera()
 
 # Set the resolution
-# Note: (1640, 1232) is a "Tuple". In Python, a Tuple allows us to store 
+# Note: (1640, 1232) is a "Tuple". In Python, a Tuple allows us to store
 # multiple items (width and height) in a single variable, similar to an array.
-camera.still_size = (1640, 1232) 
+camera.still_size = (1640, 1232)
 
 # Flip the camera if it is mounted upside down
 camera.flip_camera(hflip=True, vflip=True)
 
-# Important: Wait for the camera sensor to warm up 
+# Important: Wait for the camera sensor to warm up
 # (adjusts light levels and white balance)
-sleep(2) 
+sleep(2)
 
 # Capture the image
 # You can add a `delay` parameter inside take_photo if needed
@@ -129,11 +129,11 @@ camera.take_photo("image.jpg")
 print("Photo taken successfully.")
 ```
 
-### 4. Script: Recording Video
+### Script: Recording Video
 
 Below is the code to record a video segment.
 
-```python
+```dockerfile
 from picamzero import Camera
 from time import sleep
 
@@ -145,7 +145,7 @@ camera.still_size = (1640, 1232)
 camera.flip_camera(hflip=True, vflip=True)
 
 # Warm up the sensor
-sleep(2) 
+sleep(2)
 
 print("Starting Video Recording...")
 
@@ -156,7 +156,7 @@ camera.record_video("my_video.mp4", duration=5)
 print("Video saved successfully.")
 ```
 
-### 5. Script: Continuous Capture (Data Collection)
+### Script: Continuous Capture (data Collection)
 
 This method is ideal for collecting datasets for Deep Learning or Machine Learning. It allows you to run code _between_ every picture (e.g., image processing or sensor readings).
 
@@ -164,7 +164,7 @@ This method is ideal for collecting datasets for Deep Learning or Machine Learni
 
 This script creates a folder and continuously takes photos until you stop it (Ctrl+C).
 
-```python
+```dockerfile
 from picamzero import Camera
 import os
 from time import sleep
@@ -176,7 +176,7 @@ if not os.path.exists(FOLDER_NAME):
     os.makedirs(FOLDER_NAME)
 
 # Initialize Camera
-try: 
+try:
     camera = Camera()
     camera.still_size = (1640, 1232)
     camera.flip_camera(hflip=True, vflip=True)
@@ -191,16 +191,16 @@ counter = 0
 try:
     while True:
         file_name = f"{FOLDER_NAME}/image_{counter}.jpg"
-        
+
         # Take the photo
         camera.take_photo(file_name)
         print(f"Captured: {file_name}")
-        
+
         # You can add image processing logic here before the next shot
-        
+
         counter += 1
         sleep(3) # Delay between shots
-        
+
 except KeyboardInterrupt:
     print("\nProcess interrupted by user. Exiting...")
 except Exception as e:
@@ -215,7 +215,7 @@ finally:
 
 Use this only if you just need to dump images quickly without logic in between.
 
-```python
+```ini
 # Takes 10 images with a 5-second interval
 # Note: You cannot run code between these shots.
 camera.capture_sequence(FOLDER_NAME, num_images=10, interval=5)

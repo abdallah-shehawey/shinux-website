@@ -1,5 +1,5 @@
 ---
-title: 'ZRAM: Compressed Swap in RAM'
+title: 'Zram: Compressed Swap in Ram'
 description: >-
   zram creates a compressed block device that lives entirely in RAM and is
   typically used as swap. Because it's RAM-backed and compressed, swapping to it
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 zram creates a compressed block device that lives entirely in RAM and is typically used as swap. Because it's RAM-backed and compressed, swapping to it is far faster than swapping to disk — it buys extra headroom under memory pressure without the latency hit of a real disk-backed swap file (see the swap-file lesson in this track for the disk-backed alternative).
 
-## 1. Install
+## Install
 
 **Ubuntu/Debian** uses `zram-tools`:
 
@@ -29,7 +29,7 @@ sudo dnf install zram-generator
 
 Fedora may already ship a default zram config — creating a config file overrides those defaults.
 
-## 2. Configure
+## Configure
 
 **Ubuntu/Debian** (`/etc/default/zramswap`):
 
@@ -37,7 +37,7 @@ Fedora may already ship a default zram config — creating a config file overrid
 sudo nvim /etc/default/zramswap
 ```
 
-```bash
+```ini
 # Compression algorithm
 # speed:        lz4 > zstd > lzo
 # compression:  zstd > lzo > lz4
@@ -76,7 +76,7 @@ sudo systemctl daemon-reexec
 sudo reboot
 ```
 
-## 3. Verify
+## Verify
 
 ```bash
 swapon --show                         # confirm zram swap is active

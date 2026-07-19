@@ -1,5 +1,5 @@
 ---
-title: Ubuntu Package Management — APT Complete Guide
+title: Ubuntu Package Management Apt Complete Guide
 description: >-
   Package management is the heart of Linux system maintenance. Ubuntu uses APT
   (Advanced Package Tool) to install, upgrade, remove, and manage software.
@@ -31,7 +31,7 @@ This guide explains APT from **user commands to underlying mechanisms**.
 
 Sources stored in:
 
-```bash
+```text
 /etc/apt/sources.list
 /etc/apt/sources.list.d/
 ```
@@ -39,13 +39,13 @@ Sources stored in:
 Repository components:
 
 - main
-    
+
 - restricted
-    
+
 - universe
-    
+
 - multiverse
-    
+
 
 ---
 
@@ -103,14 +103,14 @@ sudo apt clean
 
 ## Searching Packages
 
-```bash
+```text
 apt search nginx
 apt show nginx
 ```
 
 ---
 
-## dpkg vs apt
+## Dpkg vs Apt
 
 |Tool|Scope|
 |---|---|
@@ -147,23 +147,23 @@ sudo unattended-upgrades
 ## Enterprise Best Practices
 
 - Use LTS releases
-    
+
 - Enable security repo
-    
+
 - Avoid third-party PPAs
-    
+
 
 ---
 
 ## Summary
 
 - APT resolves dependencies
-    
+
 - dpkg installs locally
-    
+
 - Repositories define trust
-    
+
 - Clean regularly
-    
+
 
 ---

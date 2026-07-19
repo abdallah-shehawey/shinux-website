@@ -1,5 +1,5 @@
 ---
-title: "\U0001F41A Comprehensive Unix Shells Guide"
+title: Comprehensive Unix Shells Guide
 description: >-
   A deep, professional, and complete reference for the most popular Unix/Linux
   shells: csh, sh, ksh, tcsh, bash, zsh, and fish. This guide expands on
@@ -10,95 +10,95 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-A **deep, professional, and complete reference** for the most popular Unix/Linux shells: **csh, sh, ksh, tcsh, bash, zsh, and fish**.  
+A **deep, professional, and complete reference** for the most popular Unix/Linux shells: **csh, sh, ksh, tcsh, bash, zsh, and fish**.
 This guide expands on history, architecture, scripting models, interactive behavior, configuration files, portability, performance, security, and real‑world use cases.
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
 1. What Is a Shell?
-    
+
 2. Shell Architecture & Execution Model
-    
+
 3. Login vs Non‑Login Shells
-    
+
 4. Interactive vs Non‑Interactive Shells
-    
+
 5. Environment Variables & Scope
-    
+
 6. Shell Configuration Files
-    
+
 7. Job Control & Signals
-    
+
 8. POSIX Compliance Explained
-    
+
 9. Shell Comparison Matrix
-    
+
 10. C Shell (csh)
-    
+
 11. Bourne Shell (sh)
-    
+
 12. Korn Shell (ksh)
-    
+
 13. TENEX C Shell (tcsh)
-    
+
 14. Bourne Again Shell (bash)
-    
+
 15. Z Shell (zsh)
-    
+
 16. Friendly Interactive Shell (fish)
-    
+
 17. Choosing the Right Shell
-    
+
 18. Security Best Practices
-    
+
 19. Common Pitfalls
-    
+
 20. Learning Path & Recommendations
-    
+
 
 ---
 
-## 1️⃣ What Is a Shell?
+## What is a Shell?
 
 A **shell** is a command interpreter that:
 
 - Reads commands from the user or a script
-    
+
 - Parses and expands them
-    
+
 - Launches programs via system calls (fork/exec)
-    
+
 - Handles I/O redirection, pipes, and signals
-    
+
 
 Shells act as the **user interface to the kernel** but run in **user space**.
 
 ---
 
-## 2️⃣ Shell Architecture & Execution Model
+## Shell Architecture & Execution Model
 
 ### Core Components
 
 - **Lexer / Parser** – breaks input into tokens
-    
+
 - **Expander** – variable, glob, and command expansion
-    
+
 - **Executor** – forks processes and executes binaries
-    
+
 - **Job Controller** – manages foreground/background tasks
-    
+
 
 ### Execution Flow
 
-```
+```text
 command → parsing → expansion → fork → exec → wait
 ```
 
 ---
 
-## 3️⃣ Login vs Non‑Login Shells
+## Login vs Nonlogin Shells
 
 |Type|Description|
 |---|---|
@@ -107,14 +107,14 @@ command → parsing → expansion → fork → exec → wait
 
 Determine shell type:
 
-```sh
+```text
 echo $0
 echo $SHELL
 ```
 
 ---
 
-## 4️⃣ Interactive vs Non‑Interactive Shells
+## Interactive vs Noninteractive Shells
 
 |Feature|Interactive|Script|
 |---|---|---|
@@ -124,20 +124,20 @@ echo $SHELL
 
 Check mode:
 
-```sh
+```ini
 [[ $- == *i* ]] && echo interactive
 ```
 
 ---
 
-## 5️⃣ Environment Variables & Scope
+## Environment Variables & Scope
 
 - **Local variables** – shell only
-    
-- **Environment variables** – inherited by child processes
-    
 
-```sh
+- **Environment variables** – inherited by child processes
+
+
+```ini
 VAR=local
 export VAR=env
 printenv VAR
@@ -145,13 +145,13 @@ printenv VAR
 
 Fish uses:
 
-```fish
+```text
 set -x VAR value
 ```
 
 ---
 
-## 6️⃣ Shell Configuration Files
+## Shell Configuration Files
 
 |Shell|Login|Interactive|
 |---|---|---|
@@ -164,175 +164,175 @@ set -x VAR value
 
 ---
 
-## 7️⃣ Job Control & Signals
+## Job Control & Signals
 
 - Foreground (`fg`)
-    
+
 - Background (`bg`)
-    
+
 - Suspend (`Ctrl+Z`)
-    
+
 
 Signals:
 
 - `SIGINT` (Ctrl+C)
-    
-- `SIGTSTP` (Ctrl+Z)
-    
-- `SIGTERM`, `SIGKILL`
-    
 
-```sh
+- `SIGTSTP` (Ctrl+Z)
+
+- `SIGTERM`, `SIGKILL`
+
+
+```text
 kill -SIGTERM 1234
 ```
 
 ---
 
-## 8️⃣ POSIX Compliance Explained
+## Posix Compliance Explained
 
 **POSIX shell** ensures scripts run consistently across Unix systems.
 
 ✅ POSIX shells:
 
 - sh
-    
+
 - bash (POSIX mode)
-    
+
 - ksh
-    
+
 
 ❌ Non‑POSIX by design:
 
 - csh / tcsh
-    
+
 - fish
-    
+
 
 ---
 
-## 9️⃣ Shell Comparison Matrix
+## Shell Comparison Matrix
 
 |Feature|sh|bash|zsh|fish|ksh|csh|
 |---|---|---|---|---|---|---|
-|POSIX|✅|✅|⚠️|❌|✅|❌|
+|POSIX|✅|✅|⚠|❌|✅|❌|
 |History|❌|✅|✅|✅|✅|✅|
 |Completion|❌|✅|✅+|✅|✅|❌|
-|Scripting|✅|✅+|✅|⚠️|✅|❌|
+|Scripting|✅|✅+|✅|⚠|✅|❌|
 |Beginner‑friendly|❌|✅|✅|✅+|❌|❌|
 
 ---
 
-## 🔟 C Shell (csh)
+## C Shell (csh)
 
 ### Internal Model
 
 - Alias‑based control
-    
+
 - No real functions
-    
+
 - Non‑recursive parser → scripting issues
-    
+
 
 ### When to Use
 
-✅ Interactive legacy systems  
+✅ Interactive legacy systems
 ❌ Production scripting
 
 ---
 
-## 1️⃣1️⃣ Bourne Shell (sh)
+## Bourne Shell (sh)
 
 ### Internal Model
 
 - Minimal and predictable
-    
+
 - Baseline for POSIX
-    
+
 
 ### When to Use
 
-✅ System scripts  
+✅ System scripts
 ✅ Embedded / init scripts
 
 ---
 
-## 1️⃣2️⃣ Korn Shell (ksh)
+## Korn Shell (ksh)
 
 ### Internal Model
 
 - Superset of sh
-    
+
 - Advanced math & arrays
-    
+
 
 ### When to Use
 
-✅ Enterprise UNIX  
+✅ Enterprise UNIX
 ✅ Financial systems
 
 ---
 
-## 1️⃣3️⃣ TENEX C Shell (tcsh)
+## Tenex C Shell (tcsh)
 
-### Improvements over csh
+### Improvements Over Csh
 
 - Real completion
-    
-- Editing modes
-    
 
-✅ Interactive legacy shell  
+- Editing modes
+
+
+✅ Interactive legacy shell
 ❌ Modern scripting
 
 ---
 
-## 1️⃣4️⃣ Bourne Again Shell (bash)
+## Bourne Again Shell (bash)
 
 ### Key Internals
 
 - GNU Readline
-    
+
 - Extensive built‑ins
-    
+
 - Bashisms
-    
+
 
 ### When to Use
 
-✅ Linux default  
+✅ Linux default
 ✅ DevOps / Automation
 
 ---
 
-## 1️⃣5️⃣ Z Shell (zsh)
+## Z Shell (zsh)
 
 ### Advanced Features
 
 - Shared history
-    
-- Globbing engine
-    
 
-✅ Power users  
+- Globbing engine
+
+
+✅ Power users
 ✅ Daily desktop shell
 
 ---
 
-## 1️⃣6️⃣ Friendly Interactive Shell (fish)
+## Friendly Interactive Shell (fish)
 
 ### Philosophy
 
 - Discoverability
-    
-- Zero configuration
-    
 
-✅ Beginners  
+- Zero configuration
+
+
+✅ Beginners
 ❌ POSIX scripting
 
 ---
 
-## 1️⃣7️⃣ Choosing the Right Shell
+## Choosing the Right Shell
 
 |Use Case|Shell|
 |---|---|
@@ -344,46 +344,46 @@ kill -SIGTERM 1234
 
 ---
 
-## 1️⃣8️⃣ Security Best Practices
+## Security Best Practices
 
 - Avoid `eval`
-    
+
 - Quote variables
-    
+
 - Use absolute paths
-    
+
 - Least‑privilege (`sudo`)
-    
+
 - Avoid sourcing untrusted scripts
-    
+
 
 ---
 
-## 1️⃣9️⃣ Common Pitfalls
+## Common Pitfalls
 
 - Bashisms in `/bin/sh`
-    
+
 - Using `csh` for scripting
-    
+
 - Ignoring shell startup files
-    
+
 - Unquoted variables
-    
+
 
 ---
 
-## 2️⃣0️⃣ Learning Path
+## Learning Path
 
 1. Learn POSIX sh basics
-    
+
 2. Master bash scripting
-    
+
 3. Customize zsh
-    
+
 4. Explore fish interactively
-    
+
 5. Understand enterprise shells (ksh)
-    
+
 
 ---
 

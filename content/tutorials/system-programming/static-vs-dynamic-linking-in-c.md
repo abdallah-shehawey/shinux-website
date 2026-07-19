@@ -12,16 +12,16 @@ author: abdallah-shehawey
 ---
 A small worked example makes the static-vs-shared distinction from the C build process lesson in this track concrete: the exact same four-function math library, built both ways, linked against the exact same `main.c`, so the only thing that differs is the linking method.
 
-## 1. The library
+## The Library
 
 Four tiny functions, one per file, plus a shared header:
 
-```c
+```text
 // mylib/myadd.c
 double myadd(double a, double b) { return a + b; }
 ```
 
-```c
+```text
 // mylib/mylib.h
 double myadd(double, double);
 double mysub(double, double);
@@ -31,7 +31,7 @@ double mydiv(double, double);
 
 `mydiv` guards the one interesting edge case:
 
-```c
+```ini
 double mydiv(double a, double b) {
   if (b != 0) return a / b;
   return 0;
@@ -56,9 +56,9 @@ int main() {
 }
 ```
 
-## 2. Building it as a static library
+## Building it as a Static Library
 
-```bash
+```text
 gcc -c mylib/myadd.c mylib/mysub.c mylib/mymul.c mylib/mydiv.c -Imylib
 ar rcs mylib/libmylib.a myadd.o mysub.o mymul.o mydiv.o
 
@@ -67,14 +67,14 @@ gcc main.c -o main_static -I./mylib -L./mylib -lmylib
 
 `main_static` now contains the four functions' actual machine code, copied in at link time. Confirm it:
 
-```bash
+```text
 ldd main_static
 # "not a dynamic executable" (or no libmylib.* listed at all)
 ```
 
-## 3. Building it as a shared library
+## Building it as a Shared Library
 
-```bash
+```text
 gcc -c -fPIC mylib/myadd.c mylib/mysub.c mylib/mymul.c mylib/mydiv.c -Imylib
 gcc -shared -o mylib/libfile.so myadd.o mysub.o mymul.o mydiv.o
 
@@ -83,7 +83,7 @@ gcc main.c -o main_dynamic -I./mylib -L./mylib -lfile
 
 `ldd main_dynamic` now lists `libfile.so` as a dependency the OS loader has to resolve at process start — and running it straight away reproduces the classic error from the build-process lesson (`cannot open shared object file`) until `LD_LIBRARY_PATH` points at `./mylib`, since it was never installed to a standard system library path.
 
-## 4. What actually differs
+## What Actually Differs
 
 | | Static (`.a`) | Shared (`.so`) |
 | --- | --- | --- |
@@ -95,9 +95,9 @@ gcc main.c -o main_dynamic -I./mylib -L./mylib -lfile
 
 For four tiny arithmetic functions the difference in executable size is trivial — the value of building it both ways here isn't the size delta, it's seeing `ldd` report a completely different answer for the exact same source code, depending purely on how it was compiled and linked.
 
-## 5. Inspecting either binary
+## Inspecting Either Binary
 
-```bash
+```text
 file main_static main_dynamic     # both report as ELF executables — file alone won't show the difference
 ldd main_dynamic                   # lists libfile.so and its resolved path (or "not found")
 nm mylib/libmylib.a                 # shows myadd/mysub/mymul/mydiv defined, ready to be copied in

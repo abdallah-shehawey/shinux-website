@@ -7,7 +7,7 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## 1. Introduction & Architecture
+## Introduction & Architecture
 
 ### Ansible Advantages
 
@@ -26,8 +26,6 @@ author: abdallah-shehawey
 ### Lab Architecture
 
 This diagram shows how the **Controller** connects to the **Agents** using SSH.
-
-> **Diagram (Mermaid source):**
 
 ```text
 flowchart LR
@@ -48,9 +46,9 @@ flowchart LR
     end
 ```
 
-## 2. Infrastructure Setup (AWS)
+## Infrastructure Setup (aws)
 
-### Step 1: Launch EC2 Instances
+### Step 1: Launch Ec2 Instances
 
 Before installing anything, we need to create the servers on AWS.
 
@@ -72,7 +70,7 @@ Before installing anything, we need to create the servers on AWS.
 
     - Instance 3 -> **Managed Node 2**.
 
-## 3. System Configuration
+## System Configuration
 
 ### Step 2: Configure Hostnames
 
@@ -98,7 +96,7 @@ sudo hostnamectl set-hostname ansible-agent01
 sudo hostnamectl set-hostname ansible-agent02
 ```
 
-## 4. Ansible Installation & Setup
+## Ansible Installation & Setup
 
 All following steps are performed **ONLY on the Ansible Controller Node**.
 
@@ -114,12 +112,12 @@ sudo dnf install ansible -y
 
 It is best practice to keep your Ansible files in a specific folder.
 
-```bash
+```text
 mkdir ~/ansible-project
 cd ~/ansible-project
 ```
 
-### Step 5: Set Up SSH Key on Controller
+### Step 5: Set Up Ssh Key on Controller
 
 Ansible needs the private key (`.pem` file) to log in to the managed nodes.
 
@@ -135,7 +133,7 @@ Ansible needs the private key (`.pem` file) to log in to the managed nodes.
 
     _Explanation: If you don't do this, SSH will reject the key as "too open"._
 
-## 5. Connecting Ansible to Nodes
+## Connecting Ansible to Nodes
 
 ### Step 6: Create Inventory File (`hosts`)
 
@@ -143,16 +141,16 @@ The inventory file tells Ansible which servers to manage and how to connect to t
 
 Create a file named `hosts`:
 
-```bash
+```ini
 [web]
 <node1_public_ip> ansible_user=ec2-user ansible_ssh_private_key_file=~/ansible-project/your-key.pem
 <node2_public_ip> ansible_user=ec2-user ansible_ssh_private_key_file=~/ansible-project/your-key.pem
 ```
 
 - `[web]`: This is a group name. You can run commands against all servers in this group.
- 
+
 - `<node1_private_ip>` public ip for node
- 
+
 - `ansible_user`: The default user for Amazon Linux is `ec2-user`.
 
 - `ansible_ssh_private_key_file`: The path to the key we secured in Step 5.
@@ -163,7 +161,7 @@ This file sets defaults so you don't have to type flags manually every time.
 
 Create a file named `ansible.cfg` in the same directory:
 
-```bash
+```ini
 [defaults]
 inventory = ./hosts
 host_key_checking = False
@@ -173,19 +171,19 @@ host_key_checking = False
 
 - `host_key_checking = False`: Prevents the interactive "Are you sure you want to connect?" prompt, which is crucial for automation.
 
-## 6. Verification
+## Verification
 
 ### Step 8: Test Connectivity
 
 Now, let's verify that the Controller can talk to the Agents using the `ping` module.
 
-```bash
+```text
 ansible web -m ping
 ```
 
 **Expected Output:** You should see a green "SUCCESS" message for both nodes.
 
-```bash
+```ini
 172.31.x.x | SUCCESS => {
     "ping": "pong"
 }

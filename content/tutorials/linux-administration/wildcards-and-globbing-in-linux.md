@@ -1,5 +1,5 @@
 ---
-title: "\U0001F9E9 Wildcards & Globbing in Linux — Deep CLI Guide"
+title: Wildcards & Globbing in Linux Deep Cli Guide
 description: >-
   A deep, practical, and system-level guide to understanding wildcards
   (globbing) in the Linux Command Line Interface. This guide goes far beyond
@@ -10,51 +10,51 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-A **deep, practical, and system-level guide** to understanding **wildcards (globbing)** in the Linux Command Line Interface.  
+A **deep, practical, and system-level guide** to understanding **wildcards (globbing)** in the Linux Command Line Interface.
 This guide goes far beyond basic usage to explain **how globbing really works, how shells differ, pitfalls, performance, and professional shell workflows**.
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
 1. What Wildcards Really Are
-    
+
 2. Globbing vs Regular Expressions (Critical Difference)
-    
+
 3. Where and When Expansion Happens
-    
+
 4. Types of Wildcards (In Depth)
-    
+
 5. Brace Expansion (Pre-Globbing Phase)
-    
+
 6. Advanced Globbing Patterns
-    
+
 7. Hidden Files and Dotfiles
-    
+
 8. Recursive Globbing (`**`)
-    
+
 9. Wildcards with Common Commands
-    
+
 10. Wildcards vs `find`
-    
+
 11. Quoting, Escaping & Disabling Expansion
-    
+
 12. Error Handling & Safety Techniques
-    
+
 13. Performance Considerations
-    
+
 14. Shell Differences (bash, zsh, sh)
-    
+
 15. Real-World Use Cases
-    
+
 16. Common Mistakes & Debugging
-    
+
 17. Exercises (Beginner → Advanced)
-    
+
 
 ---
 
-## 1️⃣ What Wildcards _Really_ Are
+## What Wildcards _really_ Are
 
 Wildcards are **pattern-matching characters expanded by the shell itself**, **not by commands** like `ls`, `cp`, or `rm`.
 
@@ -66,16 +66,16 @@ ls *.txt
 
 What actually happens:
 
-```text
+```bash
 shell expands *.txt → file1.txt file2.txt
 ls file1.txt file2.txt
 ```
 
-> ⚠️ Commands never see wildcards — they only receive expanded filenames.
+> ⚠ Commands never see wildcards — they only receive expanded filenames.
 
 ---
 
-## 2️⃣ Globbing vs Regular Expressions
+## Globbing vs Regular Expressions
 
 |Feature|Wildcards (Globs)|Regex|
 |---|---|---|
@@ -93,74 +93,74 @@ ls | grep .*txt  # regex
 
 ---
 
-## 3️⃣ Expansion Order (Very Important)
+## Expansion Order (very Important)
 
 Shell expansion happens in a defined order:
 
 1. Brace expansion `{}`
-    
+
 2. Tilde expansion `~`
-    
+
 3. Parameter expansion `$VAR`
-    
+
 4. Command substitution `$( )`
-    
+
 5. **Pathname expansion (globbing)**
-    
+
 6. Quote removal
-    
+
 
 This affects correctness and safety.
 
 ---
 
-## 4️⃣ Types of Wildcards (Deep Dive)
+## Types of Wildcards (deep Dive)
 
-### ⭐ Asterisk `*`
+### Asterisk `*`
 
 - Matches **zero or more characters**
-    
-- Does NOT cross directory separators (`/`)
-    
 
-```bash
+- Does NOT cross directory separators (`/`)
+
+
+```text
 *.log
 backup*
 ```
 
 ---
 
-### ❓ Question Mark `?`
+### Question Mark `?`
 
 - Matches **exactly one character**
-    
 
-```bash
+
+```text
 file?.txt   # file1.txt ✅ | file10.txt ❌
 ```
 
 ---
 
-### 🔤 Character Classes `[ ]`
+### Character Classes `[ ]`
 
-```bash
+```text
 file[1-3].txt
 file[a-z].txt
 ```
 
 Advanced:
 
-```bash
+```text
 file[!0-9].txt   # NOT digits
 ```
 
 ---
 
-## 5️⃣ Brace Expansion `{}` (Not a Wildcard!)
+## Brace Expansion `{}` (not a Wildcard!)
 
 Brace expansion generates strings **before globbing**.
 
-```bash
+```text
 echo file{1,2,3}.txt
 ```
 
@@ -172,24 +172,24 @@ file1.txt file2.txt file3.txt
 
 Ranges:
 
-```bash
+```text
 echo {a..d}
 echo {01..10}
 ```
 
 ---
 
-## 6️⃣ Advanced Globbing Patterns
+## Advanced Globbing Patterns
 
 Enable extended globbing:
 
-```bash
+```text
 shopt -s extglob
 ```
 
 Patterns:
 
-```bash
+```text
 *.!(txt)      # anything except txt
 *@(jpg|png)
 ```
@@ -198,14 +198,14 @@ Requires Bash or Zsh.
 
 ---
 
-## 7️⃣ Hidden Files & Dotfiles
+## Hidden Files & Dotfiles
 
 - `*` ✅ does NOT match `.hidden`
-    
+
 - `.*` ✅ matches dotfiles
-    
-- `.*` ⚠️ also matches `.` and `..`
-    
+
+- `.*` ⚠ also matches `.` and `..`
+
 
 Safe pattern:
 
@@ -215,11 +215,11 @@ ls .[^.]*
 
 ---
 
-## 8️⃣ Recursive Globbing `**`
+## Recursive Globbing `**`
 
 Enable:
 
-```bash
+```text
 shopt -s globstar
 ```
 
@@ -237,9 +237,9 @@ find . -name "*.c"
 
 ---
 
-## 9️⃣ Wildcards with Common Commands
+## Wildcards with Common Commands
 
-```bash
+```text
 cp *.txt /backup/
 rm report[0-9].txt
 mv *.log old_logs/
@@ -248,13 +248,13 @@ chmod +x *.sh
 
 Always test first:
 
-```bash
+```text
 echo rm *.log
 ```
 
 ---
 
-## 🔟 Wildcards vs `find`
+## Wildcards vs `find`
 
 |Use Case|Wildcards|find|
 |---|---|---|
@@ -265,74 +265,74 @@ echo rm *.log
 Best practice:
 
 - Use globs for simple cases
-    
+
 - Use `find` for complex logic
-    
+
 
 ---
 
-## 1️⃣1️⃣ Quoting & Escaping
+## Quoting & Escaping
 
-### Disable expansion completely:
+### Disable Expansion Completely:
 
-```bash
+```text
 echo "*.txt"
 ```
 
-### Escape a single wildcard:
+### Escape a Single Wildcard:
 
-```bash
+```text
 echo \*.txt
 ```
 
 Why important:
 
-```bash
+```text
 rm "$file"
 ```
 
 ---
 
-## 1️⃣2️⃣ Safety Techniques (VERY IMPORTANT)
+## Safety Techniques (very Important)
 
-### Dry run everything:
+### Dry Run Everything:
 
-```bash
+```text
 echo rm *.log
 ```
 
-### Fail on no matches:
+### Fail on No Matches:
 
-```bash
+```text
 shopt -s failglob
 ```
 
-### Prevent dangerous deletes:
+### Prevent Dangerous Deletes:
 
-```bash
+```text
 rm -- -file.txt
 ```
 
 ---
 
-## 1️⃣3️⃣ Performance Considerations
+## Performance Considerations
 
 - Globbing happens **before execution**
-    
+
 - Large directories = memory expansion cost
-    
+
 - Use `find` for thousands of files
-    
+
 
 Shell limits:
 
-```bash
+```text
 getconf ARG_MAX
 ```
 
 ---
 
-## 1️⃣4️⃣ Shell Differences
+## Shell Differences
 
 |Feature|sh|bash|zsh|
 |---|---|---|---|
@@ -343,38 +343,38 @@ getconf ARG_MAX
 
 ---
 
-## 1️⃣5️⃣ Real-World Use Cases
+## Real-world Use Cases
 
-### Cleanup logs:
+### Cleanup Logs:
 
-```bash
+```text
 rm /var/log/*.{1,old}
 ```
 
-### Project setup:
+### Project Setup:
 
-```bash
+```text
 mkdir -p app/{src,bin,docs,tests}
 ```
 
-### Batch rename preview:
+### Batch Rename Preview:
 
-```bash
+```text
 echo mv *.jpeg *.jpg
 ```
 
 ---
 
-## 1️⃣6️⃣ Common Mistakes
+## Common Mistakes
 
-❌ Believing commands interpret wildcards  
-❌ Forgetting hidden files  
-❌ Mixing regex with glob syntax  
+❌ Believing commands interpret wildcards
+❌ Forgetting hidden files
+❌ Mixing regex with glob syntax
 ❌ Unquoted variables
 
 ---
 
-## 1️⃣7️⃣ Exercises
+## Exercises
 
 Beginner:
 

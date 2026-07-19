@@ -1,5 +1,5 @@
 ---
-title: "\U0001F680 Getting Started with Git"
+title: Getting Started with Git
 description: >-
   This guide covers everything from installation and basic concepts to managing
   your user configuration at different levels.
@@ -11,47 +11,47 @@ author: abdallah-shehawey
 ---
 This guide covers everything from installation and basic concepts to managing your user configuration at different levels.
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
-### 1. Download Git
+### Download Git
 
 You can download Git for any Operating System (Windows, macOS, Linux) from the official website: 🔗 [git-scm.com/install](https://git-scm.com/install/ "null")
 
-### 2. Verify Installation
+### Verify Installation
 
 After installing, open your Terminal or Command Prompt and run the following command to ensure Git is ready:
 
-```
+```bash
 git --version
 ```
 
-## ⚙️ User Configuration
+## User Configuration
 
 Git requires an identity (email and username) to be attached to every **Commit** you make. You can set this at two different levels:
 
-### 1. Global Configuration (System-wide)
+### Global Configuration (system-wide)
 
 This sets a default identity for **all projects** on your computer.
 
-```
+```bash
 git config --global user.email "example@gmail.com"
 git config --global user.name "username"
 ```
 
-### 2. Local Configuration (Repository Level)
+### Local Configuration (repository Level)
 
 Use this if you want to use a different identity for a **specific repository** (e.g., using a work email for a specific folder). _Note: You must run these commands inside that specific project folder._
 
-```
+```bash
 git config --local user.email "example@gmail.com"
 git config --local user.name "username"
 ```
 
-### 🔍 Check Your Settings
+### Check Your Settings
 
 To verify your current configuration, use:
 
-```
+```bash
 # To see all settings
 git config --list
 
@@ -59,7 +59,7 @@ git config --list
 git config user.email
 ```
 
-## 💡 Core Concepts
+## Core Concepts
 
 ### Working Directory
 

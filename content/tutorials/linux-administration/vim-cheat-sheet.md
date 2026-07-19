@@ -180,27 +180,27 @@ author: abdallah-shehawey
 **Special Registers:**
 
 - `0` - Last yank
-    
+
 - `"` - Unnamed register, last delete or yank
-    
+
 - `%` - Current file name
-    
+
 - `#` - Alternate file name
-    
+
 - `*` - Clipboard contents (X11 primary)
-    
+
 - `+` - Clipboard contents (X11 clipboard)
-    
+
 - `/` - Last search pattern
-    
+
 - `:` - Last command-line
-    
+
 - `.` - Last inserted text
-    
+
 - `-` - Last small (less than a line) delete
-    
+
 - `_` - Black hole register
-    
+
 
 ## Marks, Jumps, and Macros
 
@@ -347,17 +347,17 @@ author: abdallah-shehawey
 |`Ctrl` + `wK`|Move window to very top|
 |`Ctrl` + `w=`|Make all windows equal height & width|
 
-### ✅ Pro Tip
+### Pro Tip
 
 > **Vim mastery comes from composing commands:** `Operator` + `Motion` = **Power**
-> 
+>
 > Examples:
-> 
+>
 > - `daw` (Delete Around Word)
->     
+>
 > - `ci(` (Change Inside Parentheses)
->     
+>
 > - `yap` (Yank Around Paragraph)
->     
+>
 > - `gUiw` (Make Inner Word Uppercase)
 >

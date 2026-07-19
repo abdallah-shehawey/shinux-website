@@ -1,5 +1,5 @@
 ---
-title: Logical Volume Management (LVM) Guide
+title: Logical Volume Management (lvm) Guide
 description: >-
   Logical Volume Management (LVM) provides a flexible way to manage disk space.
   It allows you to create virtual partitions that can be easily resized, even
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Logical Volume Management (LVM) provides a flexible way to manage disk space. It allows you to create virtual partitions that can be easily resized, even across multiple physical drives.
 
-## 1. Physical Volumes (PV)
+## Physical Volumes (pv)
 
 Physical volumes are the raw building blocks (partitions or full disks) that LVM uses.
 
@@ -20,7 +20,7 @@ Physical volumes are the raw building blocks (partitions or full disks) that LVM
 
 Initialize a partition or disk for LVM use.
 
-```bash
+```text
 pvcreate /dev/nvme1n1p1
 ```
 
@@ -28,7 +28,7 @@ pvcreate /dev/nvme1n1p1
 
 Check the status and capacity of your physical volumes.
 
-```bash
+```text
 # Brief summary
 pvs
 
@@ -36,7 +36,7 @@ pvs
 pvdisplay
 ```
 
-## 2. Volume Groups (VG)
+## Volume Groups (vg)
 
 A Volume Group is a pool of storage created by combining one or more Physical Volumes.
 
@@ -44,13 +44,13 @@ A Volume Group is a pool of storage created by combining one or more Physical Vo
 
 Combine multiple physical partitions into a single pool named `myvg`.
 
-```bash
+```text
 vgcreate myvg /dev/nvme1n1p1 /dev/nvme1n1p2
 ```
 
 ### Display Volume Groups
 
-```bash
+```text
 # Brief summary
 vgs
 
@@ -58,7 +58,7 @@ vgs
 vgdisplay
 ```
 
-## 3. Logical Volumes (LV)
+## Logical Volumes (lv)
 
 Logical Volumes are the "virtual partitions" created from a Volume Group. You format these with a filesystem and mount them.
 
@@ -66,7 +66,7 @@ Logical Volumes are the "virtual partitions" created from a Volume Group. You fo
 
 Create a volume named `mylvm` with a size of 2GB.
 
-```bash
+```text
 # -L: size (e.g., 2G, 500M)
 # -n: name of the logical volume
 lvcreate -L 2G -n mylvm myvg
@@ -76,7 +76,7 @@ lvcreate -L 2G -n mylvm myvg
 
 Before using the volume, create a filesystem (e.g., ext4).
 
-```bash
+```text
 mkfs.ext4 /dev/myvg/mylvm
 ```
 
@@ -84,7 +84,7 @@ mkfs.ext4 /dev/myvg/mylvm
 
 Map the volume to a directory in your system.
 
-```bash
+```text
 # Check block devices
 lsblk
 
@@ -93,7 +93,7 @@ mkdir /data
 mount /dev/myvg/mylvm /data/
 ```
 
-## 4. Extending Storage
+## Extending Storage
 
 One of the main benefits of LVM is the ability to grow storage on the fly.
 
@@ -101,7 +101,7 @@ One of the main benefits of LVM is the ability to grow storage on the fly.
 
 If you run out of space in the Volume Group, initialize a new partition.
 
-```bash
+```text
 pvcreate /dev/nvme1n1p3
 ```
 
@@ -109,7 +109,7 @@ pvcreate /dev/nvme1n1p3
 
 Add the new physical volume to your existing pool.
 
-```bash
+```text
 vgextend myvg /dev/nvme1n1p3
 ```
 
@@ -117,7 +117,7 @@ vgextend myvg /dev/nvme1n1p3
 
 Increase the size of the logical volume.
 
-```bash
+```text
 # Add 2GB to the current size
 lvextend -L +2G /dev/myvg/mylvm
 ```
@@ -126,7 +126,7 @@ lvextend -L +2G /dev/myvg/mylvm
 
 The LV is now larger, but the filesystem (ext4) needs to be told to fill that new space.
 
-```bash
+```text
 # Check for errors first
 e2fsck -f /dev/myvg/mylvm
 
@@ -134,7 +134,7 @@ e2fsck -f /dev/myvg/mylvm
 resize2fs /dev/myvg/mylvm
 ```
 
-## 5. Shrinking Storage
+## Shrinking Storage
 
 **Warning:** Shrinking a volume is risky. Always back up your data first. You must shrink the filesystem **before** reducing the Logical Volume size.
 
@@ -142,7 +142,7 @@ resize2fs /dev/myvg/mylvm
 
 You cannot safely shrink most filesystems while they are mounted.
 
-```bash
+```text
 umount /data
 ```
 
@@ -150,7 +150,7 @@ umount /data
 
 Reduce the filesystem to the target size (e.g., 2GB).
 
-```bash
+```text
 e2fsck -f /dev/myvg/mylvm
 resize2fs /dev/myvg/mylvm 2G
 ```
@@ -159,13 +159,13 @@ resize2fs /dev/myvg/mylvm 2G
 
 Now that the filesystem is small, you can reduce the LV container.
 
-```bash
+```text
 lvreduce -L 2G /dev/myvg/mylvm
 ```
 
 ### Step D: Re-mount and Verify
 
-```bash
+```text
 mount /dev/myvg/mylvm /data/
 df -h /data
 ```

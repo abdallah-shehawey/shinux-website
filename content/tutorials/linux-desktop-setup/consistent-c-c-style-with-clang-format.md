@@ -1,5 +1,5 @@
 ---
-title: Consistent C/C++ Style with clang-format
+title: Consistent C/c++ Style with Clang-format
 description: >-
   clang-format enforces a single, consistent C/C++ style automatically, instead
   of relying on everyone to format code by hand the same way. This covers
@@ -12,9 +12,9 @@ author: abdallah-shehawey
 ---
 `clang-format` enforces a single, consistent C/C++ style automatically, instead of relying on everyone to format code by hand the same way. This covers installing it, setting up a global style config, and wiring it into VS Code (or Windsurf) so it runs on every save.
 
-## 1. Installation
+## Installation
 
-```bash
+```text
 # Ubuntu / Debian
 sudo apt install clang-format
 
@@ -24,19 +24,19 @@ sudo dnf install clang-tools-extra
 
 Verify:
 
-```bash
+```text
 clang-format --version
 ```
 
-## 2. Global configuration
+## Global Configuration
 
 A `.clang-format` file in the home directory applies to every project that doesn't have its own:
 
-```bash
+```text
 nvim ~/.clang-format
 ```
 
-```yaml
+```text
 BasedOnStyle: Microsoft
 IndentWidth: 2
 TabWidth: 2
@@ -61,7 +61,7 @@ This configuration enforces:
 - Allman-style braces (opening brace on its own line)
 - No collapsed single-line functions, even short ones
 
-## 3. Editor integration (VS Code / Windsurf)
+## Editor Integration (vs Code / Windsurf)
 
 Install the **Clang-Format** extension by **xaver** (extension ID `xaver.clang-format`), then add to `settings.json` (`Ctrl+Shift+P` → *Preferences: Open Settings (JSON)*):
 

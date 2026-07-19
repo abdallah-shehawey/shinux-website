@@ -1,5 +1,5 @@
 ---
-title: Mirroring Your Android Screen with scrcpy
+title: Mirroring Your Android Screen with Scrcpy
 description: >-
   scrcpy displays and controls an Android phone from a Linux PC, over either USB
   or Wi-Fi, with low latency and no root required — a solid open-source
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 `scrcpy` displays and controls an Android phone from a Linux PC, over either USB or Wi-Fi, with low latency and no root required — a solid open-source replacement for tools like Iriun.
 
-## 1. Installation
+## Installation
 
 Prebuilt packages exist for most distros:
 
@@ -34,29 +34,29 @@ sudo apt install ffmpeg libsdl2-2.0-0 adb wget \
                  libswresample-dev libusb-1.0-0 libusb-1.0-0-dev
 ```
 
-## 2. Phone setup
+## Phone Setup
 
 **Enable Developer Options:** Settings → About phone → tap "Build number" 7 times.
 
 **Enable debugging:** Settings → Developer options → turn on both USB debugging and Wireless debugging (Android 11+).
 
-## 3. Method 1 — USB (most stable)
+## Method 1 Usb (most Stable)
 
 Connect the phone, accept the debugging prompt it shows, then:
 
-```bash
+```text
 scrcpy
 ```
 
 The phone screen appears immediately.
 
-## 4. Method 2 — Wi-Fi
+## Method 2 Wi-fi
 
 Both phone and PC must be on the same Wi-Fi network.
 
 **Option A — legacy TCP/IP** (doesn't work on every phone):
 
-```bash
+```text
 adb tcpip 5555
 adb connect <IP_ADDRESS>:5555
 adb devices          # verify
@@ -69,7 +69,7 @@ On the phone: Settings → Developer options → Wireless debugging → on, then
 
 On the PC:
 
-```bash
+```text
 adb pair <IP_ADDRESS>:<PAIR_PORT>   # enter the pairing code when prompted
 adb connect <IP_ADDRESS>:<CONNECT_PORT>
 adb devices                          # verify
@@ -78,19 +78,19 @@ scrcpy -e
 
 Fully wireless, stable, no cable needed once paired.
 
-## 5. Verifying the connection
+## Verifying the Connection
 
-```bash
+```text
 adb devices
 ```
 
-```text
+```html
 <IP_ADDRESS>:<PORT>    device
 ```
 
-## 6. Useful scrcpy options
+## Useful Scrcpy Options
 
-```bash
+```ini
 scrcpy --camera-facing=front   # use the front camera instead of mirroring the screen
 scrcpy -e --bit-rate=4M        # limit bitrate — helps on a weaker Wi-Fi link
 scrcpy --max-fps=30            # cap the frame rate

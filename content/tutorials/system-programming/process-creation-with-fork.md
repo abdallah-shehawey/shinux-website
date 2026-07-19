@@ -1,5 +1,5 @@
 ---
-title: Process Creation with fork()
+title: Process Creation with Fork()
 description: >-
   fork() is the one system call responsible for every process on a Linux system
   except PID 1 — it duplicates the calling process into two, and everything
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 `fork()` is the one system call responsible for every process on a Linux system except PID 1 — it duplicates the calling process into two, and everything downstream (shells launching commands, servers handling connections) is built on it. These four small programs work through what actually happens across that duplication: the two different return values, what's shared versus copied, and what goes wrong if a child is never cleaned up.
 
-## 1. One call, two returns
+## One Call, Two Returns
 
 `fork()` is unusual among system calls in that it returns *twice* — once in the parent, once in the child — with a different value in each:
 
@@ -50,11 +50,11 @@ int main(void)
 
 The initial `getchar()` is a deliberate pause: it gives a chance to run `ps -ef` or check `/proc` and see both processes actually existing simultaneously, each with the *same program counter position* right after the call.
 
-## 2. Both processes keep running independently
+## Both Processes Keep Running Independently
 
 `fork_demo2.c` replaces the one-shot prints with infinite loops in both branches, making the parallel execution obvious instead of instantaneous:
 
-```c
+```ini
 if (pid > 0) {
   while (1) {
     printf("PARENT: my pid = %d, My child pid = %d\n", getpid(), pid);
@@ -70,7 +70,7 @@ if (pid > 0) {
 
 Both loops print every 500 ms, interleaved — two genuinely independent processes, scheduled separately by the kernel, both descended from the exact same `fork()` call.
 
-## 3. Copy-on-write: each side gets its own memory
+## Copy-on-write: Each Side Gets Its Own Memory
 
 `fork_demo3.c` is the same shape, but tracks a global (`x`), a global BSS variable (`y`), and a stack variable (`z`) across the fork, incrementing them at different rates in each branch:
 
@@ -104,11 +104,11 @@ int main(void) {
 
 Right after `fork()`, parent and child have **identical values** for `x`, `y`, and `z` — the child got an exact copy of the parent's entire address space (globals, BSS, stack, heap). But once each side starts incrementing its own copy, the values **diverge immediately** and never resync. This is copy-on-write in action: the kernel doesn't actually duplicate physical memory pages at `fork()` time — both processes share the same pages, marked read-only, until either side *writes* to one, at which point the kernel copies just that page. From userspace the effect is indistinguishable from a full copy: each process owns its own private memory from the moment it writes, with zero risk of one process's increments corrupting the other's.
 
-## 4. What happens if nobody calls wait() — zombies
+## What Happens if Nobody Calls Wait() Zombies
 
 `zombie_demo.c` is a minimal shell: read a command, `fork()`, and in the child, `execve()` it.
 
-```c
+```ini
 pid_t pid = fork();
 
 if (pid > 0) {

@@ -26,50 +26,50 @@ The boot process is the sequence of steps that occur when a computer powers on a
 **High-Level Boot Sequence:**
 
 1. Power On
-    
+
 2. BIOS/UEFI Initialization
-    
+
 3. Bootloader Execution
-    
+
 4. Kernel Loading
-    
+
 5. System Initialization
-    
+
 6. User Space Initialization
-    
+
 
 ---
 
 ## Detailed Steps of the Boot Process
 
-### a. BIOS/UEFI Initialization
+### A. Bios/uefi Initialization
 
 **BIOS vs UEFI**
 
 - **BIOS (Basic Input/Output System):** Legacy firmware used for hardware initialization and POST.
-    
+
 - **UEFI (Unified Extensible Firmware Interface):** Modern firmware with faster boot, Secure Boot, and GPT support.
-    
+
 
 **Key Functions**
 
 - Power-On Self-Test (POST)
-    
+
 - Hardware initialization
-    
+
 - Boot device selection
-    
+
 
 **Additional Details**
 
 - Acts as a bridge between hardware and OS
-    
+
 - Allows configuration of boot order, security, and hardware settings
-    
+
 
 **Diagram Description**
 
-```
+```json
 [Power On]
    |
 [BIOS/UEFI Initialization]
@@ -79,143 +79,143 @@ The boot process is the sequence of steps that occur when a computer powers on a
 
 ---
 
-### b. Bootloader Execution
+### B. Bootloader Execution
 
 Once the boot device is selected, BIOS/UEFI loads the bootloader.
 
 **Common Bootloaders**
 
 - GRUB (Linux)
-    
+
 - NTLDR (legacy Windows)
-    
+
 - BOOTMGR (modern Windows)
-    
+
 
 **MBR Structure**
 
 - Bootstrap Code (446 bytes)
-    
+
 - Partition Table (64 bytes)
-    
+
 - Boot Signature (0x55AA)
-    
+
 
 **Boot Process**
 
 1. Load bootloader into RAM
-    
+
 2. Display boot menu
-    
+
 3. Load selected kernel
-    
+
 
 **Additional Details**
 
 - GRUB supports multi-boot and kernel parameters
-    
+
 - UEFI bootloaders reside in ESP as `.efi` files
-    
+
 
 **Diagram Description**
 
-```
+```json
 [MBR/ESP] → [GRUB] → [Kernel]
 ```
 
 ---
 
-### c. Kernel Loading
+### C. Kernel Loading
 
 The bootloader loads the Linux kernel into memory.
 
 **Steps**
 
 1. Load kernel image (vmlinuz)
-    
+
 2. Pass parameters to kernel
-    
+
 3. Initialize memory, drivers, and mount root filesystem
-    
+
 
 **Additional Details**
 
 - **initrd/initramfs:** Temporary filesystem for early boot tasks
-    
+
 - **Kernel Parameters:** Control boot behavior (quiet, splash, nomodeset)
-    
+
 
 **Diagram Description**
 
-```
+```json
 [Bootloader] → [Kernel + initramfs]
 ```
 
 ---
 
-### d. System Initialization
+### D. System Initialization
 
-#### i. The Init Process
+#### I. the Init Process
 
 - First kernel process (PID = 1)
-    
+
 - Initializes userspace and manages services
-    
+
 - Historically used **SysVinit**
-    
+
 
 **SysVinit Characteristics**
 
 - Runlevels define system states
-    
+
 - Startup scripts in `/etc/init.d/`
-    
+
 - Sequential startup
-    
+
 
 **Limitations**
 
 - Slow boot
-    
+
 - Poor dependency handling
-    
+
 
 ---
 
-#### ii. Introduction to systemd
+#### Ii. Introduction to Systemd
 
 **systemd Overview**
 
 - Modern init and service manager
-    
+
 - Parallel startup
-    
+
 - Dependency-based service handling
-    
+
 
 **Key Features**
 
 - Unit files
-    
+
 - Parallel initialization
-    
+
 - Centralized logging (journald)
-    
+
 - State tracking and service restarts
-    
+
 
 **Components**
 
 - `systemctl`
-    
+
 - `journald`
-    
+
 - `networkd`, `resolved`, `timedated`
-    
+
 
 ---
 
-#### iii. Differences Between systemd and Traditional Init Systems
+#### Iii. Differences Between Systemd and Traditional Init Systems
 
 |Feature|SysVinit|systemd|
 |---|---|---|
@@ -230,18 +230,18 @@ The bootloader loads the Linux kernel into memory.
 **Advantages of systemd**
 
 - Faster boot
-    
+
 - Unified configuration
-    
+
 - Better monitoring
-    
+
 
 **Criticisms**
 
 - Increased complexity
-    
+
 - Monolithic design
-    
+
 
 ---
 
@@ -249,7 +249,7 @@ The bootloader loads the Linux kernel into memory.
 
 ### Boot Process Flowchart
 
-```
+```text
 Power On
   ↓
 BIOS/UEFI
@@ -265,7 +265,7 @@ Login / Desktop
 
 ### Component Interaction Diagram
 
-```
+```json
 [BIOS/UEFI]
      |
 [Bootloader]
@@ -288,7 +288,7 @@ dmesg | less
 dmesg | grep -i network
 ```
 
-### Exploring GRUB
+### Exploring Grub
 
 ```bash
 cat /boot/grub/grub.cfg
@@ -296,16 +296,16 @@ cat /boot/grub/grub.cfg
 
 > **Note:** Edit `/etc/default/grub` and run `sudo update-grub`.
 
-### Modifying GRUB Timeout
+### Modifying Grub Timeout
 
 ```bash
 sudo nano /etc/default/grub
 sudo update-grub
 ```
 
-### Inspecting systemd
+### Inspecting Systemd
 
-```bash
+```ini
 systemctl status
 systemctl list-units --type=service
 ```
@@ -324,14 +324,14 @@ sudo nano /etc/default/grub
 sudo update-grub
 ```
 
-### systemd Units and Targets
+### Systemd Units and Targets
 
-```bash
+```ini
 systemctl list-units --type=target
 sudo systemctl set-default multi-user.target
 ```
 
-### Viewing Init PID
+### Viewing Init Pid
 
 ```bash
 ps -p 1 -o pid,comm
@@ -350,38 +350,38 @@ Virtualization enables multiple OS instances to run on one physical machine.
 **Benefits**
 
 - Resource efficiency
-    
+
 - Isolation
-    
+
 - Flexibility
-    
+
 - Cost savings
-    
+
 
 ### Types of Hypervisors
 
 **Type 1 (Bare-Metal)**
 
 - VMware ESXi, KVM, Hyper-V
-    
+
 
 **Type 2 (Hosted)**
 
 - VirtualBox, VMware Workstation, QEMU
-    
+
 
 ### Hypervisors in Ubuntu
 
 - KVM
-    
-- QEMU
-    
-- VirtualBox
-    
-- VMware Workstation Player
-    
 
-### Practical Exercise: KVM Setup
+- QEMU
+
+- VirtualBox
+
+- VMware Workstation Player
+
+
+### Practical Exercise: Kvm Setup
 
 ```bash
 sudo apt update
@@ -395,15 +395,15 @@ sudo usermod -aG kvm $(whoami)
 ## Additional Resources
 
 - Ubuntu Documentation: [https://help.ubuntu.com/](https://help.ubuntu.com/)
-    
+
 - GRUB Manual: [https://www.gnu.org/software/grub/manual/](https://www.gnu.org/software/grub/manual/)
-    
+
 - systemd Documentation: [https://www.freedesktop.org/wiki/Software/systemd/](https://www.freedesktop.org/wiki/Software/systemd/)
-    
+
 - KVM: [https://www.linux-kvm.org/page/Main_Page](https://www.linux-kvm.org/page/Main_Page)
-    
+
 - DigitalOcean systemd Guide
-    
+
 
 ---
 

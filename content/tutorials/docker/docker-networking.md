@@ -1,5 +1,5 @@
 ---
-title: 'Docker Networking: The Ultimate Deep Dive'
+title: 'Docker Networking: the Ultimate Deep Dive'
 description: >-
   This guide is the complete reference for Docker Networking. It covers internal
   architecture, DNS resolution, port mapping, legacy links, and advanced network
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide is the complete reference for Docker Networking. It covers internal architecture, DNS resolution, port mapping, legacy links, and advanced network drivers.
 
-## 1. Internal Architecture: The "Bridge"
+## Internal Architecture: the "bridge"
 
 When you install Docker, it creates a virtual network interface on the host called `docker0`.
 
@@ -26,11 +26,11 @@ When you install Docker, it creates a virtual network interface on the host call
 
 `Host (Eth0) <==> Docker0 Bridge (172.17.0.1) <==> Container (Eth0)`
 
-## 2. Network Drivers (Types) & Examples
+## Network Drivers (types) & Examples
 
 Docker creates 3 networks by default, but supports others.
 
-### 1. Bridge (Default)
+### Bridge (default)
 
 - **Scope:** Local (Single Host).
 
@@ -38,12 +38,12 @@ Docker creates 3 networks by default, but supports others.
 
 - **Example:**
 
-```bash
+```text
 docker run ubuntu
 # Result: Container gets IP 172.17.0.2, Gateway 172.17.0.1
 ```
 
-### 2. None (Fully Isolated)
+### None (fully Isolated)
 
 - **Scope:** Local.
 
@@ -51,13 +51,13 @@ docker run ubuntu
 
 - **Command:**
 
-```bash
+```ini
 docker run ubuntu --network=none
 ```
 
 - **Result:** The container is completely isolated from the host and other containers.
 
-### 3. Host (No Isolation)
+### Host (no Isolation)
 
 - **Scope:** Local.
 
@@ -65,19 +65,19 @@ docker run ubuntu --network=none
 
 - **Command:**
 
-```bash
+```ini
 docker run ubuntu --network=host
 ```
 
 - **Result:** If the web app listens on port 5000 inside, it is accessible directly on the Docker Host at port 5000. No Port Mapping (`-p`) is needed.
 
-### 4. User-Defined Bridge (Custom Subnets)
+### User-defined Bridge (custom Subnets)
 
 You can create your own isolated network and even specify the IP range (Subnet).
 
 **Command:**
 
-```bash
+```text
 docker network create \
   --driver bridge \
   --subnet 182.18.0.0/16 \
@@ -90,13 +90,13 @@ docker network create \
 
 - They are isolated from the default `docker0` network (`172.17.x.x`).
 
-## 3. Port Mapping (Publishing)
+## Port Mapping (publishing)
 
 Since containers are on a private network (`172.17.x.x`), you cannot access them from your browser (localhost) by default. You must "publish" the port.
 
 **Command:**
 
-```bash
+```text
 docker run -p 8080:80 nginx
 ```
 
@@ -108,7 +108,7 @@ docker run -p 8080:80 nginx
 
 **What happens if I don't use `-p`?** The container can talk to the internet (download updates), but **nobody** can talk to the container from the outside.
 
-## 4. Container Communication: DNS vs. IP
+## Container Communication: Dns vs. Ip
 
 This is the most critical concept for developers.
 
@@ -122,13 +122,13 @@ If you run two containers on the default bridge:
 
 3. _Problem:_ IPs change every time a container restarts.
 
-### Scenario B: User-Defined Bridge (Embedded DNS)
+### Scenario B: User-defined Bridge (embedded Dns)
 
 If you create your own network, Docker runs an internal **DNS Server** at `127.0.0.11`.
 
 **Example:**
 
-```bash
+```text
 # 1. Create Network
 docker network create my-net
 
@@ -141,25 +141,25 @@ docker run -d --name web --network my-net nginx
 
 **How it works (Code Example):** Inside your application code, you use the container name `mysql` instead of the IP.
 
-```python
+```text
 // Inside the 'web' container
-mysql.connect('mysql') 
+mysql.connect('mysql')
 // Docker DNS (127.0.0.11) resolves 'mysql' to '172.17.0.3' automatically.
 ```
 
-## 5. Inspecting Network Details (JSON Output)
+## Inspecting Network Details (json Output)
 
 To see the exact IP, Gateway, and MacAddress, use `docker inspect`.
 
 **Command:**
 
-```bash
+```text
 docker inspect blissful_hopper
 ```
 
 **Example Output (NetworkSettings):**
 
-```bash
+```json
 "NetworkSettings": {
     "Bridge": "",
     "Gateway": "172.17.0.1",
@@ -175,7 +175,7 @@ docker inspect blissful_hopper
 }
 ```
 
-## 6. Docker Network Commands Cheat Sheet
+## Docker Network Commands Cheat Sheet
 
 |Command|Description|Key Argument|
 |---|---|---|
@@ -187,31 +187,31 @@ docker inspect blissful_hopper
 |`docker network connect`|Attach a **running** container to a network.||
 |`docker network disconnect`|Remove a container from a network.||
 
-## 7. Advanced Debugging
+## Advanced Debugging
 
-### 1. Find Container IP (The "Grep" Method)
+### Find Container Ip (the "grep" Method)
 
 ```bash
 docker inspect <container_id> | grep -A 3 -B 3 -i ip
 ```
 
-### 2. Verify DNS (Inside Container)
+### Verify Dns (inside Container)
 
 To check if networking is working properly inside a container:
 
-```bash
+```text
 docker exec -it <container_id> nslookup <other_container_name>
 # OR
 docker exec -it <container_id> ping <other_container_name>
 ```
 
-### 3. Check Host Interfaces (Find docker0)
+### Check Host Interfaces (find Docker0)
 
 To see the `docker0` bridge interface on your **Host Machine**:
 
 **Linux/Mac:**
 
-```bash
+```text
 ip addr show docker0
 # OR
 ifconfig
@@ -219,13 +219,13 @@ ifconfig
 
 **Windows:**
 
-```bash
+```text
 ipconfig
 ```
 
 _Look for an adapter named `docker0` or `vEthernet (WSL)`._
 
-## 8. FAQ: Important Interview Questions
+## Faq: Important Interview Questions
 
 **Q: Does Docker use the Host's DNS?** **A:** By default, containers inherit the DNS settings (`/etc/resolv.conf`) from the Host machine. However, on User-Defined networks, Docker uses its own embedded DNS server first (`127.0.0.11`) to resolve container names.
 

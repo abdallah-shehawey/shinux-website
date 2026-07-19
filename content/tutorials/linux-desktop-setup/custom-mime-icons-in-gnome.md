@@ -1,5 +1,5 @@
 ---
-title: Custom MIME Icons in GNOME
+title: Custom Mime Icons in Gnome
 description: >-
   Changing the icon GNOME shows for a specific file type — say, giving .md files
   their own icon instead of a generic text-file icon — doesn't require touching
@@ -12,11 +12,11 @@ author: abdallah-shehawey
 ---
 Changing the icon GNOME shows for a specific file type — say, giving `.md` files their own icon instead of a generic text-file icon — doesn't require touching the system's Adwaita theme or any application icons. GNOME's icon-theme inheritance model makes it possible to override exactly one MIME icon safely.
 
-## 1. The core idea
+## The Core Idea
 
 Instead of modifying `hicolor` or a system theme directly, create a small custom icon theme that **inherits** from the current system theme (usually Adwaita) and overrides only the one MIME icon needed. GNOME automatically falls back to the parent theme for everything else, so application icons, Wine icons, and web-app icons (Brave, Chrome, etc.) are never affected.
 
-## 2. Theme directory structure
+## Theme Directory Structure
 
 ```text
 ~/.local/share/icons/<theme-name>/
@@ -27,7 +27,7 @@ Instead of modifying `hicolor` or a system theme directly, create a small custom
 
 Where `<size>` is something like `128x128`, `<context>` is `mimetypes`, and `<mime-icon-name>` is the icon name for that MIME type.
 
-## 3. `index.theme` template
+## `index.theme` Template
 
 ```ini
 [Icon Theme]
@@ -44,24 +44,24 @@ Context=MimeTypes
 
 GNOME resolves icons by checking the active theme first; if the icon isn't found there, it falls back to whatever `Inherits=` points at — which is what keeps this approach safe.
 
-## 4. Worked example: a custom `.md` icon
+## Worked Example: a Custom `.md` Icon
 
 **Identify the MIME type:**
 
-```bash
+```text
 xdg-mime query filetype README.md
 # text/markdown  →  icon name: text-markdown
 ```
 
 **Create the theme directory:**
 
-```bash
+```text
 mkdir -p ~/.local/share/icons/md-custom/128x128/mimetypes
 ```
 
 **Create `index.theme`:**
 
-```bash
+```text
 nano ~/.local/share/icons/md-custom/index.theme
 ```
 
@@ -80,20 +80,20 @@ Context=MimeTypes
 
 **Add the icon file**, named after the MIME icon name:
 
-```bash
+```text
 cp markdown.png ~/.local/share/icons/md-custom/128x128/mimetypes/text-markdown.png
 ```
 
 **Activate the theme:**
 
-```bash
+```text
 gsettings set org.gnome.desktop.interface icon-theme 'md-custom'
 nautilus -q && nautilus &   # restart Files to pick it up
 ```
 
 `.md` files now use the custom icon; every other file type, and all application icons, stay exactly as they were.
 
-## 5. Extending to other file types
+## Extending to Other File Types
 
 | File Type | MIME Type | Icon Name | Context |
 | --- | --- | --- | --- |
@@ -102,9 +102,9 @@ nautilus -q && nautilus &   # restart Files to pick it up
 | `.c` | `text/x-c` | `text-x-c` | mimetypes |
 | `.pdf` | `application/pdf` | `application-pdf` | mimetypes |
 
-## 6. Reverting
+## Reverting
 
-```bash
+```text
 gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 ```
 

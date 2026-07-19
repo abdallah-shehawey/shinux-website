@@ -1,5 +1,5 @@
 ---
-title: Fixing Missing Dock Icons (StartupWMClass)
+title: Fixing Missing Dock Icons (startupwmclass)
 description: >-
   Occasionally an app shows the right icon in the GNOME Applications menu, but
   once launched, the Dock displays a generic icon instead. That happens when
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Occasionally an app shows the right icon in the GNOME Applications menu, but once launched, the Dock displays a generic icon instead. That happens when GNOME can't match the running window to the app's `.desktop` file — usually because the window's `WM_CLASS` doesn't line up with what GNOME expects. Adding the correct `StartupWMClass` value fixes the mapping.
 
-## 1. Find the running app's WM_CLASS
+## Find the Running App's Wm_class
 
 Open GNOME's built-in debugger:
 
@@ -26,9 +26,9 @@ This opens **Looking Glass**. Go to the **Windows** tab, find the app in the lis
 wmclass: qpdfview.local.qpdfview
 ```
 
-## 2. Add it to the `.desktop` file
+## Add it to the `.desktop` File
 
-```bash
+```text
 nvim ~/.local/share/applications/appname.desktop
 ```
 
@@ -48,15 +48,15 @@ Icon=qpdfview
 StartupWMClass=qpdfview.local.qpdfview
 ```
 
-## 3. Update the desktop database and re-log
+## Update the Desktop Database and Re-log
 
-```bash
+```text
 update-desktop-database ~/.local/share/applications
 ```
 
 Log out and back in for GNOME to pick up the change.
 
-## 4. Result
+## Result
 
 GNOME now correctly matches the running window to its `.desktop` file, and the Dock shows the proper icon instead of a generic placeholder.
 

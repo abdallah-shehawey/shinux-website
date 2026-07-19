@@ -1,5 +1,5 @@
 ---
-title: 'Raspberry Pi OS: Installation & Initial Setup'
+title: 'Raspberry Pi Os: Installation & Initial Setup'
 description: >-
   Welcome to the ultimate setup guide for Raspberry Pi OS. Whether you are a
   beginner or looking to refine your workflow, this document covers everything
@@ -13,96 +13,96 @@ author: abdallah-shehawey
 Welcome to the ultimate setup guide for Raspberry Pi OS. Whether you are a beginner or looking to refine your workflow, this document covers everything from flashing the operating system to establishing remote access. You will learn how to perform a headless installation, find your device on the network using Angry IP Scanner, manage remote desktop connections with VNC, and configure a fallback hotspot for reliable access on the go.
 
 ---
-## 1. Downloading Raspberry Pi OS
+## Downloading Raspberry Pi Os
 
 Download the latest Raspberry Pi OS from the official website:
 
 - **Official Link:** [https://www.raspberrypi.com/software/](https://www.raspberrypi.com/software/ "null")
-    
+
     > **Note:** The OS was previously called "Raspbian", but the official name is now **Raspberry Pi OS**.
-    
+
 ---
 ### Installation Methods
 
 You have two main options to flash the OS onto your SD card:
 
-#### A. Using Raspberry Pi Imager **(Recommended)**
+#### A. Using Raspberry Pi Imager **(recommended)**
 
 Raspberry Pi provides an easy tool, **Raspberry Pi Imager**, which can download and flash the OS automatically.
 
 **Option 1: Install via Repository (Easiest)**
 
 - **On Ubuntu/Debian:**
-    
+
     ```bash
     sudo apt install rpi-imager
     ```
-    
+
 - **On Fedora:**
-    
+
     ```bash
     sudo dnf install rpi-imager
     ```
-    
+
 
 **Option 2: Manual Installation (.deb Package)** If you prefer downloading the package manually:
 
 1. Download the `.deb` file from the official website.
-    
+
 2. Open your terminal in the Downloads folder:
-    
+
     ```bash
     cd $HOME/Downloads/
     ```
-    
+
 3. Install it:
-    
+
     ```bash
     sudo dpkg -i imager_*.deb
     sudo apt-get install -f  # Fix dependencies if needed
     ```
-    
 
-#### B. Manual Installation (ISO)
+
+#### B. Manual Installation (iso)
 
 Alternatively, you can install the OS manually by downloading the image and using a tool like **Rufus** or any other imaging tool to burn it onto the SD card.
 
 ---
-## 2. Preparing the SD Card
+## Preparing the Sd Card
 
 When using the **Raspberry Pi Imager**, after selecting your OS and the target SD card, open the **Settings** menu (Gear Icon) to configure the system before flashing. This is crucial for a "Headless" setup.
 
 ### Configuration Settings:
 
 1. **General Settings:**
-    
+
     - **Set hostname:** Give your Pi a unique name.
-        
+
     - **Set username and password:** Essential for security.
-        
+
     - **Configure Wireless LAN:** **(Very Important)** Enter your Wi-Fi SSID and Password so the Pi connects automatically.
-        
+
     - _Additional general settings are optional but recommended._
-        
+
 2. **Services:**
-    
+
     - **Enable SSH:** Check this box to allow remote access via command line.
-        
+
 
 **Save the settings and start the installation (Write/Flash).**
 
 ---
-## 3. First Boot & SSH Access
+## First Boot & Ssh Access
 
 After powering on the Raspberry Pi, you can connect to it via SSH using the terminal:
 
-```bash
+```text
 ssh username@hostname.local
 ```
 
 _(Replace `username` and `hostname` with what you configured)._
 
-### Finding Raspberry Pi IP Address (Troubleshooting)
+### Finding Raspberry Pi Ip Address (troubleshooting)
 
 If you don't know the IP address or `hostname.local` doesn't work, you can use **Angry IP Scanner**.
 
@@ -111,62 +111,62 @@ If you don't know the IP address or `hostname.local` doesn't work, you can use *
 **2. Prerequisites (Java):** Angry IP Scanner requires Java (OpenJDK 11 or later).
 
 - **On Fedora/RedHat:**
-    
+
     ```bash
     sudo dnf install java-21-openjdk-devel
     ```
-    
+
 - **On Ubuntu/Debian:**
-    
+
     ```bash
     sudo apt install openjdk-21-jdk
     ```
-    
+
 - **On Arch Linux:**
-    
+
     ```bash
     sudo pacman -S jdk11-openjdk
     ```
-    
+
     _(Verify installation with `java -version`)_.
-    
+
 
 **3. Installing Angry IP Scanner:**
 
 - **For Ubuntu/Debian (.deb):**
-    
+
     ```bash
     cd $HOME/Downloads/
     sudo dpkg -i ipscan_*.deb
     sudo apt-get install -f # Fix dependencies
     ```
-    
+
 - **For fedora/redhat (.rpm):**
-	
+
   ```bash
 	cd $HOME/Downloads/
     sudo rpm -i ipscan_*.deb
   ```
-	
+
 - **Running the Executable Jar:** If you use the Jar version, run: `java -jar <jar-file>`. _(Note: You may need the `swt.jar` from the Eclipse SWT Project in your classpath)._
-    
+
 
 **4. Scanning the Network:**
 
 - Open Angry IP Scanner (`ipscan` in terminal).
-    
+
 - **Tip:** Sort results by **Ping**.
-    
+
 - Locate your Raspberry Pi and use its IP to connect.
-    
+
 - _Note for 32-bit ARM users:_ You might need an older 32-bit build of SWT.
-    
+
 ---
-## 4. Connecting with GUI (VNC)
+## Connecting with Gui (vnc)
 
 If you want to access your Raspberry Pi using a graphical desktop, you can use **VNC (Virtual Network Computing)**.
 
-### Choosing a VNC Viewer: TigerVNC vs. RealVNC
+### Choosing a Vnc Viewer: Tigervnc vs. Realvnc
 
 |Feature|TigerVNC|RealVNC Viewer|
 |---|---|---|
@@ -174,36 +174,36 @@ If you want to access your Raspberry Pi using a graphical desktop, you can use *
 |**Interface**|Utilitarian, functional|User-friendly, polished|
 |**Best For**|Performance, Linux purists|Ease of use, beginners|
 
-### Step 1: Install a VNC Viewer on Your PC
+### Step 1: Install a Vnc Viewer on Your Pc
 
-#### Option A: Install TigerVNC (Open Source)
+#### Option A: Install Tigervnc (open Source)
 
 - **On Fedora:** `sudo dnf install tigervnc`
-    
-- **On Ubuntu:** `sudo apt install tigervnc-standalone-server tigervnc-viewer`
-    
-- **To Run:** Type `vncviewer` or `tigervnc` in the terminal.
-    
 
-#### Option B: Install RealVNC Viewer (User Friendly)
+- **On Ubuntu:** `sudo apt install tigervnc-standalone-server tigervnc-viewer`
+
+- **To Run:** Type `vncviewer` or `tigervnc` in the terminal.
+
+
+#### Option B: Install Realvnc Viewer (user Friendly)
 
 1. Download from: [https://www.realvnc.com/en/connect/download/viewer/linux/](https://www.realvnc.com/en/connect/download/viewer/linux/ "null")
-    
+
 2. **On Ubuntu/Debian:**
-    
+
     ```bash
     sudo dpkg -i VNC-Viewer-*-Linux-x64.deb
     sudo apt-get install -f
     ```
-    
+
 3. **On Fedora/RedHat:**
-    
+
     ```bash
     sudo rpm -ivh VNC-Viewer-*-Linux.rpm
     ```
-    
 
-### Step 2: Enable VNC on the Raspberry Pi
+
+### Step 2: Enable Vnc on the Raspberry Pi
 
 Connect to your Pi via terminal/SSH and run:
 
@@ -214,35 +214,35 @@ sudo raspi-config
 Follow this exact order to enable it correctly:
 
 1. **Enable Desktop Auto-Login:**
-    
-    - Go to **System Options** -> **Boot / Auto Login**.
-        
-    - Select **Desktop Autologin** (Desktop GUI).
-        
-    - _(This ensures the desktop environment loads so VNC can see it)._
-        
-2. **Enable VNC Server:**
-    
-    - Go to **Interface Options** -> **VNC**.
-        
-    - Select **Yes** (Enable).
-        
-3. **Finish & Reboot.**
-    
 
-### Step 3: Connect Through VNC Viewer
+    - Go to **System Options** -> **Boot / Auto Login**.
+
+    - Select **Desktop Autologin** (Desktop GUI).
+
+    - _(This ensures the desktop environment loads so VNC can see it)._
+
+2. **Enable VNC Server:**
+
+    - Go to **Interface Options** -> **VNC**.
+
+    - Select **Yes** (Enable).
+
+3. **Finish & Reboot.**
+
+
+### Step 3: Connect Through Vnc Viewer
 
 1. Open your VNC Viewer.
-    
+
 2. Enter the **IP address** of your Raspberry Pi.
-    
+
 3. Enter your Raspberry Pi **username and password**.
-    
+
 4. You now have full GUI access.
-    
+
 
 ---
-## 5. Remote Access via Web (Raspberry Pi Connect)
+## Remote Access Via Web (raspberry Pi Connect)
 
 **Raspberry Pi Connect** allows you to access your device's desktop directly from a web browser anywhere, without needing to configure port forwarding or VNC.
 
@@ -258,7 +258,7 @@ sudo apt install rpi-connect
 
 Start the sign-in process:
 
-```bash
+```text
 # if it not enable enabel it at first
 rpi-connect on
 # and after that
@@ -268,116 +268,116 @@ rpi-connect signin
 ### Step 3: Link Your Device
 
 1. The terminal will generate a unique **verification URL**.
-    
+
 2. Copy this link and paste it into a web browser on your computer.
-    
+
 3. Sign in with your **Raspberry Pi ID** (or create one) to link the device.
-    
+
 4. Once linked, access your Pi remotely via the web dashboard.
-    
+
 
 ---
-## 6. Network Fallback: Creating a Wireless Hotspot
+## Network Fallback: Creating a Wireless Hotspot
 
 If you need to move your Raspberry Pi to a new location where the configured Wi-Fi is unavailable (e.g., from home to work), you can configure the Pi to broadcast its own Hotspot as a backup.
 
-### Steps to Configure (via GUI/VNC):
+### Steps to Configure (via Gui/vnc):
 
 1. **Create the Hotspot:**
-    
-    - Click the **Network Icon** in the system tray (top right).
-        
-    - Select **Advanced Options** -> **Create Wireless Hotspot**.
-        
-    - Follow the prompts to create a normal hotspot.
-        
-    - **Connect Laptop:** Connect your laptop to this new Hotspot network.
-        
-    - **Find Gateway IP:** Open **Angry IP Scanner** (or check your connection details). The **Gateway IP** address you see is the IP address of your Raspberry Pi. Use this IP to connect via SSH or VNC.
-        
-2. **Make it Persistent (Fallback Mode):**
-    
-    - By default, the hotspot might not restart automatically after a reboot. To fix this:
-        
-    - Go back to **Advanced Options** -> **Edit Connections**.
-        
-    - Double-click on the hotspot profile you just created.
-        
-    - Go to the **General** tab.
-        
-    - Check the box for **Connect automatically with priority**.
-        
-    - Set the **Priority** to `0`.
-        
-3. **Switch to Local Wi-Fi:**
-    
-    - Once connected to the Pi via the Hotspot, you can connect it to the new location's internet.
-        
-    - Click the **Network Icon**.
-        
-    - Select the local Wi-Fi network (or choose **Connect to Hidden Wireless Network** if applicable).
-        
-    - Since the Hotspot has priority 0, the Pi will prefer this new connection next time it boots if available.
-        
 
-### Why set Priority to 0?
+    - Click the **Network Icon** in the system tray (top right).
+
+    - Select **Advanced Options** -> **Create Wireless Hotspot**.
+
+    - Follow the prompts to create a normal hotspot.
+
+    - **Connect Laptop:** Connect your laptop to this new Hotspot network.
+
+    - **Find Gateway IP:** Open **Angry IP Scanner** (or check your connection details). The **Gateway IP** address you see is the IP address of your Raspberry Pi. Use this IP to connect via SSH or VNC.
+
+2. **Make it Persistent (Fallback Mode):**
+
+    - By default, the hotspot might not restart automatically after a reboot. To fix this:
+
+    - Go back to **Advanced Options** -> **Edit Connections**.
+
+    - Double-click on the hotspot profile you just created.
+
+    - Go to the **General** tab.
+
+    - Check the box for **Connect automatically with priority**.
+
+    - Set the **Priority** to `0`.
+
+3. **Switch to Local Wi-Fi:**
+
+    - Once connected to the Pi via the Hotspot, you can connect it to the new location's internet.
+
+    - Click the **Network Icon**.
+
+    - Select the local Wi-Fi network (or choose **Connect to Hidden Wireless Network** if applicable).
+
+    - Since the Hotspot has priority 0, the Pi will prefer this new connection next time it boots if available.
+
+
+### Why Set Priority to 0?
 
 This tells the Raspberry Pi to search for your known Wi-Fi networks (which have a higher default priority) first. If it cannot find them (because you changed location), it will fall back to Priority `0`, start the Hotspot, and allow you to connect to it directly to reconfigure your settings.
 
 ---
-## 7. Connect over Ethernet (Internet Sharing)
+## Connect Over Ethernet (internet Sharing)
 
 If you don't have Wi-Fi, you can connect the Raspberry Pi directly to your laptop via an Ethernet cable and share your laptop's internet connection.
 
-### Step 1: Configure Your Laptop (Linux)
+### Step 1: Configure Your Laptop (linux)
 
 1. Go to **Settings** -> **Network**.
-    
-2. Find the **Wired** connection section and click the **+** (plus) icon to add a new profile.
-    
-3. **Identity Tab:** Give it a name (e.g., "Shared RPi").
-    
-4. **IPv4 Tab:**
-    
-    - Change "IPv4 Method" to **Shared to other computers**.
-        
-    - _(This allows your laptop to act as a router for the Pi, giving it an IP address and internet access)._
-        
-5. Save/Apply the settings.
-    
 
-### Step 2: Connect and Find IP
+2. Find the **Wired** connection section and click the **+** (plus) icon to add a new profile.
+
+3. **Identity Tab:** Give it a name (e.g., "Shared RPi").
+
+4. **IPv4 Tab:**
+
+    - Change "IPv4 Method" to **Shared to other computers**.
+
+    - _(This allows your laptop to act as a router for the Pi, giving it an IP address and internet access)._
+
+5. Save/Apply the settings.
+
+
+### Step 2: Connect and Find Ip
 
 1. Connect the Raspberry Pi to your laptop using an Ethernet cable.
-    
+
 2. The Pi should now have an internet connection bridged from your laptop.
-    
+
 3. To find the Pi's IP address:
-    
+
     - Open **Angry IP Scanner**.
-        
+
     - Select your Ethernet interface in the preferences (or scan the local range).
-        
+
     - Look for the Pi's hostname.
-        
+
 4. Alternatively, try connecting directly via SSH:
-    
+
     ```bash
     ssh username@hostname.local
     ```
 
 ---
-## 8. Connect to Raspberry Pi from Different Wi‑Fi Networks (Using Tailscale)
+## Connect to Raspberry Pi From Different Wifi Networks (using Tailscale)
 
 Access your Raspberry Pi securely from _any network_ without needing port‑forwarding, static IP, or router access.
 
 ---
 
-### ✅ Step 1 — Install Tailscale on Raspberry Pi
+### Step 1 Install Tailscale on Raspberry Pi
 
 Open terminal on the Raspberry Pi and run:
 
-```bash
+```text
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 ```
@@ -388,34 +388,34 @@ It will generate a **login link** → open it and sign in using Google / GitHub.
 
 ---
 
-### ✅ Step 2 — Install Tailscale on Your Laptop / PC
+### Step 2 Install Tailscale on Your Laptop / Pc
 
 Run the same commands on your laptop (Linux/macOS). On Windows, simply download the Tailscale app and sign in.
 
-```bash
+```text
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 ```
 
 ---
 
-### ✅ Step 3 — Get Your Private Tailscale IP
+### Step 3 Get Your Private Tailscale Ip
 
 On **Raspberry Pi**:
 
-```bash
+```text
 tailscale ip
 ```
 
 On **Laptop/PC**:
 
-```bash
+```text
 tailscale status
 ```
 
 You will get an IP like:
 
-```
+```text
 100.x.x.x
 ```
 
@@ -423,17 +423,17 @@ This is your secure private network address.
 
 ---
 
-### ✅ Step 4 — Connect via SSH
+### Step 4 Connect Via Ssh
 
 From your laptop:
 
-```bash
+```text
 ssh pi@100.xxx.xxx.xxx
 ```
 
 Default user (if not changed):
 
-```bash
+```text
 username: pi
 password: raspberry
 ```
@@ -442,11 +442,11 @@ password: raspberry
 
 ---
 
-### ℹ️ Useful Commands
+### Useful Commands
 
 **View devices connected to your Tailnet:**
 
-```bash
+```text
 tailscale status
 ```
 
@@ -469,24 +469,24 @@ sudo systemctl start tailscaled.service
 ```
 ---
 
-### 🎯 Notes & Tips
+### Notes & Tips
 
 - Works behind NAT/CGNAT — no router setup needed
-    
+
 - Fully encrypted peer‑to‑peer connection
-    
+
 - Works on Windows • Linux • macOS • Android • iOS
-    
+
 - Can also be used for VNC / Remote Desktop / File Transfer
-    
+
 
 ---
-## 9. References
+## References
 
 - [Raspberry Pi Software](https://www.raspberrypi.com/software/ "null")
-    
+
 - [Angry IP Scanner Download](https://angryip.org/download/#linux "null")
-    
+
 - [RealVNC Viewer Download](https://www.realvnc.com/en/connect/download/viewer/linux/ "null")
-    
+
 - [TigerVNC Project](https://tigervnc.org/ "null")

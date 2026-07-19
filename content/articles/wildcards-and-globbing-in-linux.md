@@ -15,7 +15,7 @@ author: abdallah-shehawey
 
 A practical, system-level guide to understanding **wildcards (globbing)** in the Linux command line — how globbing really works, how shells differ, and the pitfalls worth knowing.
 
-## 1. What wildcards really are
+## What wildcards really are
 
 Wildcards are **pattern-matching characters expanded by the shell itself**, not by commands like `ls`, `cp`, or `rm`.
 
@@ -32,7 +32,7 @@ ls file1.txt file2.txt
 
 Commands never see wildcards — they only receive expanded filenames.
 
-## 2. Globbing vs. regular expressions
+## Globbing vs. regular expressions
 
 | Feature    | Wildcards (Globs) | Regex   |
 | ----------- | ------------------ | ------- |
@@ -48,11 +48,11 @@ ls .*txt        # glob
 ls | grep .*txt # regex
 ```
 
-## 3. Expansion order (important)
+## Expansion order (important)
 
 Shell expansion happens in a defined order: brace expansion `{}` → tilde expansion `~` → parameter expansion `$VAR` → command substitution `$( )` → pathname expansion (globbing) → quote removal. This affects correctness and safety.
 
-## 4. Types of wildcards
+## Types of wildcards
 
 ### Asterisk `*`
 
@@ -79,7 +79,7 @@ file[a-z].txt
 file[!0-9].txt   # NOT digits
 ```
 
-## 5. Brace expansion `{}` (not a wildcard!)
+## Brace expansion `{}` (not a wildcard!)
 
 Brace expansion generates strings **before** globbing.
 
@@ -98,7 +98,7 @@ echo {a..d}
 echo {01..10}
 ```
 
-## 6. Advanced globbing patterns
+## Advanced globbing patterns
 
 Enable extended globbing:
 
@@ -113,7 +113,7 @@ shopt -s extglob
 
 Requires Bash or Zsh.
 
-## 7. Hidden files and dotfiles
+## Hidden files and dotfiles
 
 `*` does NOT match `.hidden`. `.*` matches dotfiles, but also `.` and `..`.
 
@@ -123,7 +123,7 @@ Safe pattern:
 ls .[^.]*
 ```
 
-## 8. Recursive globbing `**`
+## Recursive globbing `**`
 
 ```bash
 shopt -s globstar
@@ -136,7 +136,7 @@ Conceptually equivalent to:
 find . -name "*.c"
 ```
 
-## 9. Wildcards with common commands
+## Wildcards with common commands
 
 ```bash
 cp *.txt /backup/
@@ -151,7 +151,7 @@ Always test first:
 echo rm *.log
 ```
 
-## 10. Wildcards vs. `find`
+## Wildcards vs. `find`
 
 | Use Case                | Wildcards | find |
 | ------------------------ | --------- | ---- |
@@ -161,7 +161,7 @@ echo rm *.log
 
 Use globs for simple cases, `find` for complex logic.
 
-## 11. Quoting & escaping
+## Quoting & escaping
 
 Disable expansion completely:
 
@@ -181,7 +181,7 @@ Why it matters:
 rm "$file"
 ```
 
-## 12. Safety techniques (very important)
+## Safety techniques (very important)
 
 Dry-run everything:
 
@@ -201,7 +201,7 @@ Prevent dangerous deletes:
 rm -- -file.txt
 ```
 
-## 13. Performance considerations
+## Performance considerations
 
 Globbing happens before execution; large directories mean memory expansion cost. Use `find` for thousands of files.
 
@@ -209,7 +209,7 @@ Globbing happens before execution; large directories mean memory expansion cost.
 getconf ARG_MAX
 ```
 
-## 14. Shell differences
+## Shell differences
 
 | Feature          | sh  | bash | zsh |
 | ----------------- | --- | ---- | --- |
@@ -218,7 +218,7 @@ getconf ARG_MAX
 | Extended glob     | No  | Yes  | Yes |
 | Safer defaults    | No  | No   | Yes |
 
-## 15. Real-world use cases
+## Real-world use cases
 
 ```bash
 # Cleanup logs
@@ -231,11 +231,11 @@ mkdir -p app/{src,bin,docs,tests}
 echo mv *.jpeg *.jpg
 ```
 
-## 16. Common mistakes
+## Common mistakes
 
 Believing commands interpret wildcards, forgetting hidden files, mixing regex with glob syntax, and unquoted variables.
 
-## 17. Exercises
+## Exercises
 
 Beginner:
 

@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Swap space is what the kernel falls back to when RAM fills up: inactive memory pages get moved out to disk instead of the system triggering an out-of-memory kill. It's slower than RAM, but it's the difference between a heavy workload merely slowing down versus crashing outright. This walks through creating, securing, and enabling a 16GB swap file.
 
-## 1. Disable any existing swap
+## Disable Any Existing Swap
 
 Start from a clean slate, especially if replacing or resizing an existing swap file:
 
@@ -22,7 +22,7 @@ sudo swapoff -a
 
 `-a` disables every swap device listed in `/proc/swaps`.
 
-## 2. Allocate the swap file
+## Allocate the Swap File
 
 ```bash
 sudo fallocate -l 16G /swapfile
@@ -30,7 +30,7 @@ sudo fallocate -l 16G /swapfile
 
 `fallocate` pre-allocates the space directly — much faster than the older `dd if=/dev/zero` approach.
 
-## 3. Secure it
+## Secure It
 
 Swap can contain data moved straight out of RAM, including things like passwords held in memory — so the file must only be readable by root:
 
@@ -40,7 +40,7 @@ sudo chmod 600 /swapfile
 
 `600` means read/write for the owner (root) only; no permissions for group or others.
 
-## 4. Format it as swap
+## Format it as Swap
 
 ```bash
 sudo mkswap /swapfile
@@ -48,13 +48,13 @@ sudo mkswap /swapfile
 
 This sets up the file as a Linux swap area so the kernel recognizes it as valid swap storage.
 
-## 5. Enable it for the current session
+## Enable it for the Current Session
 
 ```bash
 sudo swapon /swapfile
 ```
 
-## 6. Make it persistent across reboots
+## Make it Persistent Across Reboots
 
 The steps above only take effect until the next reboot. To have it load automatically at boot, add it to `/etc/fstab`:
 
@@ -63,14 +63,14 @@ sudo cp /etc/fstab /etc/fstab.bak
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-## 7. Verify
+## Verify
 
 ```bash
 sudo swapon --show    # should list /swapfile with SIZE 16G
 free -h                # check the Swap: row for total/used
 ```
 
-## 8. Removing it later
+## Removing it Later
 
 ```bash
 sudo swapoff -v /swapfile

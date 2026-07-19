@@ -1,5 +1,5 @@
 ---
-title: "\U0001FA84 Magic Numbers in Linux — Deep Systems Guide"
+title: Magic Numbers in Linux Deep Systems Guide
 description: >-
   A low-level, systems-oriented, production-grade guide to understanding how
   Linux determines file types using magic numbers. This document goes far beyond
@@ -10,81 +10,81 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-A **low-level, systems-oriented, production-grade guide** to understanding how Linux determines file types using **magic numbers**.  
+A **low-level, systems-oriented, production-grade guide** to understanding how Linux determines file types using **magic numbers**.
 This document goes far beyond basic definitions and explains **kernel vs user-space behavior, libmagic internals, binary layouts, security implications, and real system programming workflows**.
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
 1. What Magic Numbers Really Are
-    
+
 2. Why File Extensions Are Unreliable
-    
+
 3. Magic Numbers vs MIME Types
-    
+
 4. Kernel vs User Space File Identification
-    
+
 5. libmagic Architecture (How `file` Really Works)
-    
+
 6. File Header Layouts & Binary Structure
-    
+
 7. Common Magic Numbers (Extended Reference)
-    
+
 8. ELF Internals & Program Headers
-    
+
 9. Executable Formats & Interpreters (Shebang)
-    
+
 10. Disk Structures as Magic Numbers (MBR & GPT)
-    
+
 11. Inspecting Files at Byte Level
-    
+
 12. Writing Reliable File Detectors
-    
+
 13. Custom Magic Files (Advanced Patterns)
-    
+
 14. Security Implications & Content Sniffing
-    
+
 15. Reverse Engineering with Magic Numbers
-    
+
 16. Cross-Platform Considerations
-    
+
 17. Performance & Scaling Considerations
-    
+
 18. Practical Labs (Beginner → Advanced)
-    
+
 19. Further Reading & Research Directions
-    
+
 
 ---
 
-## 1️⃣ What Magic Numbers _Really_ Are
+## What Magic Numbers _really_ Are
 
 Magic numbers are **constant byte sequences embedded into binary data structures** to provide **early identification hints** for:
 
 - File formats
-    
+
 - Executables
-    
+
 - Disk layouts
-    
+
 - Network protocols
-    
+
 
 They act as a _weak contract_ between producers and consumers of binary data.
 
 Key properties:
 
 - Positioned at **well-known offsets**
-    
+
 - **Endian-aware** when numeric
-    
+
 - Designed for **fast rejection** of invalid data
-    
+
 
 ---
 
-## 2️⃣ Why File Extensions Fail
+## Why File Extensions Fail
 
 |Problem|Explanation|
 |---|---|
@@ -96,7 +96,7 @@ Linux always trusts **content over name**.
 
 ---
 
-## 3️⃣ Magic Numbers vs MIME Types
+## Magic Numbers vs Mime Types
 
 |Aspect|Magic Numbers|MIME|
 |---|---|---|
@@ -108,31 +108,31 @@ Linux always trusts **content over name**.
 
 ---
 
-## 4️⃣ Kernel vs User Space Detection
+## Kernel vs User Space Detection
 
 ### Kernel
 
 - Does **not** rely on file magic
-    
+
 - Executes ELF only if loaders exist
-    
+
 - Uses **shebang (`#!`)** interception
-    
+
 
 ### User Space
 
 - `file`, desktops, scanners
-    
+
 - Powered by **libmagic**
-    
+
 
 ---
 
-## 5️⃣ libmagic Architecture
+## Libmagic Architecture
 
 Execution pipeline:
 
-```
+```text
 open() → read() → pattern engine
      → indirect offsets
      → strength scoring
@@ -142,19 +142,19 @@ open() → read() → pattern engine
 Capabilities:
 
 - Conditional rules
-    
+
 - Nested patterns
-    
+
 - Offset arithmetic
-    
+
 
 ---
 
-## 6️⃣ File Header Layouts
+## File Header Layouts
 
 Example (PNG):
 
-```
+```text
 Offset  Size  Meaning
 0x00    8     Signature
 0x08    4     IHDR length
@@ -164,7 +164,7 @@ Magic numbers rarely act alone — they validate **structure presence**, not ful
 
 ---
 
-## 7️⃣ Common Magic Numbers (Extended)
+## Common Magic Numbers (extended)
 
 |Format|Hex|Offset|
 |---|---|---|
@@ -178,67 +178,67 @@ Notice: not all magic appears at offset 0.
 
 ---
 
-## 8️⃣ ELF Internals
+## Elf Internals
 
 Beyond magic:
 
 - e_ident[EI_CLASS]
-    
+
 - e_ident[EI_DATA]
-    
+
 - Program headers
-    
+
 
 Use:
 
-```bash
+```text
 readelf -h file
 ```
 
 ---
 
-## 9️⃣ Executable Detection & Shebang
+## Executable Detection & Shebang
 
 `#!` works by kernel loader redirection:
 
-```
+```python
 #! /usr/bin/python3
 ```
 
 Kernel steps:
 
 1. Reads first 2 bytes
-    
+
 2. Parses interpreter path
-    
+
 3. Re-execs
-    
+
 
 ---
 
-## 🔟 Disk Structures as Magic Numbers
+## Disk Structures as Magic Numbers
 
-### MBR
+### Mbr
 
 - Offset 510 → `0x55AA`
-    
 
-### GPT
+
+### Gpt
 
 - Primary header at LBA 1
-    
+
 - Magic = `EFI PART`
-    
+
 
 Disk formats **are file formats**.
 
 ---
 
-## 1️⃣1️⃣ Byte-Level Inspection
+## Byte-level Inspection
 
 Essential tools:
 
-```bash
+```text
 xxd -l 64 file
 hexdump -C file
 od -An -tx1 file
@@ -246,17 +246,17 @@ od -An -tx1 file
 
 ---
 
-## 1️⃣2️⃣ Writing File Detectors
+## Writing File Detectors
 
 Python example:
 
-```python
+```ini
 magic = f.read(4)
 ```
 
 C example:
 
-```c
+```text
 memcmp(buf, "\x7FELF", 4)
 ```
 
@@ -264,71 +264,71 @@ Avoid trusting magic alone.
 
 ---
 
-## 1️⃣3️⃣ Advanced Magic Files
+## Advanced Magic Files
 
 Features:
 
 - Indirect offsets
-    
+
 - Numeric comparisons
-    
+
 - Strength modifiers
-    
+
 
 Example:
 
-```
+```ini
 0  string  ELF
 >4 byte =2 64-bit ELF
 ```
 
 ---
 
-## 1️⃣4️⃣ Security Implications
+## Security Implications
 
 Threats:
 
 - Polyglot files
-    
+
 - Content spoofing
-    
+
 - Malformed headers
-    
+
 
 Mitigations:
 
 - Full structure validation
-    
+
 - Size & bounds checking
-    
+
 - Sandboxing
-    
+
 
 ---
 
-## 1️⃣5️⃣ Reverse Engineering
+## Reverse Engineering
 
 Magic numbers help identify:
 
 - Packed binaries
-    
+
 - Firmware
-    
+
 - Unknown dumps
-    
+
 
 Paired with:
 
 - `binwalk`
-    
+
 - `strings`
-    
+
 - `radare2`
-    
+
 
 ---
 
-## 1️⃣6️⃣ Cross-Platform Notes
+## Cross-platform Notes
 
 |OS|Format|
 |---|---|
@@ -340,38 +340,38 @@ Multi-format binaries exist.
 
 ---
 
-## 1️⃣7️⃣ Performance Considerations
+## Performance Considerations
 
 - Early short-circuit
-    
+
 - Read minimal bytes
-    
+
 - Cache detection results
-    
+
 
 Used heavily by antivirus engines.
 
 ---
 
-## 1️⃣8️⃣ Practical Labs
+## Practical Labs
 
-Beginner → dump headers  
-Intermediate → parse MBR  
-Advanced → implement detector  
+Beginner → dump headers
+Intermediate → parse MBR
+Advanced → implement detector
 Expert → fuzz malformed headers
 
 ---
 
-## 1️⃣9️⃣ Further Reading
+## Further Reading
 
 - `man magic`
-    
+
 - libmagic source
-    
+
 - OSDev Wiki
-    
+
 - ELF Specification
-    
+
 
 ---
 

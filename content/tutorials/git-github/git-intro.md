@@ -10,13 +10,13 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## 1. What is Git?
+## What is Git?
 
 Git is a **free and open-source, distributed version control system (VCS)** designed to handle everything from small to very large projects with speed and efficiency.
 
 - **Distributed:** Unlike older systems, every developer has a full copy of the project history on their local machine, not just a snapshot of the latest code.
 
-## 2. Key Advantages
+## Key Advantages
 
 Git provides two primary benefits that are essential for any development workflow:
 
@@ -26,7 +26,7 @@ Git provides two primary benefits that are essential for any development workflo
 
     - Git keeps a detailed log of every change made to the files. You can see exactly what was changed, when it happened, and why (through commit messages).
 
-## 3. The "Local" Limitation
+## The "local" Limitation
 
 While Git is powerful, it has one significant drawback when used in isolation:
 

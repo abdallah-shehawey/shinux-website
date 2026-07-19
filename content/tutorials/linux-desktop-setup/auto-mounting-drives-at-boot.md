@@ -1,5 +1,5 @@
 ---
-title: Auto-Mounting Drives at Boot
+title: Auto-mounting Drives at Boot
 description: >-
   Secondary drives — an NTFS Windows partition, a shared data disk — don't mount
   themselves on every boot unless /etc/fstab tells the kernel to do it. This
@@ -18,7 +18,7 @@ Secondary drives — an NTFS Windows partition, a shared data disk — don't mou
 > sudo cp /etc/fstab /etc/fstab.bak
 > ```
 
-## 1. Find the partition's UUID and filesystem type
+## Find the Partition's Uuid and Filesystem Type
 
 ```bash
 sudo blkid
@@ -26,23 +26,23 @@ sudo blkid
 
 This prints each partition's **UUID** (e.g. `7C9EBC0D9EBBBE48`) and **TYPE** (e.g. `ntfs`, `ext4`, `exfat`) — both needed for the fstab entry.
 
-## 2. Edit `/etc/fstab`
+## Edit `/etc/fstab`
 
 ```bash
 sudo nvim /etc/fstab
 ```
 
-## 3. Add the mount entry
+## Add the Mount Entry
 
 General syntax:
 
-```bash
+```ini
 UUID=<uuid> <mount_point> <filesystem_type> <options> <dump> <pass>
 ```
 
 For NTFS partitions specifically, these options avoid the usual permission headaches:
 
-```bash
+```ini
 # Mount Local_Disk
 UUID=7C9EBC0D9EBBBE48 /media/abdallah-shehawey/Local_Disk ntfs-3g defaults,nofail,x-gvfs-show,uid=1000,gid=1000,umask=0022 0 0
 
@@ -64,7 +64,7 @@ sudo mkdir -p /media/abdallah-shehawey/Local_Disk
 - `uid=1000,gid=1000` — makes the primary user the owner of the files, so reads/writes don't need root.
 - `umask=0022` — the default permission mask for new files on the mount.
 
-## 4. Verify before rebooting
+## Verify Before Rebooting
 
 Don't reboot yet — a typo in `fstab` can otherwise leave the system stuck at boot. Instead, mount everything fstab defines and check for errors:
 

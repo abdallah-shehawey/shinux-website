@@ -15,19 +15,19 @@ A guide explaining the fundamental concepts of Bash scripting.
 To run Bash commands interactively in a notebook environment, you can install Jupyter and the bash_kernel.
 
 1. **Install pip** (Example for Fedora/RHEL systems):
-    
+
     ```bash
     sudo dnf install python3-pip
     ```
-    
+
 2. **Install the bash_kernel**:
-    
+
     ```bash
     pip install bash_kernel
     ```
-    
+
 3. **Install the kernel into Jupyter**:
-    
+
     ```bash
     python3 -m bash_kernel.install
     ```
@@ -48,19 +48,19 @@ For example, to use Bash:
 
 **Local Variable** A variable that is only available within the script where it is defined.
 
-```bash
+```ini
 VAR="Value"
 ```
 
 **Global Variable** To make a variable available to any sub-shells or child processes, you must `export` it.
 
-```bash
+```ini
 export VAR="Value"
 ```
 
 **Using `declare`** You can use the `declare` command to explicitly state the type of variable or set attributes.
 
-```bash
+```ini
 # Integer value: Forces the variable to be treated as a number
 declare -i num=16
 # num="text"                  # This would be treated as 0 because it expects an integer
@@ -98,27 +98,27 @@ declare -p names              # Useful for debugging to see array content
 There are three common ways to execute a Bash script:
 
 1. **Make the file executable** This method requires the script to have a shebang.
-    
+
     ```bash
     # 1. Add execute permissions to the file
     chmod +x your_script_name.sh
-    
+
     # 2. Run the script
     ./your_script_name.sh
     ```
-    
+
 2. **Using the `bash` command** This runs the script in a new sub-shell. Environment variables changed by the script will **not** affect your current shell.
-    
+
     ```bash
     bash your_script_name.sh
     ```
-    
+
 3. **Using the `source` command** This runs the script in the _current_ shell. Any environment variables changed by the script **will** affect your current shell.
-    
+
     ```bash
     source your_script_name.sh
     ```
-    
+
 ---
 ### User Input
 
@@ -126,13 +126,13 @@ You can get input from the user with the `read` command.
 
 **Reading Input** The `-p` flag is used to display a prompt message without a newline. The `-s` flag makes the input silent (for passwords), and `-r` prevents backslash interpretation.
 
-```bash
+```text
 read -rp "Please enter your name: " user_name
 ```
 
 **Printing Output** Use the `echo` command to print the variable's value. You must prefix the variable name with a `$`.
 
-```bash
+```text
 # Print just the variable
 echo $user_name
 
@@ -141,38 +141,38 @@ echo "Hello, $user_name!"
 ```
 
 ---
-### Command-Line Arguments
+### Command-line Arguments
 
 You can pass arguments to your script when you run it from the command line.
 
 For example:
 
-```bash
+```text
 ./your_script.sh argument1 "argument 2"
 ```
 
 Inside the script, you can access these arguments using special variables:
 
 - `$#`: Stores the total number of arguments.
-    
+
     ```bash
     # This command prints the number of arguments
     echo "You provided $# arguments."
     ```
-    
+
 - `$0`: The name of the script itself.
-    
+
 - `$1`, `$2`, etc.: The arguments themselves. `$1` is the first argument, `$2` is the second, and so on.
-    
+
     ```bash
     # This command prints the first argument
     echo "The first argument is: $1"
     ```
-    
+
 - `$*`: Expands to all the arguments as a single string (arguments are separated by the first character of the IFS special variable, typically a space).
-    
+
 - `$@`: Expands to all the arguments as separate words. This is useful for iterating over all the arguments.
-    
+
     ```bash
     # This command loops through all the arguments and prints them one by one
     for arg in "$@"
@@ -180,48 +180,48 @@ Inside the script, you can access these arguments using special variables:
         echo "Argument: $arg"
     done
     ```
-    
+
 ---
 ### Quoting
 
 The difference between single and double quotes is very important in Bash.
 
 1. **Single Quotes (`'`)** Everything inside single quotes is treated as a literal string. No variable expansion or command substitution will occur.
-    
+
     ```bash
     VAR="World"
     echo 'Hello, $VAR'
     # Output: Hello, $VAR
     ```
-    
+
 2. **Double Quotes (`"`)** Double quotes allow for variable expansion and command substitution. Special characters are interpreted.
-    
+
     ```bash
     VAR="World"
     echo "Hello, $VAR"
     # Output: Hello, World
     ```
-    
+
     You can also run commands inside double quotes using `$(...)`:
-    
+
     ```bash
     # This will print "test " followed by the output of the ls command
     echo "test $(ls)"
     ```
-    
+
     To print a special character literally inside double quotes, you can escape it with a backslash (`\`):
-    
+
     ```bash
     # This will print "hello $(ls)" literally
     echo "hello \$(ls)"
     ```
-    
+
 ---
 ### Word Splitting
 
 When a variable contains spaces and is used without quotes, Bash performs "word splitting" and treats each word as a separate argument.
 
-```bash
+```ini
 VARA=Hello
 VARB="Hello There"
 
@@ -240,7 +240,7 @@ mkdir "$VARB" # This creates one directory named "Hello There"
 
 To perform math in Bash, use the `$((...))` arithmetic expansion syntax.
 
-```bash
+```ini
 x=10
 y=5
 
@@ -286,14 +286,14 @@ echo $num ^ 4 | bc  # using bc
 
 There are two main ways to handle conditions in Bash: `if` statements and `case` statements.
 
-#### 1. `if` Statements
+#### `if` Statements
 
 The `if` statement allows you to execute code based on a condition.
 
 **Syntax:**
 
 - **Multi-line (Recommended):**
-    
+
     ```bash
     if [[ condition ]]
     then
@@ -308,43 +308,43 @@ The `if` statement allows you to execute code based on a condition.
         # statement to execute if no conditions are true
     fi
     ```
-    
+
 - **Single-line:**
-    
+
     ```bash
     if [[ condition ]]; then echo "True"; else echo "False"; fi
     ```
-    
+
 ---
 **Understanding Test Expressions: `[ ]` vs `[[ ]]`**
 
 Bash provides two primary ways to evaluate test expressions: `[ ]` (single brackets) and `[[ ]]` (double brackets). Understanding the differences is crucial for writing effective conditional statements.
 
 - **Single Brackets `[ ]`**
-    
+
     - **Usage:** Traditional `test` command.
-        
+
     - **Compatibility:** More portable across different shells (Bourne shell compatible).
-        
+
     - **Limitations:** Less powerful; requires careful quoting of variables to prevent word splitting and globbing issues.
-        
+
 - **Double Brackets `[[ ]]`**
-    
+
     - **Usage:** An enhanced test command specific to Bash.
-        
+
     - **Features:** Prevents word splitting and globbing, supports additional operators like pattern matching (`=~`), and allows logical operators like `&&` and `||` inside.
-        
+
 ---
 #### Logical Operators & Compound Commands
 
 You can use logical operators to combine commands or test results.
 
 - **`&&` (AND):** The second command runs **only if** the first one succeeds (returns 0).
-    
+
 - **`||` (OR):** The second command runs **only if** the first one fails (returns non-zero).
-    
+
 - **`!` (NOT):** Inverts the exit status of a command.
-    
+
 
 **Examples:**
 
@@ -372,7 +372,7 @@ false || echo "False"
 
 The `test` command is functionally equivalent to `[ ]`. It checks file types and compares values.
 
-```bash
+```text
 # Check if a file exists
 test -f /etc/hosts; echo $?
 
@@ -384,14 +384,13 @@ test 1 -le 5; echo $?
 
 ```
 
-
 ---
 **Common Comparison Operators**
 
 Bash offers a variety of operators to compare integers, strings, and file attributes.
 
 - **Numeric Comparison Operators** (for integers)
-    
+
 
 |Operator|Description|
 |---|---|
@@ -422,7 +421,7 @@ fi
 ```
 
 - **String Comparison Operators**
-    
+
 
 |Operator|Description|Works In|
 |---|---|---|
@@ -452,7 +451,7 @@ fi
 ```
 
 - **File & Directory Operators**
-    
+
 
 |Operator|Description|
 |---|---|
@@ -521,15 +520,15 @@ fi
 Every command in Linux returns an **exit status** (also called a return code). This is a number between 0 and 255.
 
 - `0` means the command was successful.
-    
+
 - Any number from `1` to `255` means the command failed.
-    
+
 
 The special variable `$?` always holds the exit status of the _last executed command_. You can use this to check if a command or a condition was successful.
 
 **Example:**
 
-```bash
+```text
 if [[ -f file.txt ]]; then
     echo "The file exists on your system."
     mkdir -p hello_there # This will have an exit status of 0 if it runs well
@@ -549,13 +548,13 @@ fi
 > **Note:** The `[` command is an actual program (or shell builtin). You can learn more about its options by running `man [` in your terminal.
 
 ---
-#### 2. `case` Statements
+#### `case` Statements
 
 The `case` statement is a cleaner way to write multiple `if`/`elif`/`else` conditions when you are checking a single variable against a series of different values (patterns).
 
 **Syntax:**
 
-```bash
+```text
 case $VARIABLE in
     pattern1)
         # commands to execute if VARIABLE matches pattern1
@@ -572,13 +571,13 @@ esac
 **Key Points:**
 
 - The statement starts with `case` and ends with `esac` (case spelled backward).
-    
+
 - Each block of conditions ends with `;;`.
-    
+
 - You can use the pipe `|` to represent an "OR" condition for multiple patterns.
-    
+
 - The `*)` is a wildcard pattern that acts as a default case, similar to `else`.
-    
+
 
 **Example 1: Service Control**
 
@@ -640,7 +639,7 @@ esac
 
 Loops allow you to execute a block of code multiple times. Bash supports `for`, `while`, and `until` loops.
 
-#### 1. `for` Loops
+#### `for` Loops
 
 A `for` loop is used to iterate over a list of items and perform a given set of commands.
 
@@ -667,7 +666,7 @@ done
 
 **Syntax 2: C-style `for` loop**
 
-```bash
+```text
 for (( INITIALIZATION; CONDITION; INCREMENT ))
 do
     # commands to execute
@@ -686,13 +685,13 @@ do
 done
 ```
 
-#### 2. `while` Loops
+#### `while` Loops
 
 A `while` loop executes a block of code as long as a given condition is true.
 
 **Syntax:**
 
-```bash
+```text
 while [[ condition ]]
 do
     # commands to execute
@@ -712,13 +711,13 @@ do
 done
 ```
 
-#### 3. `until` Loops
+#### `until` Loops
 
 An `until` loop is the opposite of a `while` loop. It executes a block of code as long as a given condition is false.
 
 **Syntax:**
 
-```bash
+```text
 until [[ condition ]]
 do
     # commands to execute
@@ -743,9 +742,9 @@ done
 You can control the flow of your loops with the `break` and `continue` statements.
 
 - `break`: Exits the current loop immediately.
-    
+
 - `continue`: Skips the current iteration of the loop and moves to the next one.
-    
+
 
 **Example:**
 
@@ -774,7 +773,7 @@ There are two common ways to define a function.
 
 **Syntax 1:**
 
-```bash
+```text
 function function_name {
     # commands
 }
@@ -782,7 +781,7 @@ function function_name {
 
 **Syntax 2 (more common):**
 
-```bash
+```text
 function_name() {
     # commands
 }
@@ -794,7 +793,7 @@ function_name() {
 
 To run the code inside a function, you simply call it by its name.
 
-```bash
+```text
 function_name
 ```
 
@@ -807,9 +806,9 @@ You can pass arguments to functions just like you do with scripts. Inside the fu
 Bash functions don't return values in the way many other programming languages do. They have two main ways of providing a result:
 
 1. **Return Status:** Using the `return` command, a function can return a numeric exit status (a number from 0 to 255) to the caller. This is useful for indicating success (`return 0`) or failure (any other number). The calling script can check this status using the `$?` variable.
-    
+
 2. **Standard Output:** The most common method is to have the function `echo` or `printf` a result. The calling part of the script can then capture this output using command substitution `$(...)`.
-    
+
 
 **Example 1: Simple Greeting**
 

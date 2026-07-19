@@ -1,5 +1,5 @@
 ---
-title: 'Vidtime: a Tiny CLI for Video Duration'
+title: 'Vidtime: a Tiny Cli for Video Duration'
 description: >-
   vidtime is a small Unix-style command-line tool that prints the duration of
   video files in HH:MM:SS format. It's a good example of wrapping ffprobe into
@@ -12,11 +12,11 @@ author: abdallah-shehawey
 ---
 `vidtime` is a small Unix-style command-line tool that prints the duration of video files in `HH:MM:SS` format. It's a good example of wrapping `ffprobe` into something that feels like a native shell command — handling wildcards, filenames with spaces, and multiple files in one call, while doing exactly one thing.
 
-## 1. Requirements
+## Requirements
 
 `vidtime` only needs `ffprobe`, which ships with FFmpeg:
 
-```bash
+```text
 # Ubuntu / Debian
 sudo apt install ffmpeg
 
@@ -24,7 +24,7 @@ sudo apt install ffmpeg
 sudo dnf install ffmpeg
 ```
 
-## 2. Installation
+## Installation
 
 ```bash
 sudo nano /usr/bin/vidtime
@@ -80,16 +80,16 @@ fi
 sudo chmod +x /usr/bin/vidtime
 ```
 
-## 3. Usage
+## Usage
 
-```bash
+```text
 vidtime "Information theory Lec 3.mp4"                     # single file
 vidtime "Session 06.mkv" "Session 07.mkv"                    # multiple files
 vidtime *.mp4                                                 # wildcards
 vidtime *                                                      # everything in a directory
 ```
 
-## 4. How it works
+## How it Works
 
 - `"$@"` preserves every argument exactly as passed, including ones containing spaces.
 - The shell expands any wildcard pattern before `vidtime` ever sees it.

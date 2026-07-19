@@ -1,5 +1,5 @@
 ---
-title: Linux File Permissions and Ownership — Complete Practical Guide
+title: Linux File Permissions and Ownership Complete Practical Guide
 description: >-
   Linux is a multi-user system, and file permissions are the backbone of its
   security model. Every file and directory is protected by ownership rules that
@@ -42,7 +42,7 @@ Linux permissions are based on **three subjects** and **three actions**.
 
 ## Understanding `ls -l`
 
-```bash
+```text
 -rw-r--r-- 1 alice developers 4096 file.txt
 ```
 
@@ -68,17 +68,17 @@ Linux permissions are based on **three subjects** and **three actions**.
 
 Example:
 
-```bash
+```text
 chmod 755 script.sh
 ```
 
 ---
 
-## chmod — Change Permissions
+## Chmod Change Permissions
 
 ### Symbolic Mode
 
-```bash
+```text
 chmod u+x script.sh
 chmod g-w file.txt
 chmod o-r secret.txt
@@ -86,13 +86,13 @@ chmod o-r secret.txt
 
 ### Numeric Mode
 
-```bash
+```text
 chmod 640 file.txt
 ```
 
 ---
 
-## chown — Change Ownership
+## Chown Change Ownership
 
 ```bash
 sudo chown alice file.txt
@@ -102,7 +102,7 @@ sudo chown -R alice /projects
 
 ---
 
-## chgrp — Change Group
+## Chgrp Change Group
 
 ```bash
 sudo chgrp developers project.txt
@@ -111,7 +111,7 @@ sudo chgrp -R admins /srv
 
 ---
 
-## Directory Permissions (Critical)
+## Directory Permissions (critical)
 
 |Permission|Effect on Directory|
 |---|---|
@@ -123,19 +123,19 @@ sudo chgrp -R admins /srv
 
 ---
 
-## setuid, setgid, sticky bit
+## Setuid, Setgid, Sticky Bit
 
-### setuid
+### Setuid
 
-```bash
+```text
 chmod u+s program
 ```
 
 Program runs as file owner (e.g. passwd).
 
-### setgid
+### Setgid
 
-```bash
+```text
 chmod g+s directory
 ```
 
@@ -143,7 +143,7 @@ New files inherit group.
 
 ### Sticky Bit
 
-```bash
+```text
 chmod +t /tmp
 ```
 
@@ -151,11 +151,11 @@ Prevents deleting others’ files.
 
 ---
 
-## umask
+## Umask
 
 Controls default permissions.
 
-```bash
+```text
 umask
 umask 022
 ```
@@ -165,11 +165,11 @@ umask 022
 ## Permission Resolution Order
 
 1. Owner
-    
+
 2. Group
-    
+
 3. Others
-    
+
 
 The kernel stops at the first match.
 
@@ -178,23 +178,23 @@ The kernel stops at the first match.
 ## Common Permission Mistakes
 
 - Forgetting execute bit on directories
-    
+
 - Overusing `777`
-    
+
 - Ignoring group strategy
-    
+
 
 ---
 
 ## Summary
 
 - Linux permissions are kernel enforced
-    
+
 - Numeric and symbolic modes exist
-    
+
 - Directories behave differently
-    
+
 - Special bits enable enterprise sharing
-    
+
 
 ---

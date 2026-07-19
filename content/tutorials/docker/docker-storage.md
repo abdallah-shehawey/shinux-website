@@ -1,5 +1,5 @@
 ---
-title: 'Docker Storage & Filesystem: The Complete Reference'
+title: 'Docker Storage & Filesystem: the Complete Reference'
 description: >-
   This guide explains how Docker manages data, the internal file system
   structure, the layered architecture (with precise sizes), and how to persist
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide explains how Docker manages data, the internal file system structure, the layered architecture (with precise sizes), and how to persist data using Volumes and Bind Mounts.
 
-## 1. The Docker File System
+## The Docker File System
 
 When you install Docker, it creates a specific directory structure on your Host machine to manage all data.
 
@@ -28,7 +28,7 @@ Inside this directory, you will find the following subdirectories:
 
 - `volumes`: Stores persistent data (This is where Docker volumes live).
 
-## 2. Layered Architecture (Image Building)
+## Layered Architecture (image Building)
 
 Docker images are built using a **Layered Architecture**. Each instruction in the Dockerfile creates a new layer.
 
@@ -60,7 +60,7 @@ ENTRYPOINT FLASK_APP=/opt/source-code/app.py flask run
 
 **Total Size:** ~432 MB
 
-### Scenario B: Building the Second Image (Optimization)
+### Scenario B: Building the Second Image (optimization)
 
 **Command:** `docker build Dockerfile2 –t mmumshad/my-custom-app-2`
 
@@ -88,7 +88,7 @@ ENTRYPOINT FLASK_APP=/opt/source-code/app2.py flask run
 
 **Key Takeaway:** Docker is efficient. It only stores the difference (the new source code layer).
 
-## 3. Container Layer vs. Image Layers
+## Container Layer vs. Image Layers
 
 When you run a container (`docker run`), Docker adds a new layer on top.
 
@@ -120,17 +120,17 @@ When you run a container (`docker run`), Docker adds a new layer on top.
 
 - Data inside it is lost.
 
-## 4. Persisting Data: Volumes
+## Persisting Data: Volumes
 
 To prevent data loss (e.g., losing your MySQL database), we must map the container's data folder to the Host.
 
-### A. Data Volumes (Managed by Docker)
+### A. Data Volumes (managed by Docker)
 
 This is the preferred way. Docker manages the storage location.
 
 **Create Volume:**
 
-```bash
+```text
 docker volume create data_volume
 ```
 
@@ -138,7 +138,7 @@ _(This creates a folder at `/var/lib/docker/volumes/data_volume`)_
 
 **Run with Volume:**
 
-```bash
+```text
 docker run -v data_volume:/var/lib/mysql mysql
 ```
 
@@ -146,13 +146,13 @@ docker run -v data_volume:/var/lib/mysql mysql
 
 - **Result:** Data is saved in `/var/lib/docker/volumes/data_volume`. Even if you delete the container, the volume remains.
 
-### B. Bind Mounts (Host Directory)
+### B. Bind Mounts (host Directory)
 
 This maps a specific folder on your host machine (e.g., your project folder) to the container.
 
 **Run Command:**
 
-```bash
+```text
 docker run -v /data/mysql:/var/lib/mysql mysql
 ```
 
@@ -160,13 +160,13 @@ docker run -v /data/mysql:/var/lib/mysql mysql
 
 - **Use Case:** Development (Editing code on your laptop and seeing changes in the container instantly).
 
-### C. The New Syntax (`--mount`)
+### C. the New Syntax (`--mount`)
 
 This is the modern, verbose way to mount volumes.
 
 **Command:**
 
-```bash
+```ini
 docker run \
   --mount type=bind,source=/data/mysql,target=/var/lib/mysql \
   mysql
@@ -176,7 +176,7 @@ docker run \
 
 - **type=volume:** Use a Docker volume.
 
-## 5. Storage Drivers
+## Storage Drivers
 
 Docker uses Storage Drivers to manage the layered filesystem and the Copy-On-Write mechanism. The driver depends on your OS.
 

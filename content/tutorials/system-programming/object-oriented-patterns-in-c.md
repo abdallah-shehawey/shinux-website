@@ -1,5 +1,5 @@
 ---
-title: Object-Oriented Patterns in C
+title: Object-oriented Patterns in C
 description: >-
   C has no class keyword, no inheritance, no virtual dispatch — and yet embedded
   C codebases reimplement all three constantly, because the underlying need
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 C has no `class` keyword, no inheritance, no virtual dispatch — and yet embedded C codebases reimplement all three constantly, because the underlying need (model a peripheral once, reuse the model across several sensors, swap behavior without an if/else ladder everywhere) doesn't go away just because the language is C. This walks through the same small ADC/sensor example built three ways: plain encapsulation, composition-based "inheritance," and function-pointer-based polymorphism.
 
-## 1. Abstraction & encapsulation: a struct as an object, an `_construct()` as a constructor
+## Abstraction & Encapsulation: a Struct as an Object, an `_construct()` as a Constructor
 
 The `Adc_t` type models an ADC peripheral as a struct whose fields are mostly **function pointers**, populated once at construction:
 
@@ -33,7 +33,7 @@ void adc_destruct(Adc_t* obj);
 
 The constructor allocates the object and its private register-address struct, then wires up every method pointer to the real implementation:
 
-```c
+```ini
 Adc_t* adc_construct(unsigned int* ctrlRegAddr, unsigned int* statusRegAddr, unsigned int* dataRegAddr)
 {
     Adc_t* obj = (Adc_t*) malloc(sizeof(Adc_t));
@@ -50,7 +50,7 @@ Adc_t* adc_construct(unsigned int* ctrlRegAddr, unsigned int* statusRegAddr, uns
 
 The call site never calls `adc_init(obj)` directly — it calls **through the object**:
 
-```c
+```ini
 Adc_t* adcObjs[NUMBER_OF_ADCS];
 adcObjs[0] = adc_construct(ADC0_CTRL_REG, ADC0_STATUS_REG, ADC0_DATA_REG);
 adcObjs[0]->init(adcObjs[0]);
@@ -71,7 +71,7 @@ void setCtrlAddress(Adc_t* obj, unsigned int* ctrlRegAddr) {
 }
 ```
 
-## 2. Inheritance via composition
+## Inheritance Via Composition
 
 C can't extend a struct the way a class extends a base class, but it can **embed** one struct inside another and delegate to it — composition standing in for inheritance:
 
@@ -84,7 +84,7 @@ struct temperatureSensor {
 };
 ```
 
-```c
+```ini
 static float readConvertedTemperatureValue(TemperatureSensor_t* obj)
 {
     return (obj->adcParentObj->readValue(obj->adcParentObj) * 9/5) + 32;
@@ -101,11 +101,11 @@ TemperatureSensor_t* temperatureSensor_construct(unsigned int* ctrlRegAddr, unsi
 
 `TemperatureSensor_t` doesn't inherit `Adc_t`'s methods automatically — it holds a *pointer* to a fully-constructed `Adc_t` and explicitly forwards to it (`obj->adcParentObj->readValue(...)`) wherever it needs the base behavior, then layers its own conversion math (raw ADC counts → Fahrenheit) on top. `voltageSensor` in the same example follows the identical shape with its own conversion formula — this is the "has-a, and forwards to it" pattern that stands in for "is-a" in C.
 
-## 3. Polymorphism: one field, different behavior per instance
+## Polymorphism: One Field, Different Behavior Per Instance
 
 The composition approach above still requires the caller to know it's holding a `TemperatureSensor_t*` versus a `VoltageSensor_t*` to call the right conversion function. The polymorphism variant collapses that: it adds a **generic function-pointer field directly onto the base `Adc_t` struct** and lets each derived constructor decide what that field points to:
 
-```c
+```text
 typedef float (*readConvertedValueType)(Adc_t* obj);
 
 struct adc {
@@ -121,7 +121,7 @@ Adc_t* adc_construct(unsigned int* ctrlRegAddr, unsigned int* statusRegAddr,
 
 Each sensor type supplies its own implementation of that one slot at construction time:
 
-```c
+```ini
 // temperatureSensor.c
 static float readConvertedTemperatureValue(Adc_t* obj) {
     return (obj->readValue(obj) * 9/5) + 32;
@@ -130,7 +130,7 @@ obj->adcParentObj = adc_construct(ctrlRegAddr, statusRegAddr, dataRegAddr,
                                     readConvertedTemperatureValue);
 ```
 
-```c
+```ini
 // voltageSensor.c
 static float readConvertedVoltageValue(Adc_t* obj) {
     return (obj->readValue(obj) / 1000.0);
@@ -141,7 +141,7 @@ obj->adcParentObj = adc_construct(ctrlRegAddr, statusRegAddr, dataRegAddr,
 
 Now the call site can treat every sensor as "just an `Adc_t*`" and call the **same field name** without caring which concrete sensor it actually is:
 
-```c
+```ini
 Adc_t* adcObjs[NUMBER_OF_ADCS];
 adcObjs[0] = tempObjs[0]->adcParentObj;    // was built with the temperature conversion
 adcObjs[5] = voltObjs[0]->adcParentObj;    // was built with the voltage conversion

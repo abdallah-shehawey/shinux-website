@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 The Ultimate Git Handbook"
+title: The Ultimate Git Handbook
 description: >-
   Welcome! This guide is a complete reference for Git, the distributed version
   control system. It covers everything from the absolute basics to advanced
@@ -13,8 +13,8 @@ author: abdallah-shehawey
 Welcome! This guide is a complete reference for **Git**, the distributed version control system. It covers everything from the absolute basics to advanced recovery techniques, designed for beginners, students, and professionals.
 
 > **Note:** This guide focuses purely on **Git** (the local tool), not GitHub/GitLab (hosting services).
->
-## 🧓 What is Git?
+
+## What is Git?
 
 Git is a **Distributed Version Control System (VCS)**. It is often humorously described by its creator as:
 
@@ -22,7 +22,7 @@ Git is a **Distributed Version Control System (VCS)**. It is often humorously de
 
 It tracks changes, saves history (Time Machine), and enables teamwork without overwriting code.
 
-## ⚙️ First Time Setup
+## First Time Setup
 
 Before using Git, you must introduce yourself. This information is embedded in every commit.
 
@@ -32,7 +32,7 @@ git config --global user.email "your@email.com"
 git config --list
 ```
 
-## 📦 The Core Concept (CRITICAL)
+## The Core Concept (critical)
 
 Understanding these three areas is the key to mastering Git.
 
@@ -51,9 +51,9 @@ graph LR
 
 3. **Local Repository:** The database where history is stored. (Status: _Committed_)
 
-## 🚀 Basic Workflow
+## Basic Workflow
 
-### 1. Initialize & Status
+### Initialize & Status
 
 ```bash
 git init        # Start a new repo
@@ -61,7 +61,7 @@ git status      # Check modified/staged files (Most Used!)
 git ls-files    # List all tracked files in staging area
 ```
 
-### 2. Add & Commit
+### Add & Commit
 
 ```bash
 git add filename.c      # Add specific file
@@ -69,7 +69,7 @@ git add .               # Add ALL changed/new files
 git commit -m "Message" # Save snapshot
 ```
 
-### 3. Deleting Files (Two Methods)
+### Deleting Files (two Methods)
 
 How to remove a file from the project properly:
 
@@ -87,13 +87,13 @@ How to remove a file from the project properly:
     git commit -m "Deleted file"
     ```
 
-## 🙈 Ignoring Files (.gitignore)
+## Ignoring Files (.gitignore)
 
 Create a file named `.gitignore` in your root folder. List files you **don't** want Git to track (e.g., build artifacts, passwords).
 
 **Example `.gitignore` content:**
 
-```bash
+```text
 # Ignore all .o and .exe files
 *.o
 *.exe
@@ -108,9 +108,9 @@ Create a file named `.gitignore` in your root folder. List files you **don't** w
 
 _Note:_ If a file is already tracked, adding it to `.gitignore` won't stop Git from tracking it. You must `git rm --cached <file>` it first.
 
-## 🔍 Viewing History & Diffs
+## Viewing History & Diffs
 
-### Log (History)
+### Log (history)
 
 ```bash
 git log                         # Full history
@@ -118,7 +118,7 @@ git log --oneline --graph --all # Visual tree (Best for overview)
 git show <commit-id>            # See exactly what changed in a specific commit
 ```
 
-### Diff (Comparing Changes)
+### Diff (comparing Changes)
 
 |Command|What it compares|
 |---|---|
@@ -126,9 +126,9 @@ git show <commit-id>            # See exactly what changed in a specific commit
 |`git diff --cached`|**Staging** vs **Last Commit** (What will be committed)|
 |`git diff HEAD`|**Working Dir** vs **Last Commit** (All changes)|
 
-## 🧹 Undoing Changes & Cleaning Up
+## Undoing Changes & Cleaning Up
 
-### 1. Discard Changes (Working Directory)
+### Discard Changes (working Directory)
 
 _I edited a file but want to cancel changes._
 
@@ -141,7 +141,7 @@ git restore .            # Discard all local changes
 git checkout filename.txt
 ```
 
-### 2. Unstage Files (Staging Area)
+### Unstage Files (staging Area)
 
 _I added a file to staging but want to remove it from staging._
 
@@ -153,7 +153,7 @@ git restore --staged filename.txt
 git reset filename.txt
 ```
 
-### 3. Clean Untracked Files
+### Clean Untracked Files
 
 _Remove new files/folders that haven't been added to Git yet._
 
@@ -162,7 +162,7 @@ git clean -dn    # Dry run (Show what will be deleted)
 git clean -df    # Force delete untracked files/folders
 ```
 
-### 4. Resetting Commits (Time Travel)
+### Resetting Commits (time Travel)
 
 _Undo commits. Assuming `HEAD~1` is the previous commit._
 
@@ -172,7 +172,7 @@ _Undo commits. Assuming `HEAD~1` is the previous commit._
 |`git reset HEAD~1` (Mixed)|Undoes commit. Changes go to **Working Dir**. (Great to keep work).|
 |`git reset --hard HEAD~1`|**DANGER.** Deletes commit and **destroys all changes**.|
 
-### 5. Fixing the Last Commit (--amend)
+### Fixing the Last Commit (--amend)
 
 _I committed but forgot a file OR made a typo in the message._
 
@@ -181,7 +181,7 @@ git add forgotten_file.c          # Add the file you missed
 git commit --amend -m "New Msg"   # Updates the last commit
 ```
 
-### 6. Safe Undo (Revert)
+### Safe Undo (revert)
 
 _I want to undo a commit but preserve history (Safe for public branches)._
 
@@ -189,7 +189,7 @@ _I want to undo a commit but preserve history (Safe for public branches)._
 git revert <commit-id>   # Creates a NEW commit that does the opposite of the bad commit
 ```
 
-## 🌿 Branching, Merging & Strategies
+## Branching, Merging & Strategies
 
 ### Branch Management
 
@@ -200,7 +200,7 @@ git branch -d <name>       # Delete branch (Safe)
 git branch -D <name>       # Force delete branch
 ```
 
-### Switching & Checkout (The Nuance)
+### Switching & Checkout (the Nuance)
 
 - **`git checkout <id>`**: Moves to specific commit -> **"Detached HEAD"**.
 
@@ -225,7 +225,7 @@ git merge dev
 
 2. **Non-Fast-Forward (ORT/Recursive):** Creates a **Merge Commit**.
 
-## 📦 Stashing (The "Pause" Button)
+## Stashing (the "pause" Button)
 
 Save uncommitted work to a stack so you can switch branches.
 
@@ -250,7 +250,7 @@ git stash drop 2            # Delete specific stash
 git stash clear             # Delete ALL stashes
 ```
 
-## 🌐 Working with Remotes (Online)
+## Working with Remotes (online)
 
 Connecting your local repo to GitHub/GitLab.
 
@@ -268,7 +268,7 @@ git pull                    # Download AND merge changes (fetch + merge)
 git push origin main        # Upload your commits to the server
 ```
 
-## 🏷️ Tags (Releases)
+## Tags (releases)
 
 Mark specific points in history as important (e.g., v1.0).
 
@@ -278,9 +278,9 @@ git tag                     # List tags
 git push origin v1.0        # Push tag to remote (tags don't push automatically)
 ```
 
-## 🔀 Advanced: Rewriting History
+## Advanced: Rewriting History
 
-### Cherry-Pick
+### Cherry-pick
 
 Take a specific commit from another branch and apply it to your current branch.
 
@@ -288,7 +288,7 @@ Take a specific commit from another branch and apply it to your current branch.
 git cherry-pick <commit-id>
 ```
 
-### Rebase (Linear History)
+### Rebase (linear History)
 
 **Scenario:** Re-align `dev` on top of `main` to keep history straight.
 
@@ -299,11 +299,11 @@ git rebase main
 
 - **Warning:** Commits get new IDs. Never rebase public/shared branches!
 
-## 🚑 Emergency Recovery (Reflog)
+## Emergency Recovery (reflog)
 
 `git reflog` records **every** move you make. It is your safety net.
 
-### Scenario 1: Recovering a Deleted Commit (Hard Reset)
+### Scenario 1: Recovering a Deleted Commit (hard Reset)
 
 You did `git reset --hard` and lost code.
 

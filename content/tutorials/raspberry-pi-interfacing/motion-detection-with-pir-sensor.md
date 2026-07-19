@@ -1,5 +1,5 @@
 ---
-title: Motion Detection with PIR Sensor
+title: Motion Detection with Pir Sensor
 description: >-
   The easiest way to interact with a PIR sensor on the Raspberry Pi is using the
   gpiozero library. It provides a simple interface for handling input devices.
@@ -9,20 +9,20 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## Part 1: Understanding and Interfacing with the PIR Sensor
+## Part 1: Understanding and Interfacing with the Pir Sensor
 
-### 1. What is a PIR Sensor?
+### What is a Pir Sensor?
 
 **PIR** stands for **Passive Infrared** sensor. It is an electronic sensor that measures infrared (IR) light radiating from objects in its field of view.
 
 - **How it works:** All objects with a temperature above absolute zero emit heat energy in the form of radiation. Usually, this is invisible to the human eye, but PIR sensors can detect it.
-    
-- **Motion Detection:** The sensor looks for _changes_ in the IR levels. When a warm body (like a human or a pet) moves across the sensor's field of view, the sensor detects a positive differential change. When the body leaves the sensing area, the sensor generates a negative differential change. This change in pulses is what triggers the "Motion Detected" signal.
-    
-- **"Passive":** It is called "passive" because the sensor does not generate or radiate any energy for detection purposes; it strictly receives energy triggered by other sources.
-    
 
-### 2. Interfacing with Python (using `gpiozero`)
+- **Motion Detection:** The sensor looks for _changes_ in the IR levels. When a warm body (like a human or a pet) moves across the sensor's field of view, the sensor detects a positive differential change. When the body leaves the sensing area, the sensor generates a negative differential change. This change in pulses is what triggers the "Motion Detected" signal.
+
+- **"Passive":** It is called "passive" because the sensor does not generate or radiate any energy for detection purposes; it strictly receives energy triggered by other sources.
+
+
+### Interfacing with Python (using `gpiozero`)
 
 The easiest way to interact with a PIR sensor on the Raspberry Pi is using the `gpiozero` library. It provides a simple interface for handling input devices.
 
@@ -30,7 +30,7 @@ The easiest way to interact with a PIR sensor on the Raspberry Pi is using the `
 
 In this method, the code constantly checks (loops) to see if the sensor status has changed.
 
-```python
+```dockerfile
 from gpiozero import MotionSensor
 
 # Initialize the sensor on GPIO Pin 23
@@ -40,23 +40,23 @@ print("Waiting for motion...")
 
 while True:
     # 'motion_detected' returns a boolean (True/False)
-    print(pir.motion_detected) 
+    print(pir.motion_detected)
 ```
 
-#### B. Using Interrupts (Event-Driven)
+#### B. Using Interrupts (event-driven)
 
 Checking `pir.motion_detected` inside a `while` loop can be inefficient or difficult to manage if your program needs to do other things simultaneously. A better approach is using **events** or **interrupts**.
 
 You can assign functions to specific events:
 
 - `pir.when_motion`: Triggers when movement is detected.
-    
+
 - `pir.when_no_motion`: Triggers when movement stops.
-    
+
 
 **Example 1: Controlling an LED based on state** This example checks the state inside a loop, similar to the first example but adding an LED.
 
-```python
+```dockerfile
 from gpiozero import MotionSensor, LED
 from time import sleep
 
@@ -73,7 +73,7 @@ while True:
 
 **Example 2: The "Clean" Event-Driven Approach** This is the recommended way to handle sensors. It uses `signal.pause()` to keep the script running while waiting for signals, rather than writing your own `while True` loop.
 
-```python
+```dockerfile
 from gpiozero import MotionSensor, LED
 from signal import pause
 
@@ -96,20 +96,20 @@ except KeyboardInterrupt:
     pass
 ```
 
-### 3. Installing Libraries on Raspberry Pi
+### Installing Libraries on Raspberry Pi
 
 Modern Raspberry Pi OS (Bookworm and later) protects the system Python environment, making it slightly stricter to install packages via `pip`. Here are the standard methods:
 
-#### Method A: Using the GUI (Thonny)
+#### Method A: Using the Gui (thonny)
 
 If you are using the Desktop version of Raspberry Pi OS:
 
 1. Open **Thonny IDE**.
-    
+
 2. Go to **Tools** -> **Manage Packages**.
-    
+
 3. Search for the library name (e.g., `gpiozero`) and click install.
-    
+
 
 #### Method B: Using the Terminal
 
@@ -117,33 +117,33 @@ If you are using the Lite version or prefer the command line:
 
 **1. APT (Recommended for System-wide)** The safest way to install libraries globally is using the system package manager (`apt`). These versions are pre-tested for your OS.
 
-```python
+```bash
 sudo apt install python3-gpiozero
 ```
 
 **2. PIP (Python Package Installer)** If the library is not available via `apt`, you generally use `pip`. However, modern OS versions (Ubuntu/Debian 12+) block direct system-wide pip installs to prevent breaking system tools (PEP 668).
 
 - **Option 2.1: Virtual Environments (Best Practice)** Create an isolated environment for your project. This prevents conflicts with system updates.
-    
+
     ```python
     # Create the environment named 'my-env'
     python3 -m venv my-env
-    
+
     # Activate the environment
     source my-env/bin/activate
-    
+
     # Install your library safely inside this environment
     pip3 install libname
     ```
-    
+
 - **Option 2.2: User-Only Installation** Install the library only for the current user, not the whole system. This is often allowed without breaking system packages.
-    
+
     ```python
     pip3 install --user libname
     ```
-    
+
 - **Option 2.3: Force System Install (Risky)** You can override the protection using the break-system-packages flag. _Warning: This effectively tells the OS, "I know what I'm doing, and if the system breaks, it is my responsibility."_
-    
+
     ```python
     pip3 install libname --break-system-packages
     ```

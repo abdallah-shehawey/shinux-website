@@ -15,7 +15,7 @@ author: abdallah-shehawey
 
 This guide explains how to install, configure, and integrate **clang-format** to enforce a consistent C/C++ coding style across Linux environments (Ubuntu, Fedora) and editors such as **VS Code**.
 
-## 1. Installation
+## Installation
 
 Install `clang-format` based on your Linux distribution.
 
@@ -37,7 +37,7 @@ Verify installation:
 clang-format --version
 ```
 
-## 2. Global Configuration
+## Global Configuration
 
 Create a global `.clang-format` file in your home directory. This configuration will be used for all projects unless a project-specific `.clang-format` exists.
 
@@ -72,7 +72,7 @@ BraceWrapping:
 - **Allman-style braces** (opening brace on a new line)
 - **No single-line functions**, even if short
 
-## 3. Editor Integration (VS Code)
+## Editor Integration (VS Code)
 
 ### 3.1 Install the Clang-Format extension
 
@@ -119,7 +119,7 @@ This ensures:
 - Formatting automatically happens on **Save** (`Ctrl + S`)
 - The formatter reads from the `.clang-format` file
 
-## 4. Notes & Best Practices
+## Notes & Best Practices
 
 - A `.clang-format` file in a **project root** overrides the global one
 - No symlinks, no system-wide config copies are required

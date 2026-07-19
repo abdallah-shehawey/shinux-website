@@ -1,5 +1,5 @@
 ---
-title: Downloading Media with yt-dlp
+title: Downloading Media with Yt-dlp
 description: >-
   yt-dlp is an actively-maintained fork of youtube-dl for downloading video and
   audio from YouTube and hundreds of other sites, with better performance and
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 `yt-dlp` is an actively-maintained fork of `youtube-dl` for downloading video and audio from YouTube and hundreds of other sites, with better performance and much more frequent updates than the project it forked from.
 
-## 1. Install on Ubuntu / Debian
+## Install on Ubuntu / Debian
 
 **Via apt** (simplest):
 
@@ -23,7 +23,7 @@ sudo apt install yt-dlp -y
 
 **Via pip** (latest release, needs Python 3):
 
-```bash
+```text
 python3 -m pip install -U yt-dlp
 ```
 
@@ -36,7 +36,7 @@ sudo chmod +x /usr/local/bin/yt-dlp
 
 Verify with `yt-dlp --version` regardless of which method was used.
 
-## 2. Install on Fedora
+## Install on Fedora
 
 ```bash
 sudo dnf install yt-dlp -y
@@ -44,17 +44,17 @@ sudo dnf install yt-dlp -y
 
 Or the same standalone-binary method shown above.
 
-## 3. Install on Windows
+## Install on Windows
 
 Download `yt-dlp.exe` from the [GitHub releases page](https://github.com/yt-dlp/yt-dlp/releases/latest), move it somewhere permanent (e.g. `C:\yt-dlp\`), and add that folder to `PATH` via "Edit the system environment variables" → Environment Variables → Path → New. Or, with Chocolatey installed:
 
-```bash
+```text
 choco install yt-dlp -y
 ```
 
-## 4. Quick usage examples
+## Quick Usage Examples
 
-```bash
+```ini
 # best quality video
 yt-dlp "https://www.youtube.com/watch?v=VIDEO_ID"
 
@@ -65,11 +65,11 @@ yt-dlp -x --audio-format mp3 "https://www.youtube.com/watch?v=VIDEO_ID"
 yt-dlp -f best "PLAYLIST_URL"
 ```
 
-## 5. Keeping it updated
+## Keeping it Updated
 
 If installed via the standalone binary or pip:
 
-```bash
+```text
 yt-dlp -U
 ```
 

@@ -1,5 +1,5 @@
 ---
-title: Raspberry Pi Hardware & Materials Guide (Generic)
+title: Raspberry Pi Hardware & Materials Guide (generic)
 description: >-
   Welcome to the Raspberry Pi Hardware & Materials Guide! This document provides
   a clear, generic, beginner‑friendly list of everything you need to work with
@@ -27,28 +27,28 @@ Several Raspberry Pi models are available. All are capable of running Linux dist
 ### Recommended Models
 
 - **Raspberry Pi 5**
-    
+
     - Available with **4GB** or **8GB RAM**.
-        
+
     - Best performance; suitable for future upgrades.
-        
+
 - **Raspberry Pi 4 Model B**
-    
+
     - Available in 2GB / 4GB / 8GB RAM variants.
-        
+
     - Excellent for general computing, GPIO, cameras, and networking.
-        
+
 
 ### Compatible Older Models
 
 If you already own one of the following, you can still complete all fundamental projects:
 
 - Raspberry Pi 3 (Any model)
-    
+
 - Raspberry Pi 2
-    
+
 - Raspberry Pi Zero 2 W (good for embedded/IoT projects, lower performance)
-    
+
 
 > **Note:** For new buyers, Raspberry Pi 4 or 5 is the best balance of price, support, and performance.
 
@@ -71,18 +71,18 @@ Stable power is essential. Unstable voltage causes SD card corruption, random re
 
 ---
 
-## Micro SD Card Specifications
+## Micro Sd Card Specifications
 
 Your SD card acts as your operating system drive, so speed matters.
 
-### Recommended SD Card Specs
+### Recommended Sd Card Specs
 
 - **Class:** Class **10** or higher
-    
+
 - **Speed:** UHS‑I **U3** recommended
-    
+
 - **Capacity:** 16GB or 32GB (64GB+ also works but requires formatting)
-    
+
 
 > A slow card leads to slow booting, laggy OS performance, and corrupted files.
 
@@ -95,33 +95,33 @@ These are required for basic GPIO projects and hands‑on electronics.
 ### Breadboard & Jumpers
 
 - **1 Breadboard (Half or Full size)**
-    
-- **Jumper Wires:**
-    
-    - Male‑to‑Male
-        
-    - Male‑to‑Female
-        
-    - Female‑to‑Female
-        
 
-### Resistors & LEDs
+- **Jumper Wires:**
+
+    - Male‑to‑Male
+
+    - Male‑to‑Female
+
+    - Female‑to‑Female
+
+
+### Resistors & Leds
 
 - **Resistors:**
-    
+
     - 330Ω, 470Ω, and 1kΩ (any of these work for LEDs)
-        
+
 - **LEDs:**
-    
+
     - At least 3 LEDs (any color)
-        
+
 
 ### Buttons & Inputs
 
 - **Push Button:** 4‑pin preferred
-    
+
 - Optional: Tactile switches or toggle switches
-    
+
 
 > Buying a beginner electronics kit is usually cheaper and comes with assortments of components.
 
@@ -131,27 +131,27 @@ These are required for basic GPIO projects and hands‑on electronics.
 
 These expand what your Raspberry Pi can do.
 
-### PIR Motion Sensor
+### Pir Motion Sensor
 
 - Recommended Model: **HC‑SR501**
-    
+
 - Used for motion‑activated projects, alarms, automation.
-    
+
 
 > Cheap sensors vary in quality—getting 2–3 can save time when troubleshooting.
 
 ### Other Optional Modules
 
 - **Ultrasonic Sensor (HC‑SR04):** For distance measurement
-    
+
 - **DHT11 / DHT22:** Temperature & humidity sensors
-    
+
 - **Relay Module:** Control AC devices
-    
+
 - **I2C LCD Display (16x2):** For small screen outputs
-    
+
 - **Buzzer (Active/Passive):** For sound alerts
-    
+
 
 ---
 
@@ -162,23 +162,23 @@ Useful for photography, video streaming, object detection, and computer vision.
 ### Recommended Options
 
 1. **Camera Module V3** (best choice)
-    
+
 2. **Camera Module V3 NoIR**
-    
+
     - For night vision or low‑light environments
-        
+
 
 ### Compatible Older Cameras
 
 - Camera Module V1 and V2 work on most Raspberry Pi models.
-    
+
 
 ### Special Note for Raspberry Pi 5
 
 If using older camera modules:
 
 - You may need a **15‑pin (1mm) to 22‑pin (0.5mm)** adapter cable.
-    
+
 
 ---
 
@@ -189,36 +189,36 @@ These are not required but highly recommended for a smoother experience.
 ### Cooling
 
 - **Heatsinks**
-    
+
 - **Active cooling fan** (especially for Pi 4 & 5)
-    
+
 - **Case with ventilation**
-    
+
 
 ### Display & Input
 
 - HDMI cable (micro‑HDMI for Pi 4, full‑size for Pi 5)
-    
+
 - USB keyboard & mouse
-    
+
 - Monitor or TV
-    
+
 
 ### Networking
 
 - Ethernet cable (optional)
-    
+
 - USB WiFi dongle (for boards without WiFi)
-    
+
 
 ### Storage & Tools
 
 - USB SD card reader
-    
+
 - Screwdriver set
-    
+
 - Multimeter (helpful for debugging circuits)
-    
+
 
 ---
 
@@ -227,10 +227,10 @@ These are not required but highly recommended for a smoother experience.
 You can purchase Raspberry Pi hardware and electronics from:
 
 - Local electronics stores
-    
+
 - Online marketplaces (Amazon, AliExpress, local tech shops)
-    
+
 - Raspberry Pi official distributors
-    
+
 
 > Tip: Always compare prices—camera modules and sensors often have large price differences between sellers.

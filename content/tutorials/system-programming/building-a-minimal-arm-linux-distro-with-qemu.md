@@ -1,5 +1,5 @@
 ---
-title: Building a Minimal ARM Linux Distro with QEMU
+title: Building a Minimal Arm Linux Distro with Qemu
 description: >-
   Building a Linux distribution from scratch — kernel, root filesystem, init
   process — makes the pieces that normally hide behind a distro installer
@@ -14,13 +14,13 @@ Building a Linux distribution from scratch — kernel, root filesystem, init pro
 
 *(Adapted from [lukaszgemborowski's minimalistic-linux-system-on-qemu-arm](https://lukaszgemborowski.github.io/articles/minimalistic-linux-system-on-qemu-arm.html) and the [QEMU Versatile PB docs](https://www.qemu.org/docs/master/system/arm/versatile.html).)*
 
-## 1. QEMU, emulation, and virtualization
+## Qemu, Emulation, and Virtualization
 
 QEMU ("Quick Emulator") runs a guest built for one architecture on a host with a different one, by translating guest instructions into ones the host CPU understands. That's **emulation** — mimicking hardware that's fundamentally unlike the host (ARM code running on an x86 machine), which is inherently slower since every instruction gets translated. **Virtualization** is a different thing: multiple guests that share the host's own architecture, managed by a hypervisor that hands out real hardware resources directly — closer to native speed. The common flavors: full virtualization (guest OS is unmodified and unaware), hardware-assisted (via Intel VT-x/AMD-V, which is what QEMU uses through KVM on Linux), paravirtualization (guest kernel is modified to talk to the hypervisor directly), and Type-1/bare-metal hypervisors (VMware ESXi, Hyper-V) that run straight on the hardware.
 
 This lesson is squarely in emulation territory: ARM guest code, translated for an x86 host, via `qemu-system-arm`.
 
-## 2. Install QEMU and the kernel build toolchain
+## Install Qemu and the Kernel Build Toolchain
 
 ```bash
 sudo apt update
@@ -49,7 +49,7 @@ int main(void)
 }
 ```
 
-```bash
+```text
 gcc hello.c -o hello_x86.out                              # native build
 file hello_x86.out                                          # reports x86-64
 
@@ -73,11 +73,11 @@ qemu-arm -L /usr/arm-linux-gnueabi ./test
 
 `-L` tells `qemu-arm` where to resolve the guest's dynamic linker and shared libraries from.
 
-## 3. Build the kernel for Versatile PB
+## Build the Kernel for Versatile Pb
 
 Download a kernel source tree from [kernel.org](https://www.kernel.org/), extract it, then configure and build for the emulated board:
 
-```bash
+```ini
 tar -xvf linux-X.Y.Z.tar.xz
 cd linux-X.Y.Z
 
@@ -91,14 +91,14 @@ time make -j$(nproc) O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
 
 Install the compiled modules into what will become the root filesystem:
 
-```bash
+```ini
 mkdir ../rootfs
 time make -j$(nproc) modules_install O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- INSTALL_MOD_PATH=../rootfs
 ```
 
-## 4. First boot — and the expected panic
+## First Boot and the Expected Panic
 
-```bash
+```ini
 qemu-system-arm -M versatilepb -kernel build/arch/arm/boot/zImage \
   -dtb build/arch/arm/boot/dts/arm/versatile-pb.dtb \
   -serial stdio -append "serial=ttyAMA0"
@@ -106,7 +106,7 @@ qemu-system-arm -M versatilepb -kernel build/arch/arm/boot/zImage \
 
 The kernel boots and immediately panics — there's no root filesystem and no `init` process yet. That's expected; the next steps fix exactly that.
 
-## 5. A trivial initrd
+## A Trivial Initrd
 
 Reuse `hello_arm.out` from step 2 as the entire `init` process, then package the rootfs directory as a `cpio` archive (the format the kernel expects for an initrd):
 
@@ -119,7 +119,7 @@ cd ..
 
 (`-print0` null-terminates filenames instead of newline-terminating them, so filenames containing spaces or odd characters survive the pipe to `cpio` intact.)
 
-```bash
+```ini
 qemu-system-arm -M versatilepb \
   -kernel ./linux-X.Y.Z/build/arch/arm/boot/zImage \
   -dtb ./linux-X.Y.Z/build/arch/arm/boot/dts/arm/versatile-pb.dtb \
@@ -130,11 +130,11 @@ qemu-system-arm -M versatilepb \
 
 This boots and runs the "Hello" loop forever — progress, but not yet a usable system.
 
-## 6. Add a real shell with BusyBox
+## Add a Real Shell with Busybox
 
 BusyBox bundles dozens of standard Unix utilities into one small, statically-linkable binary — exactly what a minimal rootfs needs instead of a real `init` loop.
 
-```bash
+```ini
 tar xvf busybox-1.36.1.tar.bz2
 cd busybox-1.36.1
 
@@ -153,7 +153,7 @@ cp -r linuxrc ../../rootfs
 cd ../../
 ```
 
-## 7. A real `init` script
+## A Real `init` Script
 
 ```bash
 cd rootfs
@@ -180,11 +180,11 @@ cd ..
 
 Booting with the same QEMU command as step 5 now drops into an actual `/bin/sh` prompt (`/ #`) — a working, if minimal, Linux system.
 
-## 8. Swapping the initrd for a persistent disk image
+## Swapping the Initrd for a Persistent Disk Image
 
 An initrd is RAM-only and disappears on reboot. To simulate a real storage device (an SD card, say), build an `ext2` image instead and boot it as a SCSI disk:
 
-```bash
+```ini
 dd if=/dev/zero of=rootfs.ext2 bs=1M count=256
 mkfs.ext2 rootfs.ext2
 
@@ -196,7 +196,7 @@ sudo umount temp_mount
 
 The kernel needs block-device and SCSI support enabled that a minimal `versatile_defconfig` doesn't include by default — via `menuconfig`, under **Device Drivers**: devtmpfs auto-mounting, the ARM Versatile PB PCI controller, and SCSI disk + `SYM53C8XX`/LSI Logic driver support. Re-run the kernel build after enabling them.
 
-```bash
+```ini
 qemu-system-arm -M versatilepb -m 256M -serial stdio \
   -kernel linux-X.Y.Z/build/arch/arm/boot/zImage \
   -dtb linux-X.Y.Z/build/arch/arm/boot/dts/arm/versatile-pb.dtb \

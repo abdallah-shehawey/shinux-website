@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 Ansible Handlers Guide"
+title: Ansible Handlers Guide
 description: >-
   A comprehensive guide to understanding and using Handlers in Ansible. This
   document covers basic usage, multiple triggers, and advanced control
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 A comprehensive guide to understanding and using **Handlers** in Ansible. This document covers basic usage, multiple triggers, and advanced control techniques like `listen` and `flush_handlers`.
 
-## 🧠 What are Handlers?
+## What are Handlers?
 
 Handlers are **special tasks** that only run when they are triggered by another task.
 
@@ -24,7 +24,7 @@ Handlers are **special tasks** that only run when they are triggered by another 
 
 **Common Use Case:** Restarting a service (like Nginx or SSH) only when the configuration file has been updated.
 
-## 🚀 Part 1: Basic Usage (The NGINX Example)
+## Part 1: Basic Usage (the Nginx Example)
 
 This is the most classic example. We copy a config file, and if it changes, we restart the web server.
 
@@ -46,7 +46,7 @@ This is the most classic example. We copy a config file, and if it changes, we r
         state: restarted
 ```
 
-### 🔍 Detailed Explanation
+### Detailed Explanation
 
 1. **`notify: Restart nginx`**
 
@@ -66,7 +66,7 @@ This is the most classic example. We copy a config file, and if it changes, we r
 
     - **`state: restarted`**: Stops and starts the service. This is preferred over `started` for config changes because `started` won't do anything if the service is already running.
 
-## ⛓️ Part 2: Multiple Handlers (Chaining Triggers)
+## Part 2: Multiple Handlers (chaining Triggers)
 
 Sometimes, one change requires multiple actions (e.g., restarting the app AND reloading the system daemon).
 
@@ -93,7 +93,7 @@ Sometimes, one change requires multiple actions (e.g., restarting the app AND re
       command: systemctl daemon-reexec
 ```
 
-### 🔍 Detailed Explanation
+### Detailed Explanation
 
 1. **`notify` as a List**
 
@@ -107,15 +107,15 @@ Sometimes, one change requires multiple actions (e.g., restarting the app AND re
 
     - **Note**: `systemd` module usually handles reloads automatically, but this is a good example of running arbitrary commands as handlers.
 
-## 🌟 Part 3: Advanced Handler Features (Pro Tips)
+## Part 3: Advanced Handler Features (pro Tips)
 
 Here are the advanced concepts that separate beginners from pros.
 
-### 1. The `listen` Keyword (Grouping Handlers)
+### The `listen` Keyword (grouping Handlers)
 
 Instead of notifying 5 different handler names, you can make multiple handlers "listen" to one generic topic.
 
-```yaml
+```text
 tasks:
   - name: Update App Config
     copy:
@@ -139,7 +139,7 @@ handlers:
 
 - **Benefit:** Decouples your tasks from specific handler names. You just notify a topic, and any handler interested in that topic will run.
 
-### 2. Forcing Handlers (`force_handlers: yes`)
+### Forcing Handlers (`force_handlers: Yes`)
 
 By default, if a task fails in the middle of a play, Ansible stops, and **handlers do not run**. This leaves your system in a bad state (config changed, but service not restarted).
 
@@ -154,18 +154,18 @@ To fix this, add `force_handlers: yes` to the Play.
       template:
         src: ...
       notify: Restart Service
-    
+
     - name: Task that might fail
       command: /bin/false
 ```
 
 - **Result:** Even though `/bin/false` fails, Ansible will still run "Restart Service" at the end.
 
-### 3. Running Handlers Immediately (`meta: flush_handlers`)
+### Running Handlers Immediately (`meta: Flush_handlers`)
 
 Handlers run at the end of the play. Sometimes, you need the service to restart **right now** before the next task runs.
 
-```yaml
+```text
 tasks:
   - name: Update Apache Config
     copy: ...
@@ -181,7 +181,7 @@ tasks:
 
 - **Use Case:** If the next task (like an HTTP check) depends on the new configuration being active, you must flush handlers first.
 
-## 🎯 Summary Cheat Sheet
+## Summary Cheat Sheet
 
 |Keyword|Description|
 |---|---|

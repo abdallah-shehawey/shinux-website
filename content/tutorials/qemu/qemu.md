@@ -1,5 +1,5 @@
 ---
-title: Building a Minimal Linux Distribution from Scratch
+title: Building a Minimal Linux Distribution From Scratch
 description: >-
   This guide walks you through creating a basic, custom Linux distribution from
   the ground up. You can test the final product on a real machine, such as a
@@ -14,7 +14,7 @@ This guide walks you through creating a basic, custom Linux distribution from th
 
 ---
 
-## What is QEMU?
+## What is Qemu?
 
 **QEMU**, which stands for "Quick Emulator," is a versatile and open-source machine emulator and virtualizer. Its primary function is to run an operating system designed for one hardware architecture (the "guest") on a machine with a completely different architecture (the "host"). QEMU achieves this by translating the guest's machine code into instructions that the host's processor can execute.
 
@@ -45,7 +45,7 @@ _This guide is adapted from the following excellent resources:_
 - [_Minimalistic Linux system on QEMU ARM_](https://lukaszgemborowski.github.io/articles/minimalistic-linux-system-on-qemu-arm.html "null")
 - [_QEMU documentation for ARM Versatile PB board_](https://www.qemu.org/docs/master/system/arm/versatile.html "null")
 
-### 1. Install QEMU for ARM
+### Install Qemu for Arm
 
 First, install the QEMU system emulator for the ARM architecture.
 
@@ -56,11 +56,11 @@ sudo apt install qemu-system-arm
 
 _**Note:** To explore all available options for the ARM system emulator, you can consult its manual page:_
 
-```bash
+```text
 man qemu-system-arm
 ```
 
-### 2. Install Kernel Compilation Prerequisites
+### Install Kernel Compilation Prerequisites
 
 Next, install the tools and libraries required to compile the Linux kernel from source.
 
@@ -68,22 +68,22 @@ Next, install the tools and libraries required to compile the Linux kernel from 
 sudo apt-get install git fakeroot build-essential ncurses-dev xz-utils libssl-dev bc flex libelf-dev bison
 ```
 
-### 3. Install the ARM Cross-Compiler
+### Install the Arm Cross-compiler
 
 To compile a kernel for the ARM architecture on a non-ARM machine (like an x86 PC), you need a cross-compiler.
 
 ```bash
 sudo apt install gcc-arm-linux-gnueabi
-sudo apt install g++-arm-linux-gnueabi 
+sudo apt install g++-arm-linux-gnueabi
 ```
 
-#### Testing the Cross-Compiler
+#### Testing the Cross-compiler
 
 Let's verify that the cross-compiler is installed correctly by compiling a simple C program.
 
 **a. Create a C source file:**
 
-```bash
+```text
 nvim hello.c
 ```
 
@@ -106,7 +106,7 @@ int main(void)
 
 **b. Compile natively (for your host machine):**
 
-```bash
+```text
 gcc hello.c -o hello_x86.out
 file hello_x86.out
 ```
@@ -115,7 +115,7 @@ The output of the `file` command will show an executable for `x86-64`. You can r
 
 **c. Cross-compile for ARM:**
 
-```bash
+```text
 arm-linux-gnueabi-gcc --static hello.c -o hello_arm.out
 file hello_arm.out
 ```
@@ -130,13 +130,13 @@ First, install `qemu-user` if you haven't already:
 
 ```bash
 sudo apt install qemu-user
-#to list all qemu-user that installed 
+#to list all qemu-user that installed
 sudo dpkg -L qemu-user
 ```
 
 Now, run the ARM binary using the QEMU user-mode emulator:
 
-```bash
+```text
 qemu-arm ./hello_arm.out
 ```
 
@@ -149,11 +149,11 @@ arm-linux-gnueabi-gcc --help
 sudo dpkg -L arm-linux-gnueabi-gcc
 #after --hlep you will find argument which -print-sysroot to print all library dir
 arm-linux-gnueabi-gcc -print-sysroot
-# it will print one of paths that use to search in it 
+# it will print one of paths that use to search in it
 # to print all pathes
 arm-linux-gnueabi-gcc -print-search-dirs
 #it will print all dir
-# to search in it 
+# to search in it
 arm-linux-gnueabi-gcc -print-search-dirs | tr ':' '\n' | xargs -I _ find _ -iname ld-linux.so.3
 #this command search the dynamically library which needed to run arm compiled code with out statically linked
 # the output will be like this --> /usr/lib/gcc-cross/arm-linux-gnueabi/13/../../../../arm-linux-gnueabi/lib/ld-linux.so.3
@@ -164,17 +164,17 @@ arm-linux-gnueabi-gcc -print-search-dirs | tr ':' '\n' | xargs -I _ find _ -inam
 
 You should see the "Hello from QEMU..." message printed to your terminal.
 
-### 4. Download the Linux Kernel Source
+### Download the Linux Kernel Source
 
 Download the latest stable version of the Linux kernel source code from the official website.
 
 - **Official Website:** [https://www.kernel.org/](https://www.kernel.org/ "null")
 
-### 5. Extract the Kernel Source
+### Extract the Kernel Source
 
 Once downloaded, extract the archive. Replace `linux-X.Y.Z` with the version number you downloaded.
 
-```bash
+```text
 # For .tar.xz files, use the following command:
 tar -xvf linux-X.Y.Z.tar.xz
 cd linux-X.Y.Z
@@ -182,11 +182,11 @@ cd linux-X.Y.Z
 
 _Note: The `tar` flags `x` (e**x**tract), `v` (**v**erbose), and `f` (**f**ile) are used here._
 
-### 6. Configure the Kernel
+### Configure the Kernel
 
 Before building the kernel, you need to configure it for our target hardware. This step ensures we build a minimal kernel to consume less memory.
 
-```bash
+```ini
 # This command generates a default configuration for the Versatile PB board.
 make O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- versatile_defconfig
 ```
@@ -198,26 +198,26 @@ make O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- versatile_defconfig
 
 You can also customize the kernel configuration using a menu-based interface:
 
-```bash
+```ini
 make O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
 ```
 
-### 7. Compile the Kernel
+### Compile the Kernel
 
 Now, compile the kernel using the configuration you just created.
 
-```bash
+```ini
 time make -j$(nproc) O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
 ```
 
 - `time`: Measures the total time taken for the compilation process.
 - `-j$(nproc)`: Speeds up compilation by running multiple jobs in parallel, based on the number of available CPU cores.
 
-### 8. Install Kernel Modules
+### Install Kernel Modules
 
 Install the compiled kernel modules into a new directory that will serve as our root filesystem.
 
-```bash
+```ini
 # Create a rootfs directory one level up from the kernel source
 mkdir ../rootfs
 # Install modules into the new rootfs directory
@@ -226,11 +226,11 @@ time make -j$(nproc) modules_install O=./build/ ARCH=arm CROSS_COMPILE=arm-linux
 
 - `INSTALL_MOD_PATH`: Specifies the destination directory for the kernel modules. The path is relative to the output build folder (`./build/`).
 
-### 9. Boot the Kernel in QEMU
+### Boot the Kernel in Qemu
 
 With the kernel compiled, you can now boot it in QEMU. A successful compilation produces the **Kernel Core** (`zImage`), **Kernel Modules**, and a **Device Tree Blob** (`.dtb`). The device tree is a data structure that describes the system's hardware to the kernel.
 
-```bash
+```ini
 qemu-system-arm -M versatilepb -kernel build/arch/arm/boot/zImage -dtb build/arch/arm/boot/dts/arm/versatile-pb.dtb -serial stdio -append "serial=ttyAMA0"
 ```
 
@@ -242,11 +242,11 @@ qemu-system-arm -M versatilepb -kernel build/arch/arm/boot/zImage -dtb build/arc
 
 The kernel will boot but will eventually panic because it cannot find a root filesystem or an `init` process to run.
 
-### 10. Create an Initial Root Filesystem (initrd)
+### Create an Initial Root Filesystem (initrd)
 
 Now, let's create an initial RAM disk (`initrd`) containing a simple `init` program. We'll use the `hello_arm.out` binary from Step 3 as our init process.
 
-```bash
+```text
 # In the directory containing the 'rootfs' folder
 cp hello_arm.out rootfs/init
 ```
@@ -262,11 +262,11 @@ cd ..
 - This command finds all files, pipes them to `cpio` to create an archive, and then compresses it with `gzip`.
 - `-print0` to remove `\n` after print to print them in one line and the end is `\0` not `\n`
 
-### 11. Run QEMU with the Kernel and initrd
+### Run Qemu with the Kernel and Initrd
 
 An `initrd` is a temporary, RAM-based root filesystem used during the early boot process before the real root filesystem is mounted.
 
-```bash
+```ini
 qemu-system-arm -M versatilepb \
 -kernel ./linux-X.Y.Z/build/arch/arm/boot/zImage \
 -dtb ./linux-X.Y.Z/build/arch/arm/boot/dts/arm/versatile-pb.dtb \
@@ -278,33 +278,33 @@ qemu-system-arm -M versatilepb \
 - `-initrd`: Specifies the path to the initial RAM disk.
 - `-append "root=/dev/mem..."`: Tells the kernel that the root filesystem is in RAM.
 
-### 12. Add a Minimal Shell with BusyBox
+### Add a Minimal Shell with Busybox
 
 Our `init` process is just an infinite loop. To get a usable shell, we'll use **BusyBox**, which combines many common Unix utilities into a single, small executable.
 
 **a. Download and Extract BusyBox:** Go to the [BusyBox website](https://busybox.net/ "null"), download the latest version, and extract it.
 
-```bash
+```text
 tar xvf busybox-1.36.1.tar.bz2
 cd busybox-1.36.1
 ```
 
 **b. Configure and Compile BusyBox:** We need to configure BusyBox to be compiled as a static binary. This includes all required libraries, so it has no external dependencies.
 
-```bash
+```ini
 # Generate a default configuration
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- defconfig
 
 # Open the menu to enable static linking
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
 ```
-**Note:** form this `menuconfig` you should make busy box build as static library from `setting` --> `build static library (no shared library)` 
- 
+**Note:** form this `menuconfig` you should make busy box build as static library from `setting` --> `build static library (no shared library)`
+
 In the configuration menu, navigate to `Settings` -> `Build Options` and enable `Build static binary (no shared libs)`. Save and exit.
 
 Now, compile and install BusyBox:
 
-```bash
+```ini
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j$(nproc)
 # If you face build errors, try disabling networking features (like TC) via menuconfig.
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- install
@@ -321,7 +321,7 @@ cp -r linuxrc ../../rootfs
 cd ../../
 ```
 
-### 13. Create a Proper `init` Script
+### Create a Proper `init` Script
 
 Now, let's create a real `init` script that will set up a minimal environment and start a shell.
 
@@ -355,11 +355,11 @@ find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../rootfs.cpio.gz
 cd ..
 ```
 
-### 14. Finally, Run Your Simple Distribution!
+### Finally, Run Your Simple Distribution!
 
 You now have a kernel and a root filesystem with a working shell. Boot it with QEMU:
 
-```bash
+```ini
 qemu-system-arm -M versatilepb \
 -kernel ./linux-X.Y.Z/build/arch/arm/boot/zImage \
 -dtb ./linux-X.Y.Z/build/arch/arm/boot/dts/arm/versatile-pb.dtb \
@@ -374,11 +374,11 @@ Congratulations! You should see your "Hello" message followed by a shell prompt 
 
 The `initrd` method is great for testing, but it's temporary. To simulate a real device like an SD card, we can use a persistent disk image. This requires re-configuring the kernel to support block devices.
 
-### 1. Create the Filesystem Image
+### Create the Filesystem Image
 
 First, we create a raw disk image file, format it with an `ext2` filesystem, and copy our `rootfs` contents into it.
 
-```bash
+```ini
 # Create an empty 256MB disk image
 dd if=/dev/zero of=rootfs.ext2 bs=1M count=256
 
@@ -396,54 +396,54 @@ sudo cp -r rootfs/* temp_mount/
 sudo umount temp_mount
 ```
 
-### 2. Re-configure the Kernel for Block Devices
+### Re-configure the Kernel for Block Devices
 
 Go back to your kernel source directory (`linux-X.Y.Z`) and run `menuconfig` to enable the necessary drivers.
 
-```bash
+```ini
 make O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
 ```
 
 Enable the following options (press `Y` for built-in `[*]` or `M` for module `<*>`).
 
 - `Device Drivers --->`
-  
+
     - `Generic Driver Options --->` (**optional**)
-      
+
         - `[*] Maintain a devtmpfs filesystem to mount at /dev`
-          
+
         - `[*] Automount devtmpfs at /dev, after the kernel mounted the rootfs`
-        
+
     - `PCI support --->`
-      
+
         - `[*] PCI controller drivers --->`
-          
+
             - `[*] ARM Versatile PB PCI controller`
-        
+
     - `SCSI device support --->`
-      
+
         - `<*> SCSI device support`
-          
+
         - `<*> SCSI disk support`
-          
+
         - `[*] SCSI low-level drivers --->`
-          
+
             - `[*] LSI Logic New Generation RAID Device Drivers`
-              
+
             - `<*> SYM53C8XX Version 2 SCSI support`
-              
+
 
 Save your new configuration and exit.
 
-### 3. Re-compile the Kernel
+### Re-compile the Kernel
 
 Since the configuration has changed, you must re-compile the kernel.
 
-```bash
+```ini
 time make -j$(nproc) O=./build/ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
 ```
 
-### 4. before build and avoid erro
+### Before Build and Avoid Erro
 
 ```bash
 sudo mount rootfs.ext2 temp_mount
@@ -469,11 +469,11 @@ exec /bin/sh
 sudo chmod +x temp_mount/etc/init.d/rcS
 sudo umount temp_mount
 ```
-### 4. Boot with the Persistent Filesystem Image
+### Boot with the Persistent Filesystem Image
 
 Now, run QEMU, telling it to use your `rootfs.ext2` image as a SCSI hard drive.
 
-```bash
+```ini
 qemu-system-arm -M versatilepb -m 256M -serial stdio \
   -kernel linux-6.17/build/arch/arm/boot/zImage \
   -dtb linux-6.17/build/arch/arm/boot/dts/arm/versatile-pb.dtb \
@@ -484,13 +484,13 @@ qemu-system-arm -M versatilepb -m 256M -serial stdio \
 ```
 
 - `-append "root=/dev/sda ..."`: Tells the kernel the root device is the first SCSI disk (`sda`). `rootwait` tells it to wait for the device to be ready.
-  
+
 - `-device lsi53c895a`: Adds a virtual LSI SCSI controller.
-  
+
 - `-drive file=...`: Defines the disk image file.
-  
+
 - `-device scsi-hd...`: Attaches the drive to the SCSI controller.
-  
+
 
 Congratulations! You have now booted your custom Linux system from a persistent disk image.
 
@@ -498,21 +498,21 @@ Congratulations! You have now booted your custom Linux system from a persistent 
 
 While building each component manually is a great learning experience, it can be time-consuming. **Buildroot** is a powerful tool that automates the entire process of building a complete embedded Linux system. It generates the cross-compilation toolchain, the root filesystem, the kernel image, and the bootloader for you.
 
-### 1. Download and Extract Buildroot
+### Download and Extract Buildroot
 
 First, download the latest version of Buildroot from the [official website](https://buildroot.org/download.html "null"). Then, extract the archive.
 
-```bash
+```text
 # Replace with the version you downloaded
 tar xvf buildroot-2024.02.2.tar.gz
 cd buildroot-2024.02.2
 ```
 
-### 2. Configure Buildroot for QEMU ARM Versatile
+### Configure Buildroot for Qemu Arm Versatile
 
 Buildroot comes with many default configurations for common boards. We can use the one for our QEMU target.
 
-```bash
+```text
 # This sets up a complete configuration for the ARM Versatile PB board
 make qemu_arm_versatile_defconfig
 ```
@@ -520,30 +520,30 @@ make qemu_arm_versatile_defconfig
 This command configures Buildroot to:
 
 - Build a cross-compiler toolchain.
-  
+
 - Build a Linux kernel with the correct settings for Versatile PB.
-  
+
 - Build a root filesystem with BusyBox and other essential utilities.
-  
+
 - Create a persistent disk image (`rootfs.ext2`).
-  
+
 
 You can optionally run `make menuconfig` to customize the system further, such as adding more packages to the final image.
 
-### 3. Build the System
+### Build the System
 
 Now, run the `make` command. Buildroot will automatically download all source code, compile it, and place the final images in the `output/images` directory.
 
-```bash
+```text
 # This process can take a long time, especially on the first run
 make
 ```
 
-### 4. Run the Buildroot-Generated System in QEMU
+### Run the Buildroot-generated System in Qemu
 
 After the build is complete, you will find all the necessary files (`zImage`, `.dtb`, `rootfs.ext2`) in the `output/images` directory. You can run the system with a single command provided by Buildroot.
 
-```bash
+```ini
 # Note: This command must be run from the Buildroot source directory
 qemu-system-arm \
     -M versatilepb \
@@ -558,20 +558,20 @@ qemu-system-arm \
 
 The system will boot, and the default login is `root` with no password. This method is much faster for creating a functional Linux system and is widely used in professional embedded systems development.
 
-## Method 4: Building a Minimal x86_64 Distro (Manual)
+## Method 4: Building a Minimal X86_64 Distro (manual)
 
 The same principles for building an ARM distro can be applied to build one for your native `x86_64` architecture. This process does not require a cross-compiler, as you are compiling for your host machine's architecture.
 
-### 1. Create a Virtual Hard Disk Image
+### Create a Virtual Hard Disk Image
 
 First, create a file that will act as the virtual hard drive.
 
-```bash
+```ini
 # Create a 128MB virtual disk image
 dd if=/dev/zero of=disk.img bs=1M count=128
 ```
 
-### 2. Set Up and Partition the Loop Device
+### Set Up and Partition the Loop Device
 
 We need to map this file to a block device so we can partition and format it.
 
@@ -582,11 +582,11 @@ sudo losetup -fP disk.img
 losetup -a | grep disk.img
 ```
 
-### 3. Create Partitions and Filesystem
+### Create Partitions and Filesystem
 
 Use `fdisk` to create a partition table on the loop device.
 
-```bash
+```text
 # Replace /dev/loopX with your actual loop device (e.g., /dev/loop0)
 sudo fdisk /dev/loopX
 ```
@@ -594,19 +594,19 @@ sudo fdisk /dev/loopX
 Inside `fdisk`, create a new primary partition:
 
 1. Type `n` (new partition)
-    
+
 2. Type `p` (primary)
-    
+
 3. Type `1` (partition number)
-    
+
 4. Press `Enter` twice to accept the default first and last sectors.
-    
+
 5. Type `w` to write the changes and exit.
-    
+
 
 **Important:** You must refresh the loop device to make the kernel see the new partition.
 
-```bash
+```text
 # Detach the loop device
 sudo losetup -d /dev/loopX
 # Re-attach it, and -P will now create /dev/loopXp1
@@ -615,25 +615,25 @@ sudo losetup -fP disk.img
 
 Now, format the new partition (`p1`) with an `ext2` filesystem.
 
-```bash
+```text
 # Make sure to format the partition (e.g., /dev/loop0p1), not the whole device
 sudo mkfs.ext2 /dev/loopXp1
 ```
 
-### 4. Mount the New Filesystem
+### Mount the New Filesystem
 
 Create a mount point and mount the partition.
 
-```bash
+```text
 mkdir ./my_new_rootfs_mp
 sudo mount /dev/loopXp1 ./my_new_rootfs_mp
 ```
 
-### 5. Download and Compile the Linux Kernel (x86)
+### Download and Compile the Linux Kernel (x86)
 
 Download and compile the kernel, just as before, but this time without `ARCH` or `CROSS_COMPILE`.
 
-```bash
+```ini
 wget [https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.tar.xz](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.tar.xz)
 tar -xf linux-6.17.tar.xz
 cd linux-6.17
@@ -651,7 +651,7 @@ time make -j$(nproc) O=./x86_build
 
 The resulting kernel will be at `arch/x86/boot/bzImage`.
 
-### 6. Create the Minimal Rootfs with BusyBox
+### Create the Minimal Rootfs with Busybox
 
 **a. Create the directory structure:**
 
@@ -663,7 +663,7 @@ cd ..
 
 **b. Download, compile, and install BusyBox:**
 
-```bash
+```ini
 wget [https://busybox.net/downloads/busybox-1.36.1.tar.bz2](https://busybox.net/downloads/busybox-1.36.1.tar.bz2)
 tar -xf busybox-1.36.1.tar.bz2
 cd busybox-1.36.1
@@ -672,7 +672,7 @@ cd busybox-1.36.1
 make mrproper
 
 # Create default config (for x86)
-make O=./x86_build defconfig 
+make O=./x86_build defconfig
 
 # Run menuconfig to enable static linking
 make O=./x86_build menuconfig
@@ -684,7 +684,7 @@ make O=./x86_build -j$(nproc)
 make O=./x86_build CONFIG_PREFIX=../../x86_file_system install
 ```
 
-### 7. Create Essential Device Nodes
+### Create Essential Device Nodes
 
 Go into your new rootfs's `dev` directory and create the `console` and `null` devices.
 
@@ -694,7 +694,7 @@ sudo mknod -m 622 console c 5 1
 sudo mknod -m 666 null c 1 3
 ```
 
-### 8. Create an Init Script (Optional)
+### Create an Init Script (optional)
 
 BusyBox provides a default `/sbin/init`, but you can create your own.
 
@@ -716,7 +716,7 @@ chmod +x init
 cd ../..
 ```
 
-### 9. Unmount and Run with QEMU (x86)
+### Unmount and Run with Qemu (x86)
 
 First, unmount the filesystem and detach the loop device.
 
@@ -733,7 +733,7 @@ sudo apt install qemu-system-x86
 
 Finally, run your new x86_64 distro!
 
-```bash
+```ini
 qemu-system-x86_64 \
     -kernel linux-6.17/arch/x86/boot/bzImage \
     -drive file=disk.img,format=raw,if=virtio \
@@ -742,12 +742,12 @@ qemu-system-x86_64 \
 ```
 
 - `-kernel`: Path to your compiled x86 kernel.
-    
+
 - `-drive`: Points to your disk image. `if=virtio` provides a high-performance virtual disk (`/dev/vda`).
-    
+
 - `-append`: `root=/dev/vda1` tells the kernel to use the first partition on the VirtIO disk. `console=ttyS0` directs output to the serial console.
-    
+
 - `-nographic`: Runs QEMU in your terminal.
-    
+
 
 To exit QEMU, press **`Ctrl+A`**, then **`x`**.

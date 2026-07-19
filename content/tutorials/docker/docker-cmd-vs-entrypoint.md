@@ -1,5 +1,5 @@
 ---
-title: 'Docker: CMD vs. ENTRYPOINT - The Comprehensive Guide'
+title: 'Docker: Cmd vs. Entrypoint - the Comprehensive Guide'
 description: >-
   This guide explains specifically how to define startup commands in Docker, the
   subtle differences between CMD and ENTRYPOINT, and when to use which.
@@ -11,19 +11,19 @@ author: abdallah-shehawey
 ---
 This guide explains specifically how to define startup commands in Docker, the subtle differences between `CMD` and `ENTRYPOINT`, and when to use which.
 
-## 1. The Basics: What happens when a container starts?
+## The Basics: What Happens When a Container Starts?
 
 When a container starts, it **must** have a process to run. If that process stops, the container dies. You define this startup process in the `Dockerfile` using either `CMD` or `ENTRYPOINT`.
 
-## 2. `CMD` (Command)
+## `cmd` (command)
 
-### What is it?
+### What is It?
 
 - It defines the **default** command and arguments that the container should run.
 
 - It is considered a "suggestion". The user can easily ignore it.
 
-### How to write it?
+### How to Write It?
 
 **Format (Exec form - Recommended):**
 
@@ -48,13 +48,13 @@ CMD ["sleep", "5"]
 |`docker run my-image 10`|❌ **Error**|"10" is not a command. It tries to run an executable named "10".|
 |`docker run my-image sleep 10`|`sleep 10`|**OVERRIDES** the entire CMD. The `sleep 5` is completely ignored.|
 
-### Summary for CMD
+### Summary for Cmd
 
 > **Rule:** If the user types _anything_ after the image name in `docker run`, the `CMD` instruction is **completely replaced**.
 
-## 3. `ENTRYPOINT`
+## `entrypoint`
 
-### What is it?
+### What is It?
 
 - It defines the **main executable** of the container.
 
@@ -62,7 +62,7 @@ CMD ["sleep", "5"]
 
 - It is "strict". It is difficult to ignore.
 
-### How to write it?
+### How to Write It?
 
 **Format:**
 
@@ -87,11 +87,11 @@ ENTRYPOINT ["sleep"]
 |`docker run my-image 10`|`sleep 10`|**APPENDS** "10" to the entrypoint.|
 |`docker run my-image 20`|`sleep 20`|**APPENDS** "20" to the entrypoint.|
 
-### Summary for ENTRYPOINT
+### Summary for Entrypoint
 
 > **Rule:** If the user types arguments after the image name, they are **appended** (added to the end) of the `ENTRYPOINT` command.
 
-## 4. The "Combo" Pattern (Best Practice)
+## The "combo" Pattern (best Practice)
 
 Professional DevOps engineers often use **both** together.
 
@@ -99,7 +99,7 @@ Professional DevOps engineers often use **both** together.
 
 - **CMD:** Defines the _default arguments_ (The thing that might change).
 
-### Example Scenario (The Perfect Dockerfile)
+### Example Scenario (the Perfect Dockerfile)
 
 **Dockerfile:**
 
@@ -118,17 +118,17 @@ CMD ["5"]
 |`docker run my-image`|`sleep 5`|Uses Entrypoint (`sleep`) + Default CMD (`5`).|
 |`docker run my-image 10`|`sleep 10`|Uses Entrypoint (`sleep`) + User Argument (`10`). The CMD is overridden.|
 
-### Why is this the best?
+### Why is This the Best?
 
 1. The container feels like a binary command (`my-image 10`).
 
 2. It still has a sensible default if the user is lazy (`my-image`).
 
-## 5. Technical Deep Dive: Shell vs. Exec Form
+## Technical Deep Dive: Shell vs. Exec Form
 
 You will see two ways of writing these commands. It is crucial to use the correct one.
 
-### 1. Shell Form (Avoid this)
+### Shell Form (avoid This)
 
 ```dockerfile
 CMD sleep 5
@@ -140,7 +140,7 @@ CMD sleep 5
 
 - **Consequence:** If you try to stop the container (`Ctrl+C` or `docker stop`), the signal goes to the shell, which might not pass it to your app. Your app won't shut down gracefully.
 
-### 2. Exec Form (Always use this)
+### Exec Form (always Use This)
 
 ```dockerfile
 CMD ["sleep", "5"]
@@ -152,7 +152,7 @@ CMD ["sleep", "5"]
 
 - **Syntax Rule:** You **MUST** use double quotes `"` (JSON format). Single quotes `'` will cause errors.
 
-## 6. How to Override ENTRYPOINT?
+## How to Override Entrypoint?
 
 We said `ENTRYPOINT` is "strict", but can we force override it? Yes, but it requires a special flag.
 
@@ -160,7 +160,7 @@ We said `ENTRYPOINT` is "strict", but can we force override it? Yes, but it requ
 
 **Command:**
 
-```bash
+```text
 docker run --entrypoint bash my-image
 ```
 

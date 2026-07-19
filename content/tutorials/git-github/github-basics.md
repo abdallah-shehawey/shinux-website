@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 GitHub – Full Basics & Practical Guide"
+title: Github Full Basics & Practical Guide
 description: >-
   GitHub is a cloud platform for hosting Git repositories and enabling
   collaboration.
@@ -9,12 +9,12 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-> This guide covers **GitHub only** (remote repositories, collaboration, organizations, PRs, permissions, .gitignore, README best practices).  
+> This guide covers **GitHub only** (remote repositories, collaboration, organizations, PRs, permissions, .gitignore, README best practices).
 > It assumes you already know **Git basics** (init, add, commit, branches, merge, rebase).
 
 ---
 
-## ❓ Why GitHub?
+## Why Github?
 
 GitHub is a **cloud platform** for hosting Git repositories and enabling collaboration.
 
@@ -34,9 +34,9 @@ GitHub is a **cloud platform** for hosting Git repositories and enabling collabo
 
 ---
 
-## 🌐 GitHub Repositories (Remote)
+## Github Repositories (remote)
 
-### Create a new repo locally and connect to GitHub
+### Create a New Repo Locally and Connect to Github
 
 ```bash
 echo "# git_playground" >> README.md
@@ -48,7 +48,7 @@ git remote add origin https://github.com/USERNAME/git_playground.git
 git push -u origin main
 ```
 
-### Connect an existing local repo to GitHub
+### Connect an Existing Local Repo to Github
 
 ```bash
 git remote add origin https://github.com/USERNAME/git_playground.git
@@ -86,11 +86,11 @@ git push -u origin main
 
 ---
 
-## 🔐 Authentication & Common Error (403)
+## Authentication & Common Error (403)
 
 You might see:
 
-```text
+```bash
 remote: Permission to USER/repo.git denied.
 fatal: unable to access 'https://github.com/USER/repo.git/': 403
 ```
@@ -115,7 +115,7 @@ git remote set-url origin git@github.com:USERNAME/repo.git
 
 ---
 
-## 🌿 Remote Branches & Tracking
+## Remote Branches & Tracking
 
 List all branches (local + remote-tracking):
 
@@ -149,7 +149,7 @@ git pull origin main
 
 ---
 
-## 🧹 Deleting Remote Branches
+## Deleting Remote Branches
 
 Delete locally:
 
@@ -167,7 +167,7 @@ git push origin --delete branchname
 
 ---
 
-## 📥 Cloning a Repository
+## Cloning a Repository
 
 ```bash
 git clone https://github.com/USERNAME/repo.git
@@ -181,7 +181,7 @@ This downloads the repo and automatically sets:
 
 ---
 
-## 🍴 Fork & Pull Request (PR)
+## Fork & Pull Request (pr)
 
 ### Fork
 
@@ -219,7 +219,7 @@ git push origin feature-x
 
 1. Open a **Pull Request** from your fork → original repo.
 
-### Pull Request (PR)
+### Pull Request (pr)
 
 - A PR is a **request to merge your changes** into another branch/repo.
 
@@ -233,7 +233,7 @@ git push origin feature-x
 
 ---
 
-## 🏢 GitHub Organizations
+## Github Organizations
 
 Organizations are used to manage **teams, permissions, and repositories** for companies, teams, or communities.
 
@@ -251,7 +251,7 @@ Organizations are used to manage **teams, permissions, and repositories** for co
 
 ### Roles & Permissions
 
-#### 👤 Members
+#### Members
 
 - Part of the organization.
 
@@ -259,7 +259,7 @@ Organizations are used to manage **teams, permissions, and repositories** for co
 
 - Permissions depend on team/repo access.
 
-#### 🤝 Outside Collaborators
+#### Outside Collaborators
 
 - Not organization members.
 
@@ -267,7 +267,7 @@ Organizations are used to manage **teams, permissions, and repositories** for co
 
 - Useful for contractors or external contributors.
 
-#### 👥 Teams
+#### Teams
 
 - Group members into teams (e.g., Backend, Frontend, DevOps).
 
@@ -303,7 +303,7 @@ This gives fine-grained control over:
 
 ---
 
-## 🚫 .gitignore (Secrets & Private Files)
+## .gitignore (secrets & Private Files)
 
 Use `.gitignore` to prevent sensitive or unnecessary files from being pushed:
 
@@ -321,7 +321,7 @@ Use `.gitignore` to prevent sensitive or unnecessary files from being pushed:
 
 Example `.gitignore`:
 
-```gitignore
+```text
 .env
 *.key
 *.pem
@@ -330,13 +330,13 @@ build/
 dist/
 ```
 
-> ⚠️ Never push secrets to GitHub. If you did, rotate the key immediately.
+> ⚠ Never push secrets to GitHub. If you did, rotate the key immediately.
 
 ---
 
-## 📝 README Files on GitHub
+## Readme Files on Github
 
-### Repository README
+### Repository Readme
 
 - Explains:
 
@@ -350,11 +350,11 @@ dist/
 
   - License
 
-### GitHub Profile README
+### Github Profile Readme
 
 Create a repo named exactly like your username:
 
-```
+```text
 USERNAME/USERNAME
 ```
 
@@ -364,7 +364,7 @@ You can use profile README generators to quickly scaffold sections like bio, ski
 
 ---
 
-## 🔒 Best Practices
+## Best Practices
 
 - Use SSH or PAT for authentication
 
@@ -380,7 +380,7 @@ You can use profile README generators to quickly scaffold sections like bio, ski
 
 ---
 
-## ✅ Summary
+## Summary
 
 - GitHub is for **hosting, collaboration, and code review**.
 

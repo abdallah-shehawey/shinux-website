@@ -12,32 +12,32 @@ author: abdallah-shehawey
 ---
 This guide explains the basic steps to convert source code from a `.c` file into an executable program, as well as how to create and use Static and Shared Libraries.
 
-## First: The 4 Stages of the Build Process
+## First: the 4 Stages of the Build Process
 
 The build process goes through four main stages, and we can use `gcc` (GNU Compiler Collection) to control each stage.
 
-### 1. Preprocessing
+### Preprocessing
 
 **What happens?** The Preprocessor reads the `.c` source code and executes commands that start with a `#`.
 
 - **`#include`**: This line is replaced with the content of the included file (e.g., `stdio.h`).
-    
+
 - **`#define`**: Every "macro" is replaced with its defined value.
-    
+
 - **Removing Comments**: All comments (`/* ... */` and `// ...`) are deleted.
-    
+
 
 **Output File**: A "Pure C Code" file with a `.i` extension.
 
 **Command:**
 
-```bash
+```text
 # -E: Means "Stop after the preprocessing step only"
 # -o source.i: Specify the output filename
 gcc -E source.c -o source.i
 ```
 
-### 2. Compilation
+### Compilation
 
 **What happens?** The Compiler takes the `.i` file (raw code) and converts it to Assembly Language specific to the target architecture (e.g., x86). This step also includes checking for syntax errors and performing optimizations.
 
@@ -45,13 +45,13 @@ gcc -E source.c -o source.i
 
 **Command:**
 
-```bash
+```text
 # -S: Means "Stop after the compilation step only"
 # (Uppercase S)
 gcc -S source.i -o source.s
 ```
 
-### 3. Assembly
+### Assembly
 
 **What happens?** The Assembler converts the assembly code (the `.s` file) into Machine Code, turning human-readable instructions (like `MOV`, `ADD`) into binary numbers that the processor understands.
 
@@ -59,13 +59,13 @@ gcc -S source.i -o source.s
 
 **Command:**
 
-```bash
+```text
 # -c: Means "Compile and assemble, but do not link"
 # (Lowercase c)
 gcc -c source.s -o source.o
 ```
 
-### 4. Linking
+### Linking
 
 **What happens?** This is the final stage. The Linker gathers your object file(s) (like `source.o`) along with any other libraries the program needs (like the `printf` function from the C standard library) to produce a complete executable file.
 
@@ -83,7 +83,7 @@ gcc source.o -o program.exe
 
 A map file is a text file that shows how the Linker organized functions and variables in memory within the executable. This is very useful for advanced debugging.
 
-```bash
+```ini
 # -Wl,...: This flag passes the commands that follow it directly to the Linker (ld)
 # -Map=main.map: We ask the linker to create a map file named main.map
 gcc test.c -o test -Wl,-Map=main.map
@@ -93,11 +93,11 @@ gcc test.c -o test -Wl,-Map=main.map
 
 A static library is an "archive" (a file with a `.a` extension) that contains a collection of object files (`.o`). When you link your program against it, the code your program needs from the library is _copied_ into your final executable file. This makes the executable larger but self-contained.
 
-### 1. Creating the Static Library
+### Creating the Static Library
 
 **Step A: Create Object Files** First, we need to convert all the `.c` files we want in the library into `.o` files.
 
-```bash
+```text
 # Use -c to create .o files only
 gcc -c file1.c -o file1.o
 gcc -c file2.c -o file2.o
@@ -109,7 +109,7 @@ gcc -c *.c
 
 **Step B: Create the Archive (Library)** We use the `ar` (archiver) tool to create the library from the `.o` files.
 
-```bash
+```text
 # ar: The archiver tool
 # r: Add files to the archive (or replace them if they already exist)
 # c: Create the archive if it doesn't exist
@@ -121,11 +121,11 @@ ar rcs libfile.a file1.o file2.o *.o
 
 **Useful command:** To list the contents of the library (which `.o` files are inside):
 
-```bash
+```text
 ar t libfile.a
 ```
 
-### 2. Using the Static Library (Linking with it)
+### Using the Static Library (linking with It)
 
 Let's assume you have a program `main.c` that uses functions from your library `libfile.a`, which is located in a folder named `mylib`.
 
@@ -149,24 +149,24 @@ gcc -c main.c -o main.o -I./mylib
 gcc main.o -o main_program -L./mylib -lfile
 ```
 
-## Third: Shared (Dynamic) Libraries
+## Third: Shared (dynamic) Libraries
 
 A shared library (or "Shared Object" - `.so` file on Linux) is different. The code is **not** copied into your executable. Instead, the executable only contains a reference to the library. The operating system loads the shared library into memory **at runtime** when you run the program.
 
 **Advantages:**
 
 - **Smaller Executables:** Your program file is much smaller.
-    
-- **Efficiency:** If 10 programs use the same library, the OS only loads _one copy_ of the library into memory.
-    
-- **Updatability:** You can update the shared library (e.g., with bug fixes) without recompiling your main program.
-    
 
-### 1. Creating the Shared Library
+- **Efficiency:** If 10 programs use the same library, the OS only loads _one copy_ of the library into memory.
+
+- **Updatability:** You can update the shared library (e.g., with bug fixes) without recompiling your main program.
+
+
+### Creating the Shared Library
 
 **Step A: Create Position-Independent Object Files** When creating a shared library, you must compile your source files into **Position-Independent Code (PIC)**. This allows the library to be loaded at any memory address by the OS.
 
-```bash
+```text
 # -fPIC: Generate Position-Independent Code. This is mandatory for shared libraries.
 # -c: Compile only, don't link.
 gcc -c -fPIC file1.c -o file1.o
@@ -186,11 +186,11 @@ gcc -shared -o libfile.so *.o
 
 **Alternative (One-Step Method):** You can also combine these two steps into one:
 
-```bash
+```text
 gcc -fPIC -shared *.c -o libfile.so
 ```
 
-### 2. Compiling with the Shared Library (Linking)
+### Compiling with the Shared Library (linking)
 
 This step looks very similar to static linking. You tell the linker where to find the library and which one to use.
 
@@ -205,7 +205,7 @@ gcc main.c -o main_program -I./mylib -L./mylib -lfile
 
 At this point, `main_program` is created, but it only knows the _name_ `libfile.so`, not _where_ to find it at runtime.
 
-### 3. Running the Program (Runtime Linking)
+### Running the Program (runtime Linking)
 
 If you try to run `./main_program` directly, you will likely get an error: `./main_program: error while loading shared libraries: libfile.so: cannot open shared object file: No such file or directory`
 
@@ -215,13 +215,13 @@ You must tell the OS loader where to find your `.so` file using the `LD_LIBRARY_
 
 **Method 1: Set for a single command** Prefix the command with the variable. This is great for testing.
 
-```bash
+```ini
 LD_LIBRARY_PATH=./mylib ./main_program
 ```
 
 **Method 2: Set for the current terminal session** Use `export` to set the variable for your current shell.
 
-```bash
+```ini
 export LD_LIBRARY_PATH=./mylib
 ./main_program
 # You can now run ./main_program freely until you close this terminal

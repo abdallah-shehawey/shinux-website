@@ -1,5 +1,5 @@
 ---
-title: su Command in Linux — Complete Guide with Environment Variables
+title: Su Command in Linux Complete Guide with Environment Variables
 description: >-
   The su (substitute user / switch user) command is one of the oldest and most
   fundamental privilege-switching tools in Unix and Linux systems. It allows one
@@ -35,7 +35,7 @@ Environment variables are **key–value pairs** inherited by child processes fro
 
 ### Viewing Environment Variables
 
-```bash
+```text
 printenv
 env
 
@@ -51,23 +51,23 @@ echo $PATH
 
 The `su` command starts a shell as another user after successful authentication. By default, it switches to **root**:
 
-```bash
+```text
 su
 ```
 
 But it can switch to any user:
 
-```bash
+```text
 su alice
 ```
 
-⚠️ **Authentication rule**: you must know the target user’s password (unless running as root).
+⚠ **Authentication rule**: you must know the target user’s password (unless running as root).
 
 ---
 
-## su Command Syntax
+## Su Command Syntax
 
-```bash
+```text
 su [OPTIONS] [USERNAME]
 ```
 
@@ -82,36 +82,36 @@ su [OPTIONS] [USERNAME]
 
 ---
 
-## `su` vs `su -` (Critical Difference)
+## `su` vs `su -` (critical Difference)
 
-### `su` (No Dash)
+### `su` (no Dash)
 
 - Keeps **current environment**
-    
+
 - Does NOT reset `HOME`, `PATH`, `USER`
-    
+
 - Working directory remains the same
-    
+
 
 Example:
 
-```bash
+```text
 su ali
 echo $HOME   # still original user's home
 ```
 
-### `su -` (Login Shell)
+### `su -` (login Shell)
 
 - Resets environment
-    
+
 - Loads `/etc/profile`, `~/.bash_profile`
-    
+
 - Changes working directory to target home
-    
+
 
 Example:
 
-```bash
+```text
 su - ali
 echo $HOME   # /home/ali
 ```
@@ -122,25 +122,25 @@ echo $HOME   # /home/ali
 
 ## Environment Variable Behavior Demo
 
-### Before su
+### Before Su
 
-```bash
+```text
 echo $USER
 echo $HOME
 echo $PATH
 ```
 
-### Using su
+### Using Su
 
-```bash
+```text
 su ali
 echo $USER   # still original user
 exit
 ```
 
-### Using su -
+### Using Su -
 
-```bash
+```text
 su - ali
 echo $USER   # ali
 exit
@@ -150,7 +150,7 @@ exit
 
 ## Running Single Commands
 
-```bash
+```text
 su - root -c "apt update"
 ```
 
@@ -158,7 +158,7 @@ Useful for scripts and auditing.
 
 ---
 
-## su vs sudo
+## Su vs Sudo
 
 |Feature|su|sudo|
 |---|---|---|
@@ -174,25 +174,25 @@ Useful for scripts and auditing.
 ## Security Best Practices
 
 - Disable direct root login where possible
-    
+
 - Prefer `sudo -i` over `su -`
-    
+
 - Limit shell access in `/etc/passwd`
-    
+
 - Log usage (`/var/log/auth.log`)
-    
+
 
 ---
 
 ## Summary
 
 - `su` switches user
-    
+
 - `su -` emulates a real login
-    
+
 - Environment variables define behavior
-    
+
 - Prefer `sudo` in production systems
-    
+
 
 ---

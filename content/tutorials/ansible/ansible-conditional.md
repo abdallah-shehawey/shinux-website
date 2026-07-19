@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 Ansible Conditionals Guide (when)"
+title: Ansible Conditionals Guide (when)
 description: >-
   A comprehensive guide to understanding and using Conditionals in Ansible. This
   document covers how to control task execution flow using the when statement,
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 A comprehensive guide to understanding and using **Conditionals** in Ansible. This document covers how to control task execution flow using the `when` statement, from basic checks to advanced logic.
 
-## 🧠 What are Conditionals?
+## What are Conditionals?
 
 In automation, you don't always want to run every task on every server.
 
@@ -20,9 +20,9 @@ In automation, you don't always want to run every task on every server.
 
 - **Solution:** Use the `when` statement. It checks a condition (True/False). If **True**, the task runs. If **False**, the task is **Skipped**.
 
-## 🚀 Part 1: Basic Examples (The Essentials)
+## Part 1: Basic Examples (the Essentials)
 
-### 1. Run Task Only on RedHat-Based Systems
+### Run Task Only on Redhat-based Systems
 
 This is the most common use case: handling different Operating Systems.
 
@@ -46,7 +46,7 @@ This is the most common use case: handling different Operating Systems.
 
 - **Logic:** "Only run this `yum` task if the OS family is exactly RedHat".
 
-### 2. Run Task If Variable Matches Value
+### Run Task if Variable Matches Value
 
 You can control flow using your own custom variables defined in the playbook or passed via CLI.
 
@@ -70,7 +70,7 @@ You can control flow using your own custom variables defined in the playbook or 
 
 - **`when: pkg_name == "nginx"`**: Checks the value. If you changed `pkg_name` to `apache`, this task would be skipped.
 
-### 3. Use 'when' with Hostname
+### Use 'when' with Hostname
 
 Useful when you need to run a specific task on a specific node (e.g., only the Master node).
 
@@ -90,7 +90,7 @@ Useful when you need to run a specific task on a specific node (e.g., only the M
 
 - **`debug` module**: Prints messages to the terminal (like `echo` in bash). Useful for testing conditions without changing the system.
 
-### 4. Run Task If File Exists (Advanced Pattern)
+### Run Task if File Exists (advanced Pattern)
 
 This is a powerful pattern: Check something first, `register` the result, then use it.
 
@@ -121,7 +121,7 @@ This is a powerful pattern: Check something first, `register` the result, then u
 
 - **Logic:** "If the file exists, delete it. If not, do nothing."
 
-### 5. Use 'when' with OS Distribution
+### Use 'when' with Os Distribution
 
 More specific than `os_family`. Use this when you care about the exact Distro (Amazon vs CentOS vs Ubuntu).
 
@@ -137,15 +137,15 @@ More specific than `os_family`. Use this when you care about the exact Distro (A
       when: ansible_distribution == "Amazon"
 ```
 
-## 🔧 Part 2: Advanced Logic (Multiple Conditions)
+## Part 2: Advanced Logic (multiple Conditions)
 
-### 1. The AND Operator
+### The and Operator
 
 To run a task only if **multiple** conditions are true.
 
 **Method A: List format (Recommended for readability)**
 
-```yaml
+```ini
 when:
   - ansible_distribution == "CentOS"
   - ansible_memtotal_mb >= 1024
@@ -155,29 +155,29 @@ _Logic:_ Run ONLY if it is CentOS **AND** has more than 1GB RAM.
 
 **Method B: String format**
 
-```yaml
+```ini
 when: ansible_distribution == "CentOS" and ansible_memtotal_mb >= 1024
 ```
 
-### 2. The OR Operator
+### The or Operator
 
 To run a task if **at least one** condition is true.
 
-```yaml
+```ini
 when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
 ```
 
 _Logic:_ Run on RedHat OR Debian systems.
 
-## 🛠️ Part 3: Controlling Task Status (Must Know!)
+## Part 3: Controlling Task Status (must Know!)
 
 Sometimes a command fails, but you don't want Ansible to stop. Or a command runs successfully, but you don't want to report "Changed".
 
-### 1. `failed_when` (Custom Failure)
+### `failed_when` (custom Failure)
 
 Define what constitutes a "failure" for a task.
 
-```yaml
+```bash
 - name: Check for error in log
   command: cat /var/log/app.log
   register: log_output
@@ -186,7 +186,7 @@ Define what constitutes a "failure" for a task.
 
 - **Logic:** The command `cat` works fine (exit code 0), but we want to fail the playbook if the word "CRITICAL" is found in the text.
 
-### 2. `changed_when` (Clean Output)
+### `changed_when` (clean Output)
 
 Commands usually report "Changed" every time they run. You can suppress this.
 
@@ -199,7 +199,7 @@ Commands usually report "Changed" every time they run. You can suppress this.
 
 - **Why?** Running `nginx -t` doesn't change the server state; it just checks config. Reporting "Changed" is misleading.
 
-## 🌟 Part 4: Conditionals with Loops
+## Part 4: Conditionals with Loops
 
 You can filter items in a loop directly using `when`.
 
@@ -219,7 +219,7 @@ You can filter items in a loop directly using `when`.
 
 **Advanced Loop Condition:**
 
-```yaml
+```bash
 - name: Create users based on group
   user:
     name: "{{ item.name }}"
@@ -232,7 +232,7 @@ You can filter items in a loop directly using `when`.
 
 - **Result:** Creates 'alice', skips 'bob'.
 
-## 🎯 Summary Checklist
+## Summary Checklist
 
 |Keyword|Use Case|
 |---|---|

@@ -23,7 +23,7 @@ This guide explains how to:
 - Export GUI applications back to Fedora
 - Troubleshoot common errors
 
-## 1) Install Distrobox on Fedora
+## Install Distrobox on Fedora
 
 ```bash
 sudo dnf install distrobox
@@ -41,7 +41,7 @@ Verify installation:
 distrobox --version
 ```
 
-## 2) Create an Arch Linux container
+## Create an Arch Linux container
 
 Create the container (recommended lowercase name):
 
@@ -82,7 +82,7 @@ If this works on Fedora, the GPU will work inside the container. Enter the conta
 distrobox enter arch
 ```
 
-## 3) First-time Arch setup
+## First-time Arch setup
 
 Update the system:
 
@@ -96,7 +96,7 @@ Install build tools required for AUR:
 sudo pacman -S base-devel git
 ```
 
-## 4) Install yay (AUR helper)
+## Install yay (AUR helper)
 
 ```bash
 git clone https://aur.archlinux.org/yay.git
@@ -110,7 +110,7 @@ Test installation:
 yay -S google-chrome
 ```
 
-## 5) Installing WhatsApp from AUR (example)
+## Installing WhatsApp from AUR (example)
 
 Search for the correct package name:
 
@@ -130,7 +130,7 @@ Launch the application:
 whatsapp-for-linux
 ```
 
-## 6) Export Arch apps to Fedora
+## Export Arch apps to Fedora
 
 To make an installed Arch application available in the Fedora menu:
 
@@ -138,7 +138,7 @@ To make an installed Arch application available in the Fedora menu:
 distrobox-export --app whatsapp-for-linux
 ```
 
-## 7) NVIDIA GPU usage inside the container
+## NVIDIA GPU usage inside the container
 
 Ensure the NVIDIA driver works on the Fedora host:
 
@@ -164,7 +164,7 @@ For hybrid GPU systems (Optimus), force NVIDIA usage:
 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia program-name
 ```
 
-## 8) Common mistakes & troubleshooting
+## Common mistakes & troubleshooting
 
 ### Mistake: deleting `~/.cache` during setup
 
@@ -204,7 +204,7 @@ podman system reset
 
 Or simply reboot / logout-login.
 
-## 9) Remove the container
+## Remove the container
 
 ```bash
 distrobox rm arch

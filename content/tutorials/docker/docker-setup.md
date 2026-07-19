@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide covers everything you need to know to get started with Docker. It explains commands in detail, breaks down arguments (flags), and provides real-world examples including web servers (Nginx) and databases (MySQL).
 
-## 1. Installation & Setup
+## Installation & Setup
 
 Before using Docker, you need to install and enable it on your system.
 
@@ -38,7 +38,7 @@ sudo systemctl start docker
 
 - **Explanation:** Installing Docker doesn't start it automatically. This command starts the Docker daemon (background process) so it can receive commands.
 
-### Enable Docker (Auto-start)
+### Enable Docker (auto-start)
 
 **Command:**
 
@@ -52,13 +52,13 @@ sudo systemctl enable docker
 
 **Command:**
 
-```bash
+```text
 docker --version
 ```
 
 - **Explanation:** Verifies that Docker is installed correctly and shows you which version you are running.
 
-## 2. The Golden Command: `docker run`
+## The Golden Command: `docker Run`
 
 The `docker run` command is the most frequently used command. It effectively performs three steps in one:
 
@@ -72,27 +72,27 @@ The `docker run` command is the most frequently used command. It effectively per
 
 **Command:**
 
-```bash
+```text
 docker run hello-world
 ```
 
 - **What it does:** Downloads a tiny test image, runs it to print a "Hello" message, and then exits. Used to verify your installation works.
 
-### Running a Web Server (Nginx)
+### Running a Web Server (nginx)
 
 **Command:**
 
-```bash
+```text
 docker run nginx
 ```
 
 - **Behavior:** This runs Nginx in the **foreground**. Your terminal will be stuck showing Nginx logs, and you cannot type new commands until you stop it (Ctrl+C).
 
-### Running in Background (Detached Mode)
+### Running in Background (detached Mode)
 
 **Command:**
 
-```bash
+```text
 docker run -d nginx
 ```
 
@@ -100,11 +100,11 @@ docker run -d nginx
 
   - `-d` (Detached): **Crucial.** It tells Docker to run the container in the background. The terminal remains free for you to use, and the container keeps running silently.
 
-### Running with a Specific Version (Tags)
+### Running with a Specific Version (tags)
 
 **Command:**
 
-```bash
+```text
 docker run -d nginx:1.19
 ```
 
@@ -114,7 +114,7 @@ docker run -d nginx:1.19
 
 **Command:**
 
-```bash
+```text
 docker run -d -p 8080:80 nginx
 ```
 
@@ -130,7 +130,7 @@ docker run -d -p 8080:80 nginx
 
 **Command:**
 
-```bash
+```text
 docker run -d ubuntu sleep 5
 ```
 
@@ -138,13 +138,13 @@ docker run -d ubuntu sleep 5
 
 - **Example:** This forces the Ubuntu container to simply `sleep` for 5 seconds and then exit (stop).
 
-## 3. Managing Containers (Lifecycle)
+## Managing Containers (lifecycle)
 
 ### List Running Containers
 
 **Command:**
 
-```bash
+```text
 docker ps
 ```
 
@@ -152,11 +152,11 @@ docker ps
 
 - **Columns:** Shows Container ID, Image, Command, Created Time, Status, Ports, and Names.
 
-### List ALL Containers (Running & Stopped)
+### List All Containers (running & Stopped)
 
 **Command:**
 
-```bash
+```text
 docker ps -a
 ```
 
@@ -164,11 +164,11 @@ docker ps -a
 
   - `-a` (All): Shows active containers AND containers that have stopped, exited, or crashed.
 
-### List Only Container IDs
+### List Only Container Ids
 
 **Command:**
 
-```bash
+```text
 docker ps -aq
 ```
 
@@ -180,7 +180,7 @@ docker ps -aq
 
 **Command:**
 
-```bash
+```text
 docker stop <container_id>
 # OR
 docker stop <container_name>
@@ -192,7 +192,7 @@ docker stop <container_name>
 
 **Command:**
 
-```bash
+```text
 docker start <container_id>
 ```
 
@@ -202,19 +202,19 @@ docker start <container_id>
 
 **Command:**
 
-```bash
+```text
 docker restart <container_id>
 ```
 
 - **Explanation:** Stops and immediately starts the container again. Useful if the app crashed or configs changed.
 
-## 4. Removing & Cleanup
+## Removing & Cleanup
 
 ### Remove a Stopped Container
 
 **Command:**
 
-```bash
+```text
 docker rm <container_id>
 ```
 
@@ -224,7 +224,7 @@ docker rm <container_id>
 
 **Command:**
 
-```bash
+```text
 docker rm -f <container_id>
 ```
 
@@ -232,11 +232,11 @@ docker rm -f <container_id>
 
   - `-f` (Force): Deletes the container immediately, even if it is currently running (sends SIGKILL). Use with caution.
 
-### Bulk Delete (Delete ALL Containers)
+### Bulk Delete (delete All Containers)
 
 **Command:**
 
-```bash
+```text
 docker rm -f $(docker ps -aq)
 ```
 
@@ -248,13 +248,13 @@ docker rm -f $(docker ps -aq)
 
     3. **Warning:** This deletes everything. Be careful!
 
-## 5. Working with Images
+## Working with Images
 
-### Pull an Image (Download Only)
+### Pull an Image (download Only)
 
 **Command:**
 
-```bash
+```text
 docker pull nginx
 ```
 
@@ -264,17 +264,17 @@ docker pull nginx
 
 **Command:**
 
-```bash
+```text
 docker images
 ```
 
 - **Explanation:** Shows all images currently downloaded on your machine (Repository, Tag, Image ID, Size).
 
-### Create a Container (Without Starting)
+### Create a Container (without Starting)
 
 **Command:**
 
-```bash
+```text
 docker create nginx
 ```
 
@@ -286,7 +286,7 @@ docker create nginx
 
 **Command:**
 
-```bash
+```text
 docker rmi <image_name>
 # OR
 docker image rm <image_name>
@@ -294,13 +294,13 @@ docker image rm <image_name>
 
 - **Explanation:** Deletes the actual image file from your disk to save space. You cannot delete an image if a container is using it (you must delete the container first).
 
-## 6. Advanced Interactions & Inspection
+## Advanced Interactions & Inspection
 
 ### Inspecting Details
 
 **Command:**
 
-```bash
+```text
 docker inspect <container_id>
 ```
 
@@ -310,7 +310,7 @@ docker inspect <container_id>
 
 **Command:**
 
-```bash
+```text
 docker logs <container_id>
 ```
 
@@ -322,7 +322,7 @@ docker logs <container_id>
 
 **Command:**
 
-```bash
+```text
 docker exec -it <container_id> bash
 ```
 
@@ -336,11 +336,11 @@ docker exec -it <container_id> bash
 
 - **Use Case:** "Logging into" the container to fix files or check configurations manually.
 
-### Persistent Storage (Volumes)
+### Persistent Storage (volumes)
 
 **Command:**
 
-```bash
+```text
 docker run -d -p 8090:80 -v /data:/tmp nginx
 ```
 
@@ -352,15 +352,15 @@ docker run -d -p 8090:80 -v /data:/tmp nginx
 
   - **Why?** If the container is deleted, files in `/tmp` are gone. But with this mapping, the files are safely stored in `/data` on your host machine.
 
-## 7. Real World Scenario: MySQL (From Uploaded Images)
+## Real World Scenario: Mysql (from Uploaded Images)
 
 This section explains the complex commands found in the screenshots you provided.
 
-### Step 1: Running the MySQL Container
+### Step 1: Running the Mysql Container
 
 **Command:**
 
-```bash
+```ini
 docker run -d \
   --name mysql-server \
   -e MYSQL_ROOT_PASSWORD=your_password \
@@ -394,11 +394,11 @@ docker run -d \
 
 6. `mysql:latest`: The image name and tag.
 
-### Step 2: Connecting to MySQL (Interactive Mode)
+### Step 2: Connecting to Mysql (interactive Mode)
 
 **Command:**
 
-```bash
+```text
 docker exec -it mysql-server mysql -u root -p
 ```
 

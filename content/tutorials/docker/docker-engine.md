@@ -1,5 +1,5 @@
 ---
-title: 'Docker Engine: The Ultimate Deep Dive'
+title: 'Docker Engine: the Ultimate Deep Dive'
 description: >-
   This guide takes you "under the hood" of Docker. It explains the architecture
   of the Docker Engine, how to manage remote engines, and the Linux technologies
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide takes you "under the hood" of Docker. It explains the architecture of the Docker Engine, how to manage remote engines, and the Linux technologies (Namespaces & Cgroups) that make containerization possible.
 
-## 1. What is Docker Engine?
+## What is Docker Engine?
 
 Docker Engine is not just a single program; it is a modular client-server application with three major components:
 
@@ -38,7 +38,7 @@ Docker Engine is not just a single program; it is a modular client-server applic
 
 `User (CLI) --> REST API --> Docker Daemon (Host)`
 
-## 2. Remote Docker Engine Management
+## Remote Docker Engine Management
 
 By default, your Docker CLI talks to the Docker Daemon on the **same machine** (Localhost) via a Unix Socket (`/var/run/docker.sock`).
 
@@ -46,13 +46,13 @@ However, you can configure your Laptop's CLI to talk to a **Remote Server's Daem
 
 ### Command: Connect to Remote Engine
 
-```bash
+```ini
 docker -H=remote-docker-engine:2375 run nginx
 ```
 
 **OR (using IP):**
 
-```bash
+```ini
 docker -H=10.123.2.1:2375 run nginx
 ```
 
@@ -70,11 +70,11 @@ docker -H=10.123.2.1:2375 run nginx
 
 **Use Case:** You are sitting in a cafe with your lightweight laptop (CLI only), but you are running heavy containers on a massive server in the cloud using the `-H` flag.
 
-## 3. Under the Hood: Containerization
+## Under the Hood: Containerization
 
 How does Docker isolate containers? It uses native **Linux Kernel** features. It doesn't use magic; it uses **Namespaces**.
 
-### A. Namespaces (Isolation)
+### A. Namespaces (isolation)
 
 Namespaces trick the process into thinking it has its own dedicated computer. It limits what a process can **SEE**.
 
@@ -98,7 +98,7 @@ Namespaces trick the process into thinking it has its own dedicated computer. It
 
     - Allows the container to have its own Hostname.
 
-### B. The PID Matrix (Host vs Container)
+### B. the Pid Matrix (host vs Container)
 
 This is a classic interview concept.
 
@@ -114,17 +114,17 @@ This is a classic interview concept.
 
 - It is just a child process of the Docker Daemon.
 
-## 4. Resource Management: Control Groups (cgroups)
+## Resource Management: Control Groups (cgroups)
 
 If Namespaces limit what a container can **SEE**, Control Groups (cgroups) limit what a container can **USE**.
 
 Without cgroups, a single container could consume 100% of your CPU and crash your server.
 
-### A. Limiting CPU
+### A. Limiting Cpu
 
 **Command:**
 
-```bash
+```ini
 docker run --cpus=.5 ubuntu
 ```
 
@@ -134,10 +134,10 @@ docker run --cpus=.5 ubuntu
 
 - **Importance:** Ensures this container never slows down other critical applications by eating all processing power.
 
-### B. Limiting Memory (RAM)
+### B. Limiting Memory (ram)
 
 **Command:**
 
-```bash
+```ini
 docker run --memory=100m ubuntu
 ```

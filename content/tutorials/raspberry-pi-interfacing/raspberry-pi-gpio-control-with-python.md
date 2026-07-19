@@ -1,5 +1,5 @@
 ---
-title: Guide to Raspberry Pi GPIO with Python (gpiozero)
+title: Guide to Raspberry Pi Gpio with Python (gpiozero)
 description: >-
   This guide provides a complete introduction to using the General Purpose Input
   Output (GPIO) pins on a Raspberry Pi using the gpiozero library. It covers
@@ -12,38 +12,38 @@ author: abdallah-shehawey
 ---
 This guide provides a complete introduction to using the **General Purpose Input Output (GPIO)** pins on a Raspberry Pi using the `gpiozero` library. It covers hardware basics, pin layouts, and code examples ranging from simple LEDs to interactive button controls.
 
-## ⚡ What is GPIO?
+## What is Gpio?
 
 **GPIO** stands for **General Purpose Input Output**. It is the row of 40 metal pins found on the Raspberry Pi board. On the Raspberry Pi, these pins allow the CPU to talk to the outside world using simple electrical signals:
 
 - **LOW (0) → 0V** (Off)
-    
+
 - **HIGH (1) → 3.3V** (On)
-    
+
 
 ### Pin Types
 
 - **Input:** The Pi reads signals from the outside world (e.g., Is a button pressed? Is the temperature high?).
-    
+
 - **Output:** The Pi sends signals to control components (e.g., Turn on an LED, spin a motor).
-    
 
-> **⚠️ WARNING:** The Raspberry Pi operates at **3.3 Volts**. Connecting 5V directly to a GPIO pin can permanently damage your board.
 
-## 📌 GPIO Pinout Map (Model 3B/4/5/Zero)
+> **⚠ WARNING:** The Raspberry Pi operates at **3.3 Volts**. Connecting 5V directly to a GPIO pin can permanently damage your board.
+
+## Gpio Pinout Map (model 3b/4/5/zero)
 
 The table below follows **Physical Pin Numbering (1–40)** as printed on the board.
 
 > **Key Terms:**
-> 
+>
 > - **Physical Pin:** The actual pin number on the board (1 to 40).
->     
+>
 > - **BCM:** The Broadcom chip numbering. **This is what `gpiozero` uses in code.**
->     
+>
 > - **GND:** Ground (Negative).
->     
+>
 > - **PWR:** Power (3.3V or 5V).
->     
+>
 
 |Physical Pin|Function / Signal|BCM (Code)|Physical Pin|Function / Signal|BCM (Code)|
 |---|---|---|---|---|---|
@@ -68,13 +68,13 @@ The table below follows **Physical Pin Numbering (1–40)** as printed on the bo
 |**37**|General I/O|GPIO 26|**38**|SPI1 MOSI|GPIO 20|
 |**39**|**GND**|Ground|**40**|SPI1 SCLK|GPIO 21|
 
-## 🛠️ Getting Started
+## Getting Started
 
-### Why use `gpiozero`?
+### Why Use `gpiozero`?
 
 `gpiozero` is a high-level Python library designed for beginners and clean code. It hides low-level details (like pin direction setup or pull-up resistors) and makes hardware control safe and readable.
 
-### 1. Installation
+### Installation
 
 The library is usually installed by default on Raspberry Pi OS. If not:
 
@@ -83,26 +83,26 @@ sudo apt update
 sudo apt install python3-gpiozero
 ```
 
-### 2. Importing Libraries correctly
+### Importing Libraries Correctly
 
 You can import the whole library, or just the specific parts you need to save memory (recommended).
 
-```python
+```text
 # Option 1: Import everything (Not recommended for large projects)
-import gpiozero 
+import gpiozero
 
 # Option 2: Efficient Import (Recommended)
 from gpiozero import LED, Button
 from time import sleep
 ```
 
-## 💡 Controlling LEDs
+## Controlling Leds
 
-### Basic On/Off
+### Basic On/off
 
 This script turns an LED connected to **GPIO 17** (Physical Pin 11) on for 1 second, then off.
 
-```python
+```dockerfile
 from gpiozero import LED
 from time import sleep
 
@@ -124,7 +124,7 @@ Let the user decide when to turn the light on or off via the keyboard.
 
 > **🧠 Note:** The `input()` function **blocks execution**. This means the program stops and does nothing else while waiting for the user to type. This is generally bad for real-time systems that need to monitor sensors constantly.
 
-```python
+```dockerfile
 from gpiozero import LED
 
 led = LED(17)
@@ -134,7 +134,7 @@ print("LED Control: Enter 1 for ON, 0 for OFF. Ctrl+C to exit.")
 while True:
     try:
         user_choice = int(input("Command > "))
-        
+
         if user_choice == 1:
             led.on()
             print("LED is ON")
@@ -143,33 +143,33 @@ while True:
             print("LED is OFF")
         else:
             print("Invalid choice. Please enter 0 or 1.")
-            
+
     except ValueError:
         print("Please enter a number.")
 ```
 
-## 🤔 Critical Concept: Why use `sleep()`?
+## Critical Concept: Why Use `sleep()`?
 
 You will see `sleep()` used often in GPIO programming. It serves two very different but important purposes:
 
 1. **For Human Visibility (Timing):** Computers execute code in microseconds. If you tell an LED to turn ON and then immediately turn OFF without a pause, it happens so fast that the human eye cannot see it. `sleep(1)` forces the program to pause so you can actually see the light change.
-    
-2. **For CPU Health (Efficiency):** When using a `while True` loop (like in the "Polling" example below), the processor runs the loop as fast as physically possible—often 100,000+ times per second! This forces the CPU to run at 100% usage, causing the Raspberry Pi to get hot and sluggish.
-    
-    - **Without sleep:** CPU usage = 100% (Bad 🔥)
-        
-    - **With `sleep(0.1)`:** CPU usage = ~1% (Good ✅)
-        
 
-## 🔘 Using Buttons (Inputs)
+2. **For CPU Health (Efficiency):** When using a `while True` loop (like in the "Polling" example below), the processor runs the loop as fast as physically possible—often 100,000+ times per second! This forces the CPU to run at 100% usage, causing the Raspberry Pi to get hot and sluggish.
+
+    - **Without sleep:** CPU usage = 100% (Bad 🔥)
+
+    - **With `sleep(0.1)`:** CPU usage = ~1% (Good ✅)
+
+
+## Using Buttons (inputs)
 
 There are two ways to handle buttons: **Polling** (checking repeatedly) and **Events** (waiting for an interrupt).
 
-### Method A: Polling (The CPU Heavy Way)
+### Method A: Polling (the Cpu Heavy Way)
 
 This constantly checks the button state. It uses a lot of processor power unless we add a `sleep`.
 
-```python
+```dockerfile
 from gpiozero import Button
 from time import sleep
 
@@ -180,16 +180,16 @@ while True:
         print("Button is being pressed!")
     else:
         print("Button is released.")
-    
+
     # Crucial: Sleep saves CPU power
-    sleep(0.1) 
+    sleep(0.1)
 ```
 
-### Method B: Events / Interrupts (The Best Practice)
+### Method B: Events / Interrupts (the Best Practice)
 
 This is the **best practice** for embedded systems. The program pauses and only "wakes up" when the button is actually clicked. It uses almost 0% CPU while waiting.
 
-```python
+```bash
 from gpiozero import Button, LED
 from signal import pause # Required to keep the program running
 
@@ -213,24 +213,24 @@ print("Waiting for button press...")
 pause() # Keeps the script running in an event loop
 ```
 
-## 🚦 Advanced Logic
+## Advanced Logic
 
-### 3-LED Switcher
+### 3-led Switcher
 
 This example cycles through 3 different LEDs (Red, Yellow, Green) using a single button. It demonstrates global variables and logic flow.
 
 **Wiring:**
 
 - LED 1: GPIO 17
-    
-- LED 2: GPIO 27
-    
-- LED 3: GPIO 22
-    
-- Button: GPIO 26
-    
 
-```python
+- LED 2: GPIO 27
+
+- LED 3: GPIO 22
+
+- Button: GPIO 26
+
+
+```bash
 from gpiozero import Button, LED
 from signal import pause
 
@@ -240,19 +240,19 @@ led2 = LED(27)
 led3 = LED(22)
 
 # 'bounce_time' prevents one click from registering as two
-button = Button(26, bounce_time=0.05) 
+button = Button(26, bounce_time=0.05)
 
 # State variable
 led_index = 0
 
 def switch_led():
     global led_index
-    
+
     # Turn everything off first
     led1.off()
     led2.off()
     led3.off()
-    
+
     # Turn on the correct LED based on index
     if led_index == 0:
         led1.on()
@@ -263,7 +263,7 @@ def switch_led():
     elif led_index == 2:
         led3.on()
         print("LED 3 Active")
-    
+
     # Increment index, but reset to 0 if it goes above 2
     led_index = led_index + 1
     if led_index > 2:
@@ -275,7 +275,7 @@ button.when_pressed = switch_led
 pause()
 ```
 
-### The "Pro" Version (Optimized Code)
+### The "pro" Version (optimized Code)
 
 We can make the code above much shorter and cleaner using Python Lists.
 
@@ -297,15 +297,15 @@ current_index = 0
 
 def on_button_pressed():
     global current_index
-    
+
     # Turn off all LEDs
     for led in leds:
         led.off()
-        
+
     # Turn on current LED
     leds[current_index].on()
     print(f"Switched to LED on Pin {led_pins[current_index]}")
-    
+
     # Calculate next index using Modulo (%) math
     # 0 -> 1 -> 2 -> 0 -> 1 ...
     current_index = (current_index + 1) % len(leds)
@@ -316,12 +316,12 @@ print("System Ready. Press button to cycle.")
 pause()
 ```
 
-## 📝 Summary & Key Takeaways
+## Summary & Key Takeaways
 
 1. **Pin Numbering:** `gpiozero` uses **BCM** numbering (e.g., GPIO 17), not physical pin numbers.
-    
+
 2. **Voltage:** GPIO logic is **3.3V**. Never connect 5V inputs directly.
-    
+
 3. **Efficiency:** Prefer **Interrupts** (`button.when_pressed`) over **Polling** (`while True`) to save CPU cycles.
-    
+
 4. **Debouncing:** Mechanical buttons vibrate when pressed, creating "phantom" clicks. Use `bounce_time=0.05` to filter this noise.

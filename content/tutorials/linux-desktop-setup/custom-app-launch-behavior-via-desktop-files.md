@@ -1,5 +1,5 @@
 ---
-title: Custom App Launch Behavior via .desktop Files
+title: Custom App Launch Behavior Via .desktop Files
 description: >-
   Changing how a Linux application launches — forcing dark mode, injecting an
   environment variable, adding a HiDPI scale flag — doesn't require patching the
@@ -12,29 +12,29 @@ author: abdallah-shehawey
 ---
 Changing how a Linux application launches — forcing dark mode, injecting an environment variable, adding a HiDPI scale flag — doesn't require patching the app itself. Every launchable app on the system has a `.desktop` file describing how to run it, and it's possible to override that safely without touching the original.
 
-## 1. Why not edit the system file directly
+## Why Not Edit the System File Directly
 
 Editing `/usr/share/applications/*.desktop` directly is a bad idea for two reasons: system updates will silently overwrite it, and the change affects every user on the machine. The fix is to copy the file into `~/.local/share/applications/` — the system always prefers a user-local `.desktop` file over the system-wide one with the same name.
 
-## 2. Create the local applications directory
+## Create the Local Applications Directory
 
-```bash
+```text
 mkdir -p ~/.local/share/applications
 ```
 
-## 3. Copy the original `.desktop` file
+## Copy the Original `.desktop` File
 
 Example for GParted:
 
-```bash
+```text
 cp /usr/share/applications/gparted.desktop ~/.local/share/applications/
 ```
 
-## 4. Edit the `Exec=` line
+## Edit the `exec=` Line
 
 Open the copy:
 
-```bash
+```text
 nvim ~/.local/share/applications/gparted.desktop
 ```
 
@@ -50,15 +50,15 @@ Exec=env GTK_THEME=Adwaita:dark /usr/sbin/gparted %f
 
 Any other program-specific flag can be added the same way — e.g. `--force-device-scale-factor=1.5` for HiDPI scaling.
 
-## 5. Update the desktop database
+## Update the Desktop Database
 
-```bash
+```text
 update-desktop-database ~/.local/share/applications
 ```
 
 This makes the system pick up the local override immediately.
 
-## 6. Adjusting privilege escalation
+## Adjusting Privilege Escalation
 
 For tools like GParted that need root, make sure `Exec=` routes through the correct wrapper for the desktop environment — `pkexec` is the standard PolicyKit wrapper:
 

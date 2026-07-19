@@ -1,5 +1,5 @@
 ---
-title: 'Docker Registry: The Ultimate Master Guide'
+title: 'Docker Registry: the Ultimate Master Guide'
 description: >-
   This guide covers everything about storing and sharing Docker Images. It
   explains Public Registries (like Docker Hub), how to decipher complex image
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide covers everything about storing and sharing Docker Images. It explains Public Registries (like Docker Hub), how to decipher complex image names, and how to set up your own Private Registry.
 
-## 1. What is a Docker Registry?
+## What is a Docker Registry?
 
 Think of a **Registry** like "GitHub" but for Docker Images.
 
@@ -26,11 +26,11 @@ Think of a **Registry** like "GitHub" but for Docker Images.
 
 When you run `docker run nginx`, Docker assumes you mean the default public registry: **Docker Hub**.
 
-## 2. Deciphering Image Names
+## Deciphering Image Names
 
 An image name is actually a URL path. Let's break down the full structure: `REGISTRY / USER_OR_ACCOUNT / IMAGE_NAME : TAG`
 
-### Example A: Docker Hub (Implicit)
+### Example A: Docker Hub (implicit)
 
 **Command:** `docker run nginx`
 
@@ -42,7 +42,7 @@ An image name is actually a URL path. Let's break down the full structure: `REGI
 
 - **Image:** `nginx`.
 
-### Example B: Docker Hub (User Image)
+### Example B: Docker Hub (user Image)
 
 **Command:** `docker run mmumshad/simple-webapp`
 
@@ -52,7 +52,7 @@ An image name is actually a URL path. Let's break down the full structure: `REGI
 
 - **Image:** `simple-webapp`
 
-### Example C: Google Container Registry (GCR)
+### Example C: Google Container Registry (gcr)
 
 **Image:** `gcr.io/kubernetes-e2e-test-images/dnsutils`
 
@@ -62,15 +62,15 @@ An image name is actually a URL path. Let's break down the full structure: `REGI
 
 - **Image:** `dnsutils`.
 
-## 3. Working with Docker Hub (Public)
+## Working with Docker Hub (public)
 
 To upload your own images to Docker Hub, you need to authenticate.
 
-### 1. Login
+### Login
 
 **Command:**
 
-```bash
+```text
 docker login
 ```
 
@@ -82,11 +82,11 @@ docker login
 
   - **Meaning:** If someone hacks your laptop and reads this file, they get your password. Use "Docker Credential Helpers" for production security.
 
-### 2. Tagging (Renaming)
+### Tagging (renaming)
 
 Before pushing, the image **must** start with your Docker ID. **Command:**
 
-```bash
+```text
 docker tag my-image:latest registry-user/my-image:v1
 ```
 
@@ -94,15 +94,15 @@ docker tag my-image:latest registry-user/my-image:v1
 
 - `registry-user`: Your Docker Hub username.
 
-### 3. Pushing (Uploading)
+### Pushing (uploading)
 
 **Command:**
 
-```bash
+```text
 docker push registry-user/my-image:v1
 ```
 
-## 4. Private Registry (Self-Hosted)
+## Private Registry (self-hosted)
 
 Sometimes companies don't want to upload their code to the public Docker Hub. They want a **Private Registry** inside their own company network.
 
@@ -112,7 +112,7 @@ Good news: The Registry itself is just a Docker Container!
 
 **Command:**
 
-```bash
+```text
 docker run -d -p 5000:5000 --name registry registry:2
 ```
 
@@ -132,7 +132,7 @@ To push to this private registry, you must rename the image to include the **Add
 
 **Command:**
 
-```bash
+```text
 docker image tag my-image localhost:5000/my-image
 ```
 
@@ -142,27 +142,27 @@ docker image tag my-image localhost:5000/my-image
 
 **Command:**
 
-```bash
+```text
 docker push localhost:5000/my-image
 ```
 
 - **Action:** Uploads the layers to your local registry container running on port 5000.
 
-### Step 4: Pulling (Downloading)
+### Step 4: Pulling (downloading)
 
 **From the same machine:**
 
-```bash
+```text
 docker pull localhost:5000/my-image
 ```
 
 **From another machine (e.g., Server IP 192.168.56.100):**
 
-```bash
+```text
 docker pull 192.168.56.100:5000/my-image
 ```
 
-## 5. Important Note: Insecure Registries
+## Important Note: Insecure Registries
 
 By default, Docker enforces **HTTPS** (TLS) for all registries. If you set up a simple private registry (like above) using HTTP (IP address), Docker will block you with an error:
 

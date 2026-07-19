@@ -12,15 +12,15 @@ author: abdallah-shehawey
 ---
 A running collection of small, easy-to-forget commands that come up often enough on a day-to-day Linux desktop to be worth keeping in one place — Bluetooth resets, GPU switching, bulk find-and-replace, and disabling core dumps.
 
-## 1. Bluetooth acting up
+## Bluetooth Acting Up
 
 ```bash
 sudo systemctl restart bluetooth
 ```
 
-## 2. Downloading a playlist with yt-dlp
+## Downloading a Playlist with Yt-dlp
 
-```bash
+```text
 yt-dlp -f 137+140 "Playlist Link"
 # or, a more portable format selector:
 yt-dlp -f "bv*+ba/b" -o "%(title)s.%(ext)s" "Playlist Link"
@@ -29,13 +29,13 @@ yt-dlp -f "bv*+ba/b" -o "%(title)s.%(ext)s" "Playlist Link"
 sudo yt-dlp -U
 ```
 
-## 3. Extracting a `.rar` archive
+## Extracting a `.rar` Archive
 
-```bash
+```text
 unrar x -o+ "Folder.rar" "Folder/"
 ```
 
-## 4. Force-killing an unresponsive program
+## Force-killing an Unresponsive Program
 
 ```bash
 sudo xkill
@@ -43,18 +43,18 @@ sudo xkill
 
 Click the offending window and it's gone — faster than hunting for the PID with `ps`/`kill` when a GUI app is frozen.
 
-## 5. Python virtual environments
+## Python Virtual Environments
 
-```bash
+```text
 python3 -m venv my_env
 source my_env/bin/activate
 ```
 
-## 6. Hybrid GPU (Optimus) laptops
+## Hybrid Gpu (optimus) Laptops
 
 Force a program onto the discrete NVIDIA GPU:
 
-```bash
+```ini
 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia <program>
 ```
 
@@ -65,13 +65,13 @@ sudo prime-select intel
 sudo prime-select nvidia
 ```
 
-## 7. Formatting C/C++ with clang-format
+## Formatting C/c++ with Clang-format
 
-```bash
+```ini
 clang-format -i -style="{BasedOnStyle: Microsoft, IndentWidth: 2, TabWidth: 2, UseTab: Never}" testing.c
 ```
 
-## 8. Holding/unholding NVIDIA packages
+## Holding/unholding Nvidia Packages
 
 Useful when an update needs to skip NVIDIA temporarily (see the update-automation lesson, which does exactly this):
 
@@ -81,13 +81,13 @@ sudo apt-mark unhold nvidia-driver-* nvidia-dkms-* nvidia-kernel-* libnvidia-*
 sudo apt upgrade
 ```
 
-## 9. Changing the default terminal emulator
+## Changing the Default Terminal Emulator
 
 ```bash
 sudo update-alternatives --config x-terminal-emulator
 ```
 
-## 10. Bulk find-and-replace across files
+## Bulk Find-and-replace Across Files
 
 ```bash
 find . -type f -exec sed -i 's/oldword/newword/g' {} +
@@ -99,7 +99,7 @@ Restricted to a specific extension:
 find . -type f -name "*.txt" -exec sed -i 's/oldword/newword/g' {} +
 ```
 
-## 11. Printing the duration of a batch of video files
+## Printing the Duration of a Batch of Video Files
 
 ```bash
 for file in "session-1.mkv" "session-2.mkv" "session-3.mkv"; do
@@ -109,22 +109,22 @@ for file in "session-1.mkv" "session-2.mkv" "session-3.mkv"; do
 done
 ```
 
-## 12. Forcing dark mode for a single program
+## Forcing Dark Mode for a Single Program
 
-```bash
+```ini
 GTK_THEME=Adwaita:dark program
 ```
 
-## 13. Laptop battery conservation mode (Lenovo/ideapad)
+## Laptop Battery Conservation Mode (lenovo/ideapad)
 
-```bash
+```text
 # enable
 echo 1 | sudo tee /sys/bus/platform/drivers/ideapad_acpi/*/conservation_mode
 # disable
 echo 0 | sudo tee /sys/bus/platform/drivers/ideapad_acpi/*/conservation_mode
 ```
 
-## 14. Disabling core dumps
+## Disabling Core Dumps
 
 Core dumps are useful for debugging a crash, but on a daily-driver machine they just eat disk space in `/var/lib/systemd/coredump/`. To disable them going forward:
 

@@ -1,5 +1,5 @@
 ---
-title: 'Docker Images: The Ultimate Comprehensive Guide'
+title: 'Docker Images: the Ultimate Comprehensive Guide'
 description: >-
   This document is designed to be the only reference you will ever need for
   Docker Images. It covers concepts, creation, building, management, and
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This document is designed to be the only reference you will ever need for **Docker Images**. It covers concepts, creation, building, management, and advanced distribution techniques in extreme detail.
 
-## 1. What is a Docker Image?
+## What is a Docker Image?
 
 ### The Concept
 
@@ -39,13 +39,13 @@ Think of a Docker Image as a **frozen snapshot** of an application. It contains 
 > - **Container:** The actual cake you baked. You can eat the cake, but eating it doesn't change the recipe on the paper.
 >
 
-## 2. The `Dockerfile`: Writing the Recipe
+## The `dockerfile`: Writing the Recipe
 
 A `Dockerfile` is a text file (no extension) containing instructions. Docker reads this file top-to-bottom to build the image.
 
-### Core Instructions (The Building Blocks)
+### Core Instructions (the Building Blocks)
 
-#### `FROM` (The Foundation)
+#### `from` (the Foundation)
 
 **Command:** `FROM <image>:<tag>`
 
@@ -55,7 +55,7 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
 - **Why specific tags?** Using `slim` or `alpine` reduces the image size significantly. Avoid using `latest` in production to prevent unexpected updates.
 
-#### `WORKDIR` (The Navigation)
+#### `workdir` (the Navigation)
 
 **Command:** `WORKDIR /path/to/dir`
 
@@ -65,7 +65,7 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
 - **Importance:** It keeps your file system organized. It's better than running `RUN cd /app`.
 
-#### `COPY` vs `ADD` (Getting Files In)
+#### `copy` vs `add` (getting Files In)
 
 1. **`COPY <src> <dest>`**
 
@@ -85,7 +85,7 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
     - **Recommendation:** Use only if you specifically need these features.
 
-#### `RUN` (The Builder)
+#### `run` (the Builder)
 
 **Command:** `RUN <linux_command>`
 
@@ -97,7 +97,7 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
 - **Note:** Each `RUN` command creates a permanent layer in the image.
 
-#### `ENV` (The Configuration)
+#### `env` (the Configuration)
 
 **Command:** `ENV KEY=VALUE`
 
@@ -105,7 +105,7 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
 - **Example:** `ENV APP_ENV=production`
 
-#### `EXPOSE` (The Documentation)
+#### `expose` (the Documentation)
 
 **Command:** `EXPOSE <port>`
 
@@ -113,7 +113,7 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
 - **Important:** It does **NOT** publish the port. You still need `-p` when running `docker run`.
 
-#### `USER` (The Security)
+#### `user` (the Security)
 
 **Command:** `USER <username>`
 
@@ -121,11 +121,11 @@ A `Dockerfile` is a text file (no extension) containing instructions. Docker rea
 
 - **Example:** `USER appuser`
 
-## 3. `CMD` vs `ENTRYPOINT` (The Startup Logic)
+## `cmd` vs `entrypoint` (the Startup Logic)
 
 Both tell the container what to do when it starts. The difference is how they handle arguments.
 
-### `CMD` (The Default)
+### `cmd` (the Default)
 
 - **Purpose:** Provides defaults.
 
@@ -137,7 +137,7 @@ Both tell the container what to do when it starts. The difference is how they ha
 
   - `docker run myapp echo hello` -> Runs `echo hello` (Ignores Python).
 
-### `ENTRYPOINT` (The Executable)
+### `entrypoint` (the Executable)
 
 - **Purpose:** Makes the container run like a binary executable.
 
@@ -147,9 +147,9 @@ Both tell the container what to do when it starts. The difference is how they ha
 
   - `docker run myapp Hello` -> Runs `echo Hello`.
 
-### The Best Practice (Combine Them)
+### The Best Practice (combine Them)
 
-```bash
+```dockerfile
 ENTRYPOINT ["python", "app.py"]
 CMD ["--help"]
 ```
@@ -158,13 +158,13 @@ CMD ["--help"]
 
 - If you run `docker run myapp --version`, it executes: `python app.py --version`.
 
-## 4. Building Images: `docker build`
+## Building Images: `docker Build`
 
 The command that turns your Dockerfile into an image.
 
 **Command:**
 
-```bash
+```text
 docker build -t myapp:v1 .
 ```
 
@@ -178,7 +178,7 @@ docker build -t myapp:v1 .
 | `--no-cache`  |           | Forces Docker to rebuild all layers from scratch. Useful if `apt-get update` is stuck on old data. | Advanced         |
 | `--build-arg` |           | Passes variables meant only for the build phase (not runtime).                                     | Advanced         |
 
-## 5. Managing Images on Your Machine
+## Managing Images on Your Machine
 
 ### Listing Images
 
@@ -198,7 +198,7 @@ docker build -t myapp:v1 .
 
   - _Warning:_ Don't use `-f` unless you are sure.
 
-### Cleaning Up (Pruning)
+### Cleaning Up (pruning)
 
 Over time, your disk fills up with "Dangling Images" (Images with no name `<none>:<none>`). **Command:** `docker image prune`
 
@@ -222,9 +222,9 @@ Over time, your disk fills up with "Dangling Images" (Images with no name `<none
 
 - **Why use it?** To find out which command (`RUN`, `COPY`) made the image size so big.
 
-## 6. Image Distribution (Sharing)
+## Image Distribution (sharing)
 
-### Method A: Docker Hub (Online Registry)
+### Method A: Docker Hub (online Registry)
 
 1. **Login:**
 
@@ -244,7 +244,7 @@ Over time, your disk fills up with "Dangling Images" (Images with no name `<none
     docker push username/myapp:v1
     ```
 
-### Method B: Offline Transfer (Tarball)
+### Method B: Offline Transfer (tarball)
 
 This is crucial for "Air-gapped" systems (servers with no internet).
 
@@ -266,7 +266,7 @@ This is crucial for "Air-gapped" systems (servers with no internet).
 
     - `-i`: Input file path.
 
-## 7. Advanced Concept: Layers & Caching
+## Advanced Concept: Layers & Caching
 
 ### How Layers Work
 
@@ -276,7 +276,7 @@ Docker images are built like a sandwich. Each instruction (`RUN`, `COPY`) adds a
 
 - **The Container Layer:** When you run a container, Docker adds a thin "Read/Write" layer on top.
 
-### Docker Build Cache (The Speed Secret)
+### Docker Build Cache (the Speed Secret)
 
 Docker remembers the result of every line in your Dockerfile.
 
@@ -288,20 +288,20 @@ Docker remembers the result of every line in your Dockerfile.
 
 **Bad Example:**
 
-```bash
+```dockerfile
 COPY . .              # <--- Source code changes often
 RUN pip install flask # <--- This will re-run every time code changes! (Slow)
 ```
 
 **Good Example:**
 
-```bash
+```dockerfile
 COPY requirements.txt .
 RUN pip install flask # <--- Cached! Won't run unless requirements change.
 COPY . .              # <--- Only this runs when code changes. (Fast)
 ```
 
-## 8. Full Real-World Example (Line-by-Line Explanation)
+## Full Real-world Example (line-by-line Explanation)
 
 Let's imagine we are building a Python Web App using Flask.
 
@@ -309,7 +309,7 @@ Let's imagine we are building a Python Web App using Flask.
 
 This is the simple program we want to run.
 
-```python
+```ini
 # app.py
 from flask import Flask
 app = Flask(__name__)
@@ -326,7 +326,7 @@ if __name__ == "__main__":
 
 This is the recipe we write to containerize the app above.
 
-```dockerfile
+```text
 # 1. Base Image
 FROM python:3.9-slim
 
@@ -347,7 +347,7 @@ EXPOSE 5000
 CMD ["python", "app.py"]
 ```
 
-### Explanation of the Code (What each line does)
+### Explanation of the Code (what Each Line Does)
 
 1. **`FROM python:3.9-slim`**:
 

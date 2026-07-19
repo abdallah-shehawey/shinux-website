@@ -10,27 +10,27 @@ author: abdallah-shehawey
 In this file, we will explain the essentials of the Linux file system.
 
 ---
-## In Linux, everything is a file.
+## In Linux, Everything is a File.
 
-### What is a file system?
+### What is a File System?
 
 A file system is:
 
 - The way your system organizes and deals with data on the hard disk.
-    
-- The directory structure containing the main files in the system.
-    
 
-### What are storage devices?
+- The directory structure containing the main files in the system.
+
+
+### What are Storage Devices?
 
 - **Floppy Disk:** Magnetic disk, 32 MB
-    
+
 - **Flash memory:** Floating gate MOSFET
-    
+
 - **Hard disk:** Magnetic disk, TB 2TB
-    
+
 - **CD ROM:** Laser Engravings
-    
+
 
 ---
 ## Internal vs. External Fragmentation
@@ -65,36 +65,36 @@ An **inode** (index node) is a data structure on the file system that stores all
 The inode acts as a "table of contents" entry for a specific file, containing information such as:
 
 - **Inode ID:** A unique number identifying the inode.
-    
+
 - **File Type:** Whether it is a regular file, directory, symbolic link, etc.
-    
+
 - **Size:** The size of the file in bytes.
-    
+
 - **Permissions:** Read, write, and execute permissions for the owner, group, and others.
-    
+
 - **Pointers:** Addresses that point to the actual data blocks on the hard disk where the file's content is stored.
-    
+
 - **Timestamps:** Time of last access, modification, and inode change.
-    
+
 - **Owner/Group:** The User ID and Group ID of the file's owner.
-    
+
 
 ### Inode Structure in the Linux Kernel
 
 At a technical level, the inode is represented by a C structure (`struct inode`) within the Linux kernel. This structure contains fields that correspond directly to the metadata mentioned above. Some key fields from this structure include:
 
 - `i_mode`: Stores the file type and permissions (read, write, execute).
-    
-- `i_uid` and `i_gid`: Store the User ID and Group ID of the owner.
-    
-- `i_size`: Stores the file's size in bytes.
-    
-- `i_atime`, `i_mtime`, `i_ctime`: Timestamps for last access, modification, and status change.
-    
-- `i_blocks`: The number of disk blocks allocated to the file.
-    
 
-```c
+- `i_uid` and `i_gid`: Store the User ID and Group ID of the owner.
+
+- `i_size`: Stores the file's size in bytes.
+
+- `i_atime`, `i_mtime`, `i_ctime`: Timestamps for last access, modification, and status change.
+
+- `i_blocks`: The number of disk blocks allocated to the file.
+
+
+```text
 struct inode {
     umode_t			i_mode;         /* File mode (permissions) */
     unsigned short		i_opflags;      /* Internal flags */
@@ -130,7 +130,7 @@ struct inode {
 Metadata is simply "data about data." In the context of a file system, the actual content of a file (the text in a document, the pixels in an image) is the **data**. The **metadata** is all the other information that describes that file. Essentially, all the information stored in an inode is the file's metadata.
 
 ---
-## How Filenames and Inodes are Connected: The Dentry
+## How Filenames and Inodes are Connected: the Dentry
 
 While the inode stores _what_ the file is, it doesn't store the file's human-readable name. This is handled by directories.
 
@@ -139,28 +139,28 @@ A directory is a special type of file that contains a list. This list maps filen
 When you access a file like `file.txt`, the system:
 
 1. Looks inside the current directory file.
-    
+
 2. Searches the list of dentries for the name `file.txt`.
-    
+
 3. Finds the corresponding inode number (e.g., 36421).
-    
+
 4. Uses that number to locate the inode, which then points to the file's actual data.
-    
+
 
 ### Dentry Table Structure
 
 The dentry itself is a structure that contains several key pieces of information to manage the file system hierarchy efficiently. The system maintains a dentry cache to speed up the process of translating paths to inodes.
 
 - **Dentry Name:** The actual filename (e.g., `passwd`).
-    
+
 - **Inode Number:** The inode number that this name points to.
-    
+
 - **Parent Dentry:** A reference to the dentry of the parent directory.
-    
+
 - **Child Dentries:** A list of child dentries if the entry is a directory.
-    
+
 - **Reference Count:** Tracks how many times the dentry is currently being used by the system.
-    
+
 
 Here is an example of a dentry for the file `/etc/passwd`:
 
@@ -182,11 +182,11 @@ The **superblock** is a critical metadata structure in Linux filesystems that co
 ### Key Concepts
 
 - **Filesystem Metadata:** The superblock stores metadata that describes the filesystem's properties.
-    
+
 - **Recovery and Redundancy:** Multiple copies of the superblock may exist to ensure recovery in case of corruption.
-    
+
 - **Dynamic Information:** The superblock may track dynamic information like free blocks and inodes.
-    
+
 
 ### Superblock Structure
 
@@ -209,7 +209,7 @@ The superblock typically includes the following fields:
 |Journal UUID|UUID of the journal (if journaling is enabled)|`abcdef01-2345-6789-abcd-ef0123456789`|
 
 ----
-## The Virtual File System (VFS)
+## The Virtual File System (vfs)
 
 The **Virtual File System** (also known as the Virtual Filesystem Switch or VFS) is a crucial abstraction layer inside the Linux kernel. Its primary purpose is to allow user applications to interact with different types of filesystems in a uniform way.
 
@@ -220,17 +220,17 @@ Because of the VFS, a programmer can use standard system calls like `open()`, `r
 The VFS provides a common interface for all filesystems. When a user application makes a file-related system call:
 
 1. The call goes through a standard library (like `glibc`) to the kernel's system call interface.
-    
+
 2. The kernel then directs the call to the VFS.
-    
+
 3. The VFS **detects the needed filesystem** to perform the operation.
-    
+
 4. It **loads this filesystem driver** into RAM if it's not already loaded.
-    
+
 5. It then **translates the generic system call** into the specific function that the underlying filesystem's driver can understand.
-    
+
 6. The filesystem driver **performs the operation** by interacting with the hardware.
-    
+
 
 This abstraction makes the system incredibly flexible, allowing you to mount and use various storage devices with different formats seamlessly.
 
@@ -290,11 +290,11 @@ This command will return the block size (e.g., `4096`) for the device `/dev/sda`
 Every process in Linux starts with three standard file descriptors automatically opened by the kernel:
 
 - **0 (stdin):** Standard input, typically connected to the keyboard or terminal for reading input.
-    
+
 - **1 (stdout):** Standard output, typically connected to the display or terminal for normal program output.
-    
+
 - **2 (stderr):** Standard error, typically connected to the display or terminal for error messages and diagnostic output.
-    
+
 
 ---
 ## Common File Operations
@@ -306,13 +306,13 @@ The behavior of common file operations depends heavily on the underlying filesys
 When you copy a file, the system always creates a brand new, independent file at the destination. This process is the same whether you are copying to the same filesystem or a different one.
 
 - **A new inode is created** on the destination filesystem.
-    
+
 - **New data blocks are allocated**, and the original data is read and written to these new blocks.
-    
+
 - **A new dentry is created** in the destination directory to link the new filename to the new inode.
-    
+
 - Metadata like permissions may be preserved, but the creation timestamp and inode number will be new.
-    
+
 
 ### Moving a File
 
@@ -323,45 +323,45 @@ The `mv` command is more complex, as its behavior changes based on the source an
 This is a very fast, efficient operation because no actual file data is moved. It is purely a metadata operation.
 
 - **Changes:** A new **dentry** is created in the destination directory and the old one is removed from the source. Both dentries point to the _exact same inode_.
-    
+
 - **Constant:** The **inode number**, the **data blocks**, and all metadata (like permissions and timestamps) remain unchanged. You are simply changing where the filename points.
-    
+
 
 #### To a Different Filesystem
 
 When you move a file to a different partition or drive (a different filesystem), the operation is fundamentally a **copy-then-delete**. An inode from one filesystem cannot exist on another.
 
 - **Changes:** The system first performs a full **copy** operation to the new filesystem, creating a new inode, new data blocks, and a new dentry.
-    
+
 - Once the copy is successfully verified, the original dentry, inode, and data blocks on the source filesystem are **deleted**. This is a much slower process because all the file's data must be read from the source and written to the destination.
-    
+
 
 ### Renaming a File
 
 Renaming a file is identical to moving a file **within the same filesystem**. It is a very fast metadata-only operation.
 
 - **Changes:** The text of the **dentry** (the filename) is changed.
-    
+
 - **Constant:** The **inode number** and the **data blocks** are completely untouched. The file itself hasn't changed, only the name used to find it.
-    
+
 
 ### Deleting a File
 
 When you delete a file (using `rm`), you are not immediately erasing the data from the disk.
 
 - **The dentry is removed** from the directory file. This unlinks the filename from its inode.
-    
+
 - The system checks the **link count** on the inode. If this was the only link (the link count is now zero), the inode and its associated data blocks are marked as free in the filesystem's bitmaps.
-    
+
 - The data is not wiped. It remains on the disk until the system reallocates those data blocks for a new file and overwrites them. This is why deleted files can sometimes be recovered with special tools.
-    
+
 
 ---
 ## Advanced Filesystem Commands
 
 Here are some more advanced commands for inspecting filesystem details.
 
-### View a file's inode number
+### View a File's Inode Number
 
 Use the `-i` flag with `ls` to display the inode number as the first column in the output.
 
@@ -369,15 +369,15 @@ Use the `-i` flag with `ls` to display the inode number as the first column in t
 ls -i file.txt
 ```
 
-### View inode usage for filesystems
+### View Inode Usage for Filesystems
 
 Use `df -ih` to see how many inodes are used and how many are free on each mounted filesystem. This is useful for diagnosing "no space left on device" errors that can occur even when disk space is available, if all inodes have been used.
 
-```bash
+```text
 df -ih
 ```
 
-### View detailed filesystem metadata
+### View Detailed Filesystem Metadata
 
 The `dumpe2fs` command prints the super block and blocks group information for filesystems of the ext2, ext3, or ext4 type. It provides a huge amount of detailed information. It's often piped to `grep` to find specific fields.
 
@@ -387,12 +387,11 @@ The `dumpe2fs` command prints the super block and blocks group information for f
 sudo dumpe2fs /dev/nvme1n1p5 | grep "Filesystem created:"
 ```
 
-
 ## How to Create a Swap File in Linux
 
 A swap file allows Linux to use disk space as virtual memory when your RAM is full. Here are two common methods.
 
-### Method 1: Using `fallocate` (Fastest & Recommended)
+### Method 1: Using `fallocate` (fastest & Recommended)
 
 This method instantly creates the file.
 
@@ -403,7 +402,7 @@ sudo swapoff -a
 ```
 
 - Disables any existing swap.
-    
+
 
 **2. Create the File**
 
@@ -412,7 +411,7 @@ sudo fallocate -l 16G /swapfile
 ```
 
 - Instantly creates an empty 16GB file named `/swapfile`.
-    
+
 
 **3. Set Permissions**
 
@@ -421,7 +420,7 @@ sudo chmod 600 /swapfile
 ```
 
 - Sets secure permissions (only root can read/write).
-    
+
 
 **4. Format as Swap**
 
@@ -430,7 +429,7 @@ sudo mkswap /swapfile
 ```
 
 - Formats the file as a swap area.
-    
+
 
 **5. Activate Swap**
 
@@ -439,9 +438,9 @@ sudo swapon /swapfile
 ```
 
 - Activates the new swap file.
-    
 
-### Method 2: Using `dd` (Alternative Method)
+
+### Method 2: Using `dd` (alternative Method)
 
 Use this if `fallocate` isn't supported. This method is slower as it writes zeros to the file.
 
@@ -452,7 +451,7 @@ sudo swapoff -a
 ```
 
 - Disables any existing swap.
-    
+
 
 **2. Create the File**
 
@@ -461,7 +460,7 @@ sudo dd if=/dev/zero of=/swap.img bs=1G count=16 status=progress
 ```
 
 - Creates a 16GB file (`/swap.img`) by copying 16 blocks of 1GB from `/dev/zero`.
-    
+
 
 **3. Set Permissions**
 
@@ -470,7 +469,7 @@ sudo chmod 600 /swap.img
 ```
 
 - Sets secure permissions (only root can read/write).
-    
+
 
 **4. Format as Swap**
 
@@ -479,7 +478,7 @@ sudo mkswap /swap.img
 ```
 
 - Formats the file as a swap area.
-    
+
 
 **5. Activate Swap**
 
@@ -488,20 +487,20 @@ sudo swapon /swap.img
 ```
 
 - Activates the new swap file.
-    
 
-### How to Make it Permanent (After Reboot)
+
+### How to Make it Permanent (after Reboot)
 
 To make the swap file active after every reboot, you must add it to `/etc/fstab`.
 
 **For Method 1 (`/swapfile`):**
 
-```bash
+```text
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
 **For Method 2 (`/swap.img`):**
 
-```bash
+```text
 echo '/swap.img none swap sw 0 0' | sudo tee -a /etc/fstab
 ```

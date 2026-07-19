@@ -1,5 +1,5 @@
 ---
-title: Installing QuestaSim for HDL Simulation
+title: Installing Questasim for Hdl Simulation
 description: >-
   QuestaSim is Mentor Graphics' HDL simulator, commonly used for Verilog/VHDL
   verification work. Getting 2021.2 running on a modern Ubuntu or Fedora install
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 QuestaSim is Mentor Graphics' HDL simulator, commonly used for Verilog/VHDL verification work. Getting 2021.2 running on a modern Ubuntu or Fedora install takes a bit of work, since it needs 32-bit compatibility libraries and a Python 2.7 environment purely for license generation — neither of which ships by default anymore.
 
-## 1. Install dependencies
+## Install Dependencies
 
 **Ubuntu/Debian:**
 
@@ -37,11 +37,11 @@ libXext libXext.i686 \
 gcc gcc-c++ make wget curl
 ```
 
-## 2. Install Python 2.7 (for the license generator only)
+## Install Python 2.7 (for the License Generator Only)
 
 Questa's license generator script needs Python 2.7, which no longer ships by default on modern distros. Build it from source:
 
-```bash
+```text
 wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz
 tar xvf Python-2.7.18.tgz
 cd Python-2.7.18
@@ -51,14 +51,14 @@ make -j$(nproc)
 sudo make altinstall
 ```
 
-```bash
+```text
 python2.7 --version
 sudo ln -s /usr/local/bin/python2.7 /usr/local/bin/python2
 ```
 
 Install pip for it:
 
-```bash
+```text
 curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
 sudo python2.7 get-pip.py
 pip2 --version
@@ -66,11 +66,11 @@ pip2 --version
 
 > If a system-wide install isn't desirable, Python 2.7 can instead be built into a private prefix (e.g. `./configure --prefix=$HOME/myApps/python2`) and aliased via `~/.bashrc`, or wrapped in a `virtualenv` — either avoids touching anything outside your home directory.
 
-## 3. Generate the license
+## Generate the License
 
 Get the host ID:
 
-```bash
+```text
 ip addr show
 ```
 
@@ -83,24 +83,24 @@ python2 mgclicgen.py <hostid>
 
 This produces `license.dat`.
 
-## 4. Install QuestaSim
+## Install Questasim
 
-```bash
+```text
 ./path/to/questa_sim-2021.2_1.aol
 ```
 
 Follow the GUI installer (a typical install path is `/opt/questasim`).
 
-## 5. Copy the license files and verify
+## Copy the License Files and Verify
 
-```bash
+```text
 cp /path/to/license.dat /path/to/pubkey_verify /path/to/questasim
 ./pubkey_verify -y
 ```
 
-## 6. Configure environment variables
+## Configure Environment Variables
 
-```bash
+```ini
 export PATH="/path/to/questasim/linux_x86_64:$PATH"
 export PATH="/path/to/questasim/RUVM_2021.2:$PATH"
 export LM_LICENSE_FILE="/path/to/license.dat:$LM_LICENSE_FILE"
@@ -108,17 +108,17 @@ export LM_LICENSE_FILE="/path/to/license.dat:$LM_LICENSE_FILE"
 
 Add the same three lines to `~/.bashrc` to make them permanent, then `source ~/.bashrc`.
 
-## 7. Test it
+## Test It
 
-```bash
+```text
 vsim
 ```
 
 The GUI opening with no license errors means the install succeeded.
 
-## 8. Optional: a desktop launcher
+## Optional: a Desktop Launcher
 
-```bash
+```text
 nano ~/.local/share/applications/questasim.desktop
 ```
 
@@ -136,7 +136,7 @@ StartupNotify=true
 StartupWMClass=Vsim
 ```
 
-```bash
+```text
 chmod +x ~/.local/share/applications/questasim.desktop
 update-desktop-database ~/.local/share/applications
 ```

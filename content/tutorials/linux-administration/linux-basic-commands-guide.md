@@ -10,104 +10,104 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## 📘 Overview
+## Overview
 
 Welcome to the **Linux Basic Commands Guide**! This repository serves as a comprehensive resource for beginners and those who want to refresh their knowledge of essential Linux commands. Whether you're new to Linux or aiming to strengthen your command-line skills, this guide provides clear explanations, categorized commands, and practical examples.
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. Introduction
-    
+
 2. Getting Started
-    
+
 3. Navigating the File System
-    
+
 4. File and Directory Operations
-    
+
 5. Viewing and Editing Files
-    
+
 6. System Information
-    
+
 7. Managing Permissions
-    
+
 8. Networking Commands
-    
+
 9. Searching and Sorting
-    
+
 10. Package Management
-    
+
 11. Process Management
-    
+
 12. Disk Management
-    
+
 13. User and Group Management
-    
+
 14. Miscellaneous Commands
-    
+
 15. Tips and Best Practices
-    
+
 
 ---
 
-## 1️⃣ Introduction
+## Introduction
 
 The **Linux Basic Commands Guide** introduces the most important commands needed for daily Linux usage. Mastering these commands allows you to manage files, monitor the system, control processes, and administer users efficiently.
 
-### 👥 Who Should Use This Guide?
+### Who Should Use This Guide?
 
 - **Beginners**: New to Linux and CLI environments
-    
+
 - **Intermediate Users**: Reinforcing command-line fundamentals
-    
+
 - **System Administrators**: Quick reference for daily operations
-    
+
 
 ---
 
-## 2️⃣ Getting Started
+## Getting Started
 
 Before diving in, ensure access to a Linux environment:
 
 - Physical machine
-    
-- Virtual machine (VMware, VirtualBox)
-    
-- Cloud-based Linux instance
-    
 
-### ✅ Prerequisites
+- Virtual machine (VMware, VirtualBox)
+
+- Cloud-based Linux instance
+
+
+### Prerequisites
 
 - Basic understanding of CLI
-    
-- Access to a terminal emulator
-    
 
-### 📌 How to Use This Guide
+- Access to a terminal emulator
+
+
+### How to Use This Guide
 
 Each section introduces commands with explanations and examples. Practice them directly in your terminal for best results.
 
 ---
 
-## 3️⃣ Navigating the File System
+## Navigating the File System
 
 Linux uses a hierarchical file system. These commands help you move through directories and explore their contents.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `pwd` – Print working directory
-    
-- `ls` – List contents
-    
-- `cd` – Change directory
-    
-- `tree` – Display directory structure
-    
-- `pushd` / `popd` – Directory stack navigation
-    
 
-### 🧪 Examples
+- `ls` – List contents
+
+- `cd` – Change directory
+
+- `tree` – Display directory structure
+
+- `pushd` / `popd` – Directory stack navigation
+
+
+### Examples
 
 ```bash
 pwd
@@ -121,22 +121,22 @@ popd
 
 ---
 
-## 4️⃣ File and Directory Operations
+## File and Directory Operations
 
 Master the creation, copying, moving, and deletion of files and directories.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `cp`, `mv`, `rm`
-    
+
 - `mkdir`, `rmdir`
-    
+
 - `ln`, `touch`
-    
 
-### 🧪 Examples
 
-```bash
+### Examples
+
+```text
 mkdir projects
 cp ~/Downloads/report.txt ~/Documents/projects/
 cp -r ~/Downloads/photos ~/Documents/projects/
@@ -148,22 +148,22 @@ touch newfile.txt
 
 ---
 
-## 5️⃣ Viewing and Editing Files
+## Viewing and Editing Files
 
 Learn to inspect and edit files using command-line and graphical tools.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `cat`, `less`, `more`
-    
-- `head`, `tail`
-    
-- `nano`, `vim`, `gedit`
-    
-- `grep`
-    
 
-### 🧪 Examples
+- `head`, `tail`
+
+- `nano`, `vim`, `gedit`
+
+- `grep`
+
+
+### Examples
 
 ```bash
 cat /etc/passwd
@@ -176,22 +176,22 @@ grep "error" /var/log/syslog
 
 ---
 
-## 6️⃣ System Information
+## System Information
 
 Get insights into CPU, memory, disks, and running processes.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `uname`, `top`, `htop`
-    
+
 - `df`, `du`, `free`
-    
+
 - `lscpu`, `lsblk`, `lsusb`, `lspci`
-    
 
-### 🧪 Examples
 
-```bash
+### Examples
+
+```text
 uname -a
 top
 df -h
@@ -201,18 +201,18 @@ lsblk
 
 ---
 
-## 7️⃣ Managing Permissions
+## Managing Permissions
 
 Control file access using permissions and ownership.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `chmod`, `chown`, `chgrp`, `umask`
-    
 
-### 🧪 Examples
 
-```bash
+### Examples
+
+```text
 chmod u+x script.sh
 chmod g+rw data.txt
 chown alice report.pdf
@@ -222,26 +222,26 @@ umask 022
 
 ---
 
-## 8️⃣ Networking Commands
+## Networking Commands
 
 Diagnose and manage networking.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `ping`, `ifconfig`, `ip`
-    
+
 - `ssh`, `scp`
-    
+
 - `netstat`, `ss`
-    
+
 - `curl`, `wget`
-    
+
 - `traceroute`, `nslookup`, `dig`
-    
 
-### 🧪 Examples
 
-```bash
+### Examples
+
+```text
 ping example.com
 ip addr show
 ssh user@server
@@ -251,18 +251,18 @@ wget https://example.com/file.zip
 
 ---
 
-## 9️⃣ Searching and Sorting
+## Searching and Sorting
 
 Locate files and manipulate text efficiently.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `grep`, `find`, `sort`, `uniq`
-    
-- `awk`, `sed`
-    
 
-### 🧪 Examples
+- `awk`, `sed`
+
+
+### Examples
 
 ```bash
 grep "error" syslog
@@ -274,22 +274,22 @@ sed 's/foo/bar/g' input.txt
 
 ---
 
-## 🔟 Package Management
+## Package Management
 
 Install, update, and remove software packages.
 
-### 🧰 Package Managers
+### Package Managers
 
 - `apt` (Debian/Ubuntu)
-    
-- `dnf`, `yum` (Fedora/RHEL)
-    
-- `pacman` (Arch)
-    
-- `snap`, `flatpak`
-    
 
-### 🧪 Examples (APT)
+- `dnf`, `yum` (Fedora/RHEL)
+
+- `pacman` (Arch)
+
+- `snap`, `flatpak`
+
+
+### Examples (apt)
 
 ```bash
 sudo apt update
@@ -300,22 +300,22 @@ sudo apt autoremove
 
 ---
 
-## 1️⃣1️⃣ Process Management
+## Process Management
 
 Monitor and control running processes.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `ps`, `top`, `htop`
-    
+
 - `kill`, `killall`, `pkill`
-    
+
 - `bg`, `fg`, `nice`, `renice`
-    
 
-### 🧪 Examples
 
-```bash
+### Examples
+
+```text
 ps aux
 kill 1234
 killall firefox
@@ -324,22 +324,22 @@ nice -n 10 ./script.sh
 
 ---
 
-## 1️⃣2️⃣ Disk Management
+## Disk Management
 
 Handle partitions, disks, and filesystems.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `fdisk`, `gdisk`, `parted`
-    
+
 - `mount`, `umount`
-    
+
 - `lsblk`, `blkid`
-    
 
-### 🧪 Examples
 
-```bash
+### Examples
+
+```text
 lsblk
 sudo mount /dev/sdb1 /mnt
 sudo umount /mnt
@@ -347,20 +347,20 @@ sudo umount /mnt
 
 ---
 
-## 1️⃣3️⃣ User and Group Management
+## User and Group Management
 
 Administer users and permissions.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `adduser`, `userdel`, `usermod`
-    
-- `groupadd`, `groupdel`
-    
-- `groups`, `id`
-    
 
-### 🧪 Examples
+- `groupadd`, `groupdel`
+
+- `groups`, `id`
+
+
+### Examples
 
 ```bash
 sudo adduser john
@@ -371,22 +371,22 @@ id john
 
 ---
 
-## 1️⃣4️⃣ Miscellaneous Commands
+## Miscellaneous Commands
 
 Useful utilities for everyday tasks.
 
-### 🔑 Key Commands
+### Key Commands
 
 - `echo`, `date`, `cal`
-    
-- `history`, `alias`, `unalias`
-    
-- `tar`, `gzip`, `gunzip`
-    
-- `man`
-    
 
-### 🧪 Examples
+- `history`, `alias`, `unalias`
+
+- `tar`, `gzip`, `gunzip`
+
+- `man`
+
+
+### Examples
 
 ```bash
 echo "Hello Linux"
@@ -398,13 +398,13 @@ man ls
 
 ---
 
-## 1️⃣5️⃣ Tips and Best Practices
+## Tips and Best Practices
 
-✅ Use tab completion  
-✅ Use pipes and redirection  
-✅ Use `sudo` carefully  
-✅ Read `man` pages  
-✅ Keep system updated  
+✅ Use tab completion
+✅ Use pipes and redirection
+✅ Use `sudo` carefully
+✅ Read `man` pages
+✅ Keep system updated
 ✅ Practice regularly
 
 ```bash

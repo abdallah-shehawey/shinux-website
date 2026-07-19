@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 Ansible Variables & Precedence Guide"
+title: Ansible Variables & Precedence Guide
 description: >-
   A comprehensive guide to understanding Variables in Ansible and their
   Precedence order. This file is designed to be a reference from beginner to
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 A comprehensive guide to understanding Variables in Ansible and their Precedence order. This file is designed to be a reference from beginner to professional levels.
 
-## 🧠 Introduction: What are Variables? Why use them?
+## Introduction: What are Variables? Why Use Them?
 
 Variables are a way to store values (like usernames, file paths, or package names) and use them throughout your Playbooks.
 
@@ -22,7 +22,7 @@ Variables are a way to store values (like usernames, file paths, or package name
 
 2. **Reusability:** You can use the same Playbook for different servers just by changing the variables.
 
-## 🏆 Variable Precedence (Who Wins?)
+## Variable Precedence (who Wins?)
 
 In Ansible, you can define variables in many places. If the same variable is defined in two different places, **who wins?**
 
@@ -42,17 +42,17 @@ The Order from Strongest (Always Wins) to Weakest:
 
 6. **Role Defaults** (The Weakest - used only as default values).
 
-## 🚀 Detailed Examples (From Strongest to Weakest)
+## Detailed Examples (from Strongest to Weakest)
 
 In the following examples, we assume we want to print a message using the variable `message`.
 
-### 1️⃣ Extra Vars (`-e`)
+### Extra Vars (`-e`)
 
 This method is the **Wildcard**. Any variable you write here will wipe out any old value and replace it. It is usually used during manual execution or in Pipelines (CI/CD).
 
 **Command:**
 
-```
+```ini
 ansible-playbook play.yml -e "message='Hello from CLI'"
 ```
 
@@ -62,7 +62,7 @@ ansible-playbook play.yml -e "message='Hello from CLI'"
 
 **Playbook:**
 
-```
+```yaml
 - name: Example with extra vars
   hosts: all
   tasks:
@@ -72,13 +72,13 @@ ansible-playbook play.yml -e "message='Hello from CLI'"
 
 - **Result:** It will print `Hello from CLI` regardless of what is written inside the files.
 
-### 2️⃣ set_fact (Runtime Variables)
+### Set_fact (runtime Variables)
 
 This module allows you to create or modify variables **during** the execution of the Playbook.
 
 **Playbook:**
 
-```
+```yaml
 - name: Example with set_fact
   hosts: all
   tasks:
@@ -96,13 +96,13 @@ This module allows you to create or modify variables **during** the execution of
 
 - **Priority:** Very high, beats Play Vars and Inventory Vars.
 
-### 3️⃣ Vars in a Play
+### Vars in a Play
 
 Defining variables explicitly inside the Playbook file itself under the `vars` section.
 
 **Playbook:**
 
-```
+```yaml
 - name: Example with vars in play
   hosts: all
   vars:
@@ -116,19 +116,19 @@ Defining variables explicitly inside the Playbook file itself under the `vars` s
 
 - **Disadvantage:** Hard to change if you want to use different values for each environment (Prod vs Dev).
 
-### 4️⃣ vars_files
+### Vars_files
 
 Instead of writing variables inside the Playbook and cluttering it, we place them in an external file and import them.
 
 **File: `vars.yml`**
 
-```
+```text
 message: 'Hello from vars_files'
 ```
 
 **Playbook:**
 
-```
+```yaml
 - name: Example with vars_files
   hosts: all
   vars_files:
@@ -140,13 +140,13 @@ message: 'Hello from vars_files'
 
 - **Importance:** ⭐⭐⭐⭐ (Excellent for organization, and for keeping secrets in files encrypted with **Ansible Vault**).
 
-### 5️⃣ host_vars
+### Host_vars
 
 Variables specific to **one single server**. They are placed in a folder named `host_vars` containing a file named after the server or IP.
 
 **Directory Structure:**
 
-```
+```text
 project/
 ├── playbook.yml
 └── host_vars/
@@ -155,7 +155,7 @@ project/
 
 **Playbook:**
 
-```
+```yaml
 - name: Example with host_vars
   hosts: all
   tasks:
@@ -165,13 +165,13 @@ project/
 
 - **When to use?** If you have one server that needs special settings (e.g., a Master Node needs more RAM than Workers).
 
-### 6️⃣ group_vars
+### Group_vars
 
 Variables specific to a **whole group** of servers (like the `web` or `db` group).
 
 **Directory Structure:**
 
-```bash
+```text
 project/
 ├── playbook.yml
 └── group_vars/
@@ -192,18 +192,18 @@ project/
 - **Importance:** ⭐⭐⭐⭐⭐ (This is the standard place to put general variables).
 
 - **Note:** `host_vars` is stronger than `group_vars`. (Specific beats General).
-     
-## 🛠️ Must-Know Additions
+
+## Must-know Additions
 
 These commands and concepts are essential for anyone using Ansible.
 
-### 1. `register` (How to store command output?)
+### `register` (how to Store Command Output?)
 
 The most important way to create dynamic variables. It captures the output of a Linux command and stores it in a variable for later use.
 
 **Example:**
 
-```
+```bash
 - name: Check if file exists
   command: ls /tmp/myfile.txt
   register: file_check
@@ -221,7 +221,7 @@ The most important way to create dynamic variables. It captures the output of a 
 
 - **`file_check.stdout`**: The text output of the command.
 
-### 2. Ansible Facts (Automatic Info)
+### Ansible Facts (automatic Info)
 
 When Ansible starts, it gathers information about the server (IP, OS, RAM, CPU) and stores it in variables called **Facts**.
 
@@ -237,12 +237,12 @@ When Ansible starts, it gathers information about the server (IP, OS, RAM, CPU) 
 
 **Example in Playbook:**
 
-```
+```text
 - debug:
     msg: "This server is running {{ ansible_distribution }} with IP {{ ansible_default_ipv4.address }}"
 ```
 
-### 3. Magic Variables
+### Magic Variables
 
 Special variables provided by Ansible that give you information about the Inventory.
 
@@ -252,7 +252,7 @@ Special variables provided by Ansible that give you information about the Invent
 
 - **`group_names`**: A list of group names that the current server belongs to.
 
-### 4. Jinja2 Filters (Formatting Variables)
+### Jinja2 Filters (formatting Variables)
 
 You can manipulate variable values using **Filters**.
 
@@ -268,7 +268,7 @@ You can manipulate variable values using **Filters**.
     msg: "{{ message | upper }}"
     ```
 
-## 🎯 Summary (Cheat Sheet)
+## Summary (cheat Sheet)
 
 |Order|Method|Location|When to use?|
 |---|---|---|---|

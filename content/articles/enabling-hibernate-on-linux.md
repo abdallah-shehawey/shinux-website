@@ -27,7 +27,7 @@ For hibernate to work properly:
 
 Examples: Ubuntu, Linux Mint, Pop!_OS.
 
-### 1. Check swap
+### Check swap
 
 ```bash
 swapon --show
@@ -41,7 +41,7 @@ free -h
 
 Recommended: swap >= RAM.
 
-### 2. Find swap UUID
+### Find swap UUID
 
 ```bash
 blkid
@@ -55,7 +55,7 @@ Example output:
 
 Copy the UUID.
 
-### 3. Configure GRUB
+### Configure GRUB
 
 Edit the GRUB config:
 
@@ -75,13 +75,13 @@ Change to:
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash resume=UUID=YOUR_SWAP_UUID"
 ```
 
-### 4. Update GRUB
+### Update GRUB
 
 ```bash
 sudo update-grub
 ```
 
-### 5. Test hibernate
+### Test hibernate
 
 ```bash
 systemctl hibernate
@@ -91,19 +91,19 @@ systemctl hibernate
 
 Fedora uses Dracut instead of initramfs-tools, so the process differs slightly.
 
-### 1. Check swap
+### Check swap
 
 ```bash
 swapon --show
 ```
 
-### 2. Find swap UUID
+### Find swap UUID
 
 ```bash
 blkid
 ```
 
-### 3. Add the resume parameter
+### Add the resume parameter
 
 Edit the GRUB config:
 
@@ -117,7 +117,7 @@ Modify:
 GRUB_CMDLINE_LINUX="resume=UUID=YOUR_SWAP_UUID"
 ```
 
-### 4. Rebuild GRUB
+### Rebuild GRUB
 
 BIOS systems:
 
@@ -131,13 +131,13 @@ UEFI systems:
 sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
 ```
 
-### 5. Rebuild initramfs
+### Rebuild initramfs
 
 ```bash
 sudo dracut -f
 ```
 
-### 6. Test hibernate
+### Test hibernate
 
 ```bash
 systemctl hibernate

@@ -1,5 +1,5 @@
 ---
-title: "\U0001F680 Getting Started with Git: From Zero to Your First Commit"
+title: 'Getting Started with Git: From Zero to Your First Commit'
 description: >-
   A simplified guide to understanding how Git works, how to install it, and how
   to start tracking your projects.
@@ -11,15 +11,15 @@ author: abdallah-shehawey
 ---
 A simplified guide to understanding how Git works, how to install it, and how to start tracking your projects.
 
-## 💡 Core Concepts
+## Core Concepts
 
 When working with Git, your files go through a specific journey. Here is an explanation of the terms you mentioned in a structured technical way:
 
-### 1. Working Directory
+### Working Directory
 
 When you start a new project and initialize Git, this folder is called the **Working Directory**. At this stage, Git sees the files but doesn't take any action on them (they are in an `untracked` state) unless you explicitly tell it to.
 
-### 2. Snapshot
+### Snapshot
 
 In Git, we don't just save random full copies of the folder. Instead, we take **Snapshots**.
 
@@ -27,13 +27,13 @@ In Git, we don't just save random full copies of the folder. Instead, we take **
 
 - Instead of saving the entire file every time, Git is smart enough to save only the **new changes** in every snapshot. This makes Git fast and space-efficient.
 
-### 3. Commit
+### Commit
 
 A **Commit** is the actual process of saving a snapshot into your project's history.
 
 > **Simple Analogy:** Imagine you are playing a video game and you reach a certain level and "Save" your progress. That "Save" is exactly what a **Commit** is in the world of programming.
 
-## 🛠️ Installing Git
+## Installing Git
 
 ### Step 1: Download
 
@@ -43,11 +43,11 @@ You can download Git for any Operating System (Windows, macOS, Linux) from the o
 
 After downloading and installing, open your Terminal or Command Prompt and type the following command to ensure everything is working correctly:
 
-```
+```bash
 git --version
 ```
 
-## 📈 The Git Lifecycle
+## The Git Lifecycle
 
 1. **Modify:** You edit your files in the _Working Directory_.
 

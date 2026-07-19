@@ -9,7 +9,7 @@ tags:
 draft: false
 author: abdallah-shehawey
 ---
-## 1. What is an Inventory?
+## What is an Inventory?
 
 The inventory is the "Source of Truth" for Ansible. It tells Ansible **which** servers to manage and **how** to communicate with them.
 
@@ -19,13 +19,13 @@ Inventories can be:
 
 - **Dynamic:** Scripts or plugins that fetch server lists automatically from Cloud Providers (AWS, Azure, etc.).
 
-## 2. Basic Static Inventory Structure
+## Basic Static Inventory Structure
 
 The most common format is **INI**. You can list IP addresses or Hostnames.
 
-### Simple List (Ungrouped)
+### Simple List (ungrouped)
 
-```bash
+```text
 192.168.1.50
 192.168.1.51
 server1.company.com
@@ -35,7 +35,7 @@ server1.company.com
 
 Grouping allows you to run automation on specific sets of servers (e.g., only Webservers or only Databases).
 
-```bash
+```json
 [web]
 192.168.1.10
 192.168.1.11
@@ -44,7 +44,7 @@ Grouping allows you to run automation on specific sets of servers (e.g., only We
 192.168.1.20
 ```
 
-## 3. Connection Parameters (The "Cheat Sheet")
+## Connection Parameters (the "cheat Sheet")
 
 You can define how Ansible connects to each host using special variables directly in the inventory line.
 
@@ -57,20 +57,20 @@ You can define how Ansible connects to each host using special variables directl
 |`ansible_connection`|Connection type (ssh, winrm, local).|`ansible_connection=local`|
 |`ansible_ssh_pass`|SSH Password (if not using keys - _Not Recommended_).|`ansible_ssh_pass=Secret123`|
 
-### Example with Parameters (Inline)
+### Example with Parameters (inline)
 
-```bash
+```ini
 [web]
 # Syntax: <IP> <Parameter1> <Parameter2> ...
 10.0.1.5 ansible_user=ec2-user ansible_ssh_private_key_file=~/ansible-project/your-key.pem
 10.0.1.6 ansible_user=ec2-user ansible_ssh_private_key_file=~/ansible-project/your-key.pem
 ```
 
-## 4. Optimization: Group Variables
+## Optimization: Group Variables
 
 Instead of repeating the user and key path for every single line (like above), you can define variables for the **entire group**.
 
-```bash
+```ini
 [web]
 10.0.1.5
 10.0.1.6
@@ -83,13 +83,13 @@ ansible_ssh_private_key_file=~/ansible-project/your-key.pem
 
 _Now, both IPs automatically inherit the user and key settings._
 
-## 5. Nested Groups (Groups of Groups)
+## Nested Groups (groups of Groups)
 
 You can create a "Super Group" that contains other groups using the `:children` suffix. This is useful if you want to target your entire application stack (Web + DB) at once.
 
 **Syntax:**
 
-```bash
+```ini
 [web]
 <node1_private_ip> ansible_user=ec2-user ansible_ssh_private_key_file=~/ansible-project/your-key.pem
 
@@ -110,35 +110,35 @@ db
 
 - Target Everything: `ansible mysite -m ping`
 
-## 6. Testing Your Inventory
+## Testing Your Inventory
 
 Once your file is created, use the `ansible` ad-hoc command to verify Ansible can see the groups.
 
 **List all hosts in the inventory:**
 
-```bash
+```text
 ansible all --list-hosts
 ```
 
 **Ping a specific group:**
 
-```bash
+```text
 ansible web -m ping
 ```
 
 **Ping a parent group (Children):**
 
-```bash
+```text
 ansible mysite -m ping
 ```
 
-## 7. Default Location
+## Default Location
 
 By default, Ansible looks for `/etc/ansible/hosts`. However, in most projects, we create a local `hosts` file and point to it in `ansible.cfg`:
 
 **ansible.cfg:**
 
-```
+```ini
 [defaults]
 inventory = ./hosts
 ```

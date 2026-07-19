@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Distrobox lets you run a full container of another distro — Arch, Ubuntu, Debian, whatever — fully integrated with your host: shared home directory, shared GPU, shared themes, apps exported straight into your host's app menu. It's the practical way to get AUR packages on Fedora, or a Debian toolchain on Arch, without dual-booting or babysitting a VM. This guide covers installing it on Fedora, creating an Arch container with NVIDIA GPU passthrough, using AUR inside it, and exporting GUI apps back to the host.
 
-## 1. Install Distrobox on Fedora
+## Install Distrobox on Fedora
 
 ```bash
 sudo dnf install distrobox
@@ -20,15 +20,15 @@ sudo dnf install podman
 distrobox --version
 ```
 
-## 2. Create an Arch Linux container
+## Create an Arch Linux Container
 
-```bash
+```text
 distrobox create --name arch --image archlinux:latest
 ```
 
 For NVIDIA GPU support (CUDA, AI workloads, gaming, GPU rendering), pass `--nvidia` explicitly:
 
-```bash
+```text
 distrobox create \
   --name arch \
   --image archlinux:latest \
@@ -43,24 +43,24 @@ distrobox create \
 
 Verify the host GPU first:
 
-```bash
+```text
 nvidia-smi
 ```
 
 If that works on Fedora, the GPU will work inside the container too. Enter it with:
 
-```bash
+```text
 distrobox enter arch
 ```
 
-## 3. First-time Arch setup
+## First-time Arch Setup
 
 ```bash
 sudo pacman -Syu
 sudo pacman -S base-devel git
 ```
 
-## 4. Install yay (AUR helper)
+## Install Yay (aur Helper)
 
 ```bash
 git clone https://aur.archlinux.org/yay.git
@@ -69,27 +69,27 @@ makepkg -si
 yay -S google-chrome   # test it
 ```
 
-## 5. Installing an AUR package (example: WhatsApp)
+## Installing an Aur Package (example: Whatsapp)
 
-```bash
+```text
 yay -S whatsapp-for-linux
 ```
 
 If prompted for a clean build: choose `A` for a clean build, `q` to exit the diff view, then confirm with `Y`. Launch with:
 
-```bash
+```text
 whatsapp-for-linux
 ```
 
-## 6. Exporting Arch apps back to Fedora
+## Exporting Arch Apps Back to Fedora
 
-```bash
+```text
 distrobox-export --app whatsapp-for-linux
 ```
 
 This adds the app to Fedora's own application menu, even though it's actually running inside the Arch container.
 
-## 7. NVIDIA GPU usage inside the container
+## Nvidia Gpu Usage Inside the Container
 
 ```bash
 nvidia-smi                      # confirm the host driver works
@@ -99,15 +99,15 @@ nvidia-smi                       # confirm again, inside the container
 
 On hybrid GPU (Optimus) laptops, force the NVIDIA GPU for a specific program:
 
-```bash
+```ini
 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia program-name
 ```
 
-## 8. Common mistakes & troubleshooting
+## Common Mistakes & Troubleshooting
 
 **Don't delete `~/.cache` during setup.** Distrobox stores required state in `~/.cache/distrobox/`. If it does get corrupted:
 
-```bash
+```text
 distrobox rm arch
 rm -rf ~/.cache/distrobox
 ```
@@ -116,15 +116,15 @@ Then recreate the container.
 
 **Error: `crun: ptsname: Inappropriate ioctl for device`** — usually an interrupted setup or stale terminal session. Fix with:
 
-```bash
+```text
 podman system reset
 ```
 
 Or just reboot / log out and back in.
 
-## 9. Removing the container
+## Removing the Container
 
-```bash
+```text
 distrobox rm arch
 ```
 

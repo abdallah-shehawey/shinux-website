@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Some older tools — QuestaSim's license generator among them — still hard-depend on Python 2, which modern distros no longer package. Building it from source into an isolated location keeps it fully separate from the system Python.
 
-## 1. Install build dependencies
+## Install Build Dependencies
 
 ```bash
 sudo apt update
@@ -20,7 +20,7 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev \
   libnss3-dev libssl-dev libreadline-dev libffi-dev wget
 ```
 
-## 2. Download and extract the source
+## Download and Extract the Source
 
 ```bash
 cd ~/Downloads
@@ -29,38 +29,38 @@ tar -xf Python-2.7.18.tgz
 cd Python-2.7.18
 ```
 
-## 3. Build into a private prefix
+## Build Into a Private Prefix
 
 Installing to a custom prefix (rather than system-wide) means it never conflicts with anything the OS expects Python to be:
 
-```bash
+```ini
 ./configure --prefix=$HOME/myApps/python2 --enable-optimizations
 make
 make install
 ```
 
-## 4. Alias `python2`
+## Alias `python2`
 
-```bash
+```text
 nano ~/.bashrc
 ```
 
 Add:
 
-```bash
+```ini
 alias python2='$HOME/myApps/python2/bin/python'
 ```
 
-```bash
+```text
 source ~/.bashrc
 python2 --version   # Python 2.7.18
 ```
 
-## 5. Alternative: a virtual environment
+## Alternative: a Virtual Environment
 
 If several tools need Python 2, a virtualenv keeps them isolated from each other too:
 
-```bash
+```text
 wget https://bootstrap.pypa.io/pip/2.7/get-pip.py
 python2 get-pip.py
 python2 -m pip install virtualenv
@@ -70,7 +70,7 @@ $HOME/myApps/python2/bin/virtualenv ~/myApps/python_env/python2_env
 
 Activate/deactivate as usual:
 
-```bash
+```text
 source ~/myApps/python_env/python2_env/bin/activate
 python -V   # Python 2.7.18
 deactivate

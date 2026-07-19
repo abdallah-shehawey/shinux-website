@@ -1,5 +1,5 @@
 ---
-title: "\U0001F4D8 Ansible Custom Roles Guide"
+title: Ansible Custom Roles Guide
 description: >-
   A comprehensive guide to creating, structuring, and using Custom Roles in
   Ansible. Roles are the best way to organize your code, making it reusable,
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 A comprehensive guide to creating, structuring, and using **Custom Roles** in Ansible. Roles are the best way to organize your code, making it reusable, shareable, and clean.
 
-## 🧠 What is an Ansible Role?
+## What is an Ansible Role?
 
 A Role is a package of automation. Instead of writing one giant playbook with 100 tasks, variables, and handlers, you split them into specific folders.
 
@@ -26,17 +26,17 @@ A Role is a package of automation. Instead of writing one giant playbook with 10
 
   - **Sharing:** Easily shareable via Ansible Galaxy.
 
-## 🚀 Step 1: Create Role Structure (`ansible-galaxy`)
+## Step 1: Create Role Structure (`ansible-galaxy`)
 
 Ansible comes with a tool called `ansible-galaxy` that can "scaffold" (automatically create) the folder structure for you.
 
 **Command:**
 
-```bash
+```text
 ansible-galaxy init nginx
 ```
 
-### 🔍 Detailed Explanation
+### Detailed Explanation
 
 - **`ansible-galaxy`**: The CLI tool for managing roles.
 
@@ -46,11 +46,11 @@ ansible-galaxy init nginx
 
 - **Result:** It creates a folder named `nginx` in your current directory with all the standard subfolders (tasks, handlers, vars, etc.) ready for you to fill.
 
-## 📂 Step 2: Project Directory Structure
+## Step 2: Project Directory Structure
 
 After running the command, your project should look like this. Here is what every folder does:
 
-```bash
+```text
 my-ansible-project/
 ├── inventory              # Your hosts file
 ├── site.yml               # The "Master" playbook
@@ -70,19 +70,19 @@ my-ansible-project/
             └── main.yml
 ```
 
-### 💡 Pro Tip: `defaults` vs `vars`
+### Pro Tip: `defaults` vs `vars`
 
 - **`defaults/main.yml`**: Use this for variables you want the user to allow changing easily (e.g., `nginx_port: 80`). They have **lowest** priority.
 
 - **`vars/main.yml`**: Use this for variables internal to the role logic that shouldn't be changed often. They have **high** priority.
 
-## 📝 Step 3: Define Tasks in Role
+## Step 3: Define Tasks in Role
 
 The `tasks/main.yml` file is the heart of the role. It executes the actual automation.
 
 **File:** `roles/nginx/tasks/main.yml`
 
-```yaml
+```text
 ---
 # Task 1: Install the Package
 - name: Install nginx
@@ -98,7 +98,7 @@ The `tasks/main.yml` file is the heart of the role. It executes the actual autom
     enabled: true
 ```
 
-### 🔍 Argument Explanation
+### Argument Explanation
 
 - **`yum` Module**:
 
@@ -114,13 +114,13 @@ The `tasks/main.yml` file is the heart of the role. It executes the actual autom
 
   - **`enabled: true`**: **Crucial.** Ensures it starts automatically if the server reboots (systemctl enable).
 
-## ⚡ Step 4: Define Handlers (Optional)
+## Step 4: Define Handlers (optional)
 
 Handlers are used to restart services only when configuration changes.
 
 **File:** `roles/nginx/handlers/main.yml`
 
-```yaml
+```text
 ---
 - name: restart nginx
   service:
@@ -128,19 +128,19 @@ Handlers are used to restart services only when configuration changes.
     state: restarted
 ```
 
-### 🔍 Argument Explanation
+### Argument Explanation
 
 - **`name: restart nginx`**: This is the "Trigger Name". You must use this exact string in your tasks (e.g., `notify: restart nginx`).
 
 - **`state: restarted`**: Stops and starts the service to apply new configs.
 
-## 🔗 Step 5: Create the Playbook (`site.yml`)
+## Step 5: Create the Playbook (`site.yml`)
 
 Now that the role is built, you need a Playbook to "call" or "use" it. This file is usually much shorter because the logic is hidden inside the role.
 
 **File:** `site.yml` (in project root)
 
-```yaml
+```text
 ---
 - name: Apply nginx role to web servers
   hosts: all          # Target hosts from inventory
@@ -149,21 +149,21 @@ Now that the role is built, you need a Playbook to "call" or "use" it. This file
     - nginx           # The name of the folder inside /roles/
 ```
 
-### 🔍 Detailed Explanation
+### Detailed Explanation
 
 - **`roles:`**: This section tells Ansible to look into the `roles/` directory, find a folder named `nginx`, and execute `tasks/main.yml`. It also automatically loads any vars, handlers, or defaults found inside that role.
 
-## ▶️ Step 6: Run the Playbook
+## Step 6: Run the Playbook
 
 Finally, execute the automation.
 
 **Command:**
 
-```bash
+```text
 ansible-playbook -i inventory site.yml
 ```
 
-### 🔍 Argument Explanation
+### Argument Explanation
 
 - **`ansible-playbook`**: The command to run YAML playbooks.
 
@@ -171,7 +171,7 @@ ansible-playbook -i inventory site.yml
 
 - **`site.yml`**: The master playbook file.
 
-## 🌟 Summary Checklist for Custom Roles
+## Summary Checklist for Custom Roles
 
 1. **Init**: `ansible-galaxy init <role_name>`
 
@@ -185,7 +185,7 @@ ansible-playbook -i inventory site.yml
 
 6. **Run**: Execute with `ansible-playbook`.
 
-## 🌐 Bonus: Finding Community Roles (Ansible Galaxy Web)
+## Bonus: Finding Community Roles (ansible Galaxy Web)
 
 You don't always have to write roles from scratch. You can find high-quality, pre-made roles on the official website.
 

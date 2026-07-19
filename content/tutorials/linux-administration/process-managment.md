@@ -17,17 +17,15 @@ A process is an instance of a computer program that is being executed. It's a se
 Key characteristics of a process:
 
 - **Independent:** Processes are isolated from each other. One process cannot directly access the memory or resources of another.
-    
+
 - **Heavyweight:** Creating a process consumes a significant amount of system resources (memory, CPU time) because the operating system has to allocate a dedicated memory space and data structures for it.
-    
+
 - **Resource Ownership:** A process owns resources such as memory, file handles, and devices.
-    
+
 ---
 ## Process States
 
 A process moves through different states during its life cycle. The operating system's scheduler manages these transitions.
-
-> **Diagram (Mermaid source):**
 
 ```text
 graph TD
@@ -41,15 +39,15 @@ graph TD
 Here is a detailed explanation of each state:
 
 - **Dormant (Created):** This is the initial state where the process is first created (e.g., by a `fork()` call). The operating system has allocated resources, but the process has not yet been approved to compete for CPU time.
-    
+
 - **Ready:** The process is loaded into main memory and is ready to run. It is waiting for the CPU to be assigned to it by the scheduler. There can be many processes in the "Ready" state at one time.
-    
+
 - **Running:** The process's instructions are being executed by the CPU. A process moves from the "Ready" state to the "Running" state when the scheduler picks it.
-    
+
 - **Waiting (Blocked):** The process is waiting for some event to occur, such as the completion of an I/O operation (like reading from a file) or receiving a signal. It cannot proceed until this event happens. Once the event is complete, the process moves back to the "Ready" state, not directly to "Running."
-    
+
 - **Terminated (Finished):** The process has finished its execution or has been explicitly killed. Its resources are reclaimed by the operating system.
-    
+
 ---
 ## Key Process Concepts
 
@@ -160,9 +158,9 @@ int main() {
 **5. Concurrency vs. Parallelism**
 
 - **Concurrency** involves multiple processes making progress simultaneously by time-sharing CPU resources.
-    
+
 - **Parallelism** involves multiple processes running _truly_ simultaneously on multi-core systems.
-    
+
 
 **6. Signal Handling** Processes can communicate and control each other using **signals**. Common signals include `SIGCHLD` (sent when a child process terminates) and `SIGKILL` (forcefully terminates a process).
 
@@ -189,7 +187,7 @@ To start, stop, or check the status of a service (daemon), there are generally t
 
 **1. Using systemd (Modern Systems)** Most modern Linux distributions (Ubuntu, CentOS 7+, Fedora) use `systemd`.
 
-```bash
+```text
 # Start a service
 systemctl start servicename
 
@@ -223,7 +221,7 @@ cd /etc/init.d
 
 You can list all available signals on your system by using the `kill -l` command:
 
-```bash
+```text
 kill -l
 ```
 
@@ -269,9 +267,9 @@ Below is a comprehensive list of signals available in Linux, including their sig
 Real-time signals are numbered from 32 to 64 and are intended for application-defined purposes. They have the following properties:
 
 - **Guaranteed Delivery:** Signals are not lost; they are queued.
-    
+
 - **Ordered Delivery:** Signals are delivered in the order they were sent.
-    
+
 
 |Signal Number|Signal Name|Default Action|Description|
 |---|---|---|---|
@@ -288,13 +286,13 @@ Despite its name, the `kill` command is used to send signals to processes, not j
 
 **Syntax:**
 
-```bash
+```text
 kill -SIGNAL PID
 ```
 
 **Examples:**
 
-```bash
+```text
 # Gracefully terminate a process:
 kill -SIGTERM 1234
 
@@ -311,13 +309,13 @@ The `killall` command sends signals to all processes running a specified command
 
 **Syntax:**
 
-```bash
+```text
 killall -SIGNAL process_name
 ```
 
 **Examples:**
 
-```bash
+```text
 # Gracefully terminate all instances of firefox:
 killall -SIGTERM firefox
 
@@ -331,13 +329,13 @@ The `pkill` command sends signals to processes based on various criteria such as
 
 **Syntax:**
 
-```bash
+```text
 pkill -SIGNAL pattern
 ```
 
 **Examples:**
 
-```bash
+```text
 # Terminate all processes matching the pattern vim:
 pkill -SIGTERM vim
 
@@ -351,9 +349,9 @@ pkill -SIGUSR1 -u john
 In a command-line shell (like `bash`), you can control whether a process runs in the **foreground** (where it takes over your terminal) or the **background** (where it runs without blocking you).
 
 - **Foreground (fg):** This is the default. The process runs, and you cannot type new commands until it finishes or is suspended.
-    
+
 - **Background (bg):** The process runs "behind the scenes." You immediately get your command prompt back and can run other commands.
-    
+
 
 Here are the common commands to manage this:
 
@@ -383,20 +381,20 @@ bg %1
 ```
 
 ---
-## Process Priority (Nice Value)
+## Process Priority (nice Value)
 
 The **priority** (`PRI`) of a process is its actual execution priority, managed by the kernel's scheduler. This value is not directly changeable by a normal user.
 
 The **nice value** (`NI`) is a user-adjustable setting that influences the priority. A higher nice value means a _lower_ priority (the process is "nicer" to other processes).
 
 - Values range from `-20` (highest priority) to `19` (lowest priority).
-    
+
 - Regular users can only _increase_ the nice value (lower the priority) of their own processes.
-    
+
 
 You can launch a process with a specific nice value:
 
-```bash
+```text
 # Runs 'sleep 123456' with a nice value of 10 (lower priority)
 nice -n 10 sleep 123456
 ```
@@ -418,37 +416,36 @@ A thread is the smallest unit of execution within a process. A process can have 
 Key characteristics of a thread:
 
 - **Dependent:** Threads exist within a process and share its resources (memory, code, files).
-    
+
 - **Lightweight:** Threads are faster to create and require fewer resources than processes because they don't need a new memory space allocated.
-    
+
 - **Shared Resources:** All threads of a process share its code, data, and open files. However, each thread has its own stack, registers, and program counter.
-    
+
 ---
 ## Communication
 
 How these units of execution talk to each other is a fundamental concept that stems directly from their design.
 
-### Inter-Process Communication (IPC)
+### Inter-process Communication (ipc)
 
 Because processes are isolated in their own separate memory spaces, they cannot communicate directly. They require the operating system to act as an intermediary. This method, while safer, is inherently slower. Common IPC mechanisms include:
 
 - **Pipes:** A channel where one process can write information and another can read it.
-    
-- **Sockets:** Allows processes to communicate over a network, not just on the same machine.
-    
-- **Shared Memory:** The operating system allocates a block of memory that both processes have permission to access.
-    
-- **Message Queues:** A list of messages that processes can add to and read from.
-    
 
-### Inter-Thread Communication
+- **Sockets:** Allows processes to communicate over a network, not just on the same machine.
+
+- **Shared Memory:** The operating system allocates a block of memory that both processes have permission to access.
+
+- **Message Queues:** A list of messages that processes can add to and read from.
+
+
+### Inter-thread Communication
 
 Threads have a much simpler and faster way to communicate. Since all threads within a process share the same memory, they can communicate directly by reading and writing to the same data and variables.
 
 - **Direct Access:** One thread can modify a piece of data, and all other threads within that process can immediately see the change.
-    
-- **Synchronization Challenge:** The major risk with this method is a **race condition**, where multiple threads attempt to modify the same resource simultaneously, leading to corrupted data. To prevent this, programmers use synchronization tools like **mutexes** and **semaphores** to ensure only one thread can access a critical section of data at a time.
 
+- **Synchronization Challenge:** The major risk with this method is a **race condition**, where multiple threads attempt to modify the same resource simultaneously, leading to corrupted data. To prevent this, programmers use synchronization tools like **mutexes** and **semaphores** to ensure only one thread can access a critical section of data at a time.
 
 ---
 ## Differences Between Process and Thread
@@ -460,9 +457,9 @@ The main distinction is that processes are independent and heavyweight, while th
 The image below illustrates this concept perfectly.
 
 - **On the left (Single-Threaded Process):** You see one large box representing the process's memory. It contains the shared `code`, `data`, `files`. There is only one thread of execution, which has its own private `registers`, `stack`, and `program counter`.
-    
+
 - **On the right (Multi-Threaded Process):** This is still a single process in one large box. The `code`, `data`, `files` are still shared across the entire process. However, there are now multiple threads running inside it. Crucially, while they share the process's resources, **each thread has its own separate `registers`, `stack`, and `program counter`**.
-    
+
 
 This visual highlights why threads are "lightweight." To create a new thread, the system only needs to create a new set of registers, a stack, and a counter, reusing the existing code and data. To create a whole new process, it would need to duplicate the entire box.
 

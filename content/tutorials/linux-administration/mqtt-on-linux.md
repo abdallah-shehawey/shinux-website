@@ -1,5 +1,5 @@
 ---
-title: MQTT Server Setup (PC as Server)
+title: Mqtt Server Setup (pc as Server)
 description: >-
   First, update your package lists, install Mosquitto broker and clients,
   enable, and start the service.
@@ -18,19 +18,19 @@ sudo systemctl enable mosquitto
 sudo systemctl start mosquitto
 ```
 
-# Terminal 1 (Subscriber)
+# Terminal 1 (subscriber)
 
 In one terminal window, subscribe to a topic to listen for messages.
 
-```bash
+```text
 mosquitto_sub -h localhost -t "test/topic"
 ```
 
-# Terminal 2 (Publisher)
+# Terminal 2 (publisher)
 
 In a second terminal window, publish a message to the topic.
 
-```bash
+```text
 mosquitto_pub -h localhost -t "test/topic" -m "Hello World"
 ```
 

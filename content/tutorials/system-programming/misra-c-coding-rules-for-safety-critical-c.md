@@ -1,5 +1,5 @@
 ---
-title: 'MISRA C: Coding Rules for Safety-Critical C'
+title: 'Misra C: Coding Rules for Safety-critical C'
 description: >-
   MISRA C (from the Motor Industry Software Reliability Association) is a set of
   coding guidelines aimed at one goal: making C — a language full of undefined
@@ -16,9 +16,9 @@ Rules fall into three severities: **Mandatory** (must never be violated), **Requ
 
 The rules below are the ones that come up constantly in practice.
 
-## 1. No implicit type conversion
+## No Implicit Type Conversion
 
-```c
+```ini
 // avoid
 uint8_t x = 300;
 
@@ -28,9 +28,9 @@ uint8_t x = (uint8_t)300;
 
 An explicit cast makes truncation/overflow a deliberate decision instead of a silent accident, and documents intent.
 
-## 2. Use fixed-width integer types
+## Use Fixed-width Integer Types
 
-```c
+```text
 // avoid — size is compiler-dependent
 int x;
 
@@ -40,9 +40,9 @@ uint32_t x;
 
 Embedded code in particular can't afford `int` meaning something different on a different toolchain.
 
-## 3. Every variable is initialized
+## Every Variable is Initialized
 
-```c
+```ini
 // avoid
 int x;
 if (x > 5) { ... }
@@ -53,9 +53,9 @@ int x = 0;
 
 Reading an uninitialized variable is undefined behavior, not "probably zero."
 
-## 4. No reliance on undefined behavior
+## No Reliance on Undefined Behavior
 
-```c
+```ini
 int x = 10 / 0;    // division by zero
 *p = 5;             // NULL pointer dereference
 x = i++ + i++;      // multiple unsequenced side effects on i
@@ -63,9 +63,9 @@ x = i++ + i++;      // multiple unsequenced side effects on i
 
 The compiler is free to generate literally anything for these — including code that "works" until an optimization flag changes.
 
-## 5. One side effect per expression
+## One Side Effect Per Expression
 
-```c
+```ini
 // avoid
 a = i++ + i++;
 
@@ -76,9 +76,9 @@ i++;
 a += i;
 ```
 
-## 6. Always brace compound statements
+## Always Brace Compound Statements
 
-```c
+```text
 // avoid — z++ isn't actually part of the if
 if (x > 0)
     y++;
@@ -91,9 +91,9 @@ if (x > 0)
 }
 ```
 
-## 7. Every `if` gets an `else`; every `switch` gets a `default`
+## Every `if` Gets an `else`; Every `switch` Gets a `default`
 
-```c
+```ini
 if (status == OK)
 {
     handle_ok();
@@ -104,7 +104,7 @@ else
 }
 ```
 
-```c
+```text
 switch (state)
 {
     case INIT: break;
@@ -113,11 +113,11 @@ switch (state)
 }
 ```
 
-## 8. No `goto`
+## No `goto`
 
 Breaks structured control flow and makes code harder to reason about; allowed only with strong, documented justification.
 
-## 9. No dynamic memory allocation
+## No Dynamic Memory Allocation
 
 ```c
 // avoid
@@ -129,7 +129,7 @@ static uint8_t buffer[128];
 
 `malloc`/`free` introduce fragmentation and non-deterministic timing — both unacceptable in hard real-time or safety-critical code. Static allocation is fully predictable.
 
-## 10. No recursion
+## No Recursion
 
 ```c
 // avoid
@@ -138,9 +138,9 @@ void func(void) { func(); }
 
 Recursion depth isn't statically boundable in the general case, which means unpredictable stack usage — a real risk on a microcontroller with a few KB of stack.
 
-## 11. One return statement per function
+## One Return Statement Per Function
 
-```c
+```ini
 // avoid
 if (x) return 1;
 return 0;
@@ -156,13 +156,13 @@ return ret;
 
 A single exit point makes cleanup and reasoning about a function's control flow much simpler.
 
-## 12. Function prototypes are mandatory
+## Function Prototypes are Mandatory
 
 Every function must be declared (usually in a header) before it's used — no implicit declarations.
 
-## 13. No magic numbers
+## No Magic Numbers
 
-```c
+```text
 // avoid
 if (speed > 120) { ... }
 
@@ -171,9 +171,9 @@ if (speed > 120) { ... }
 if (speed > MAX_SPEED) { ... }
 ```
 
-## 14. Explicit boolean expressions
+## Explicit Boolean Expressions
 
-```c
+```ini
 // avoid
 if (x) { ... }
 
@@ -183,25 +183,25 @@ if (x != 0U) { ... }
 
 Makes the comparison's intent explicit instead of relying on implicit truthiness conversion.
 
-## 15. Prefer `const` wherever possible
+## Prefer `const` Wherever Possible
 
-```c
+```ini
 const uint32_t MAX_SIZE = 64U;
 ```
 
 Protects data from accidental modification and gives the compiler more room to optimize.
 
-## 16. Correct use of `volatile`
+## Correct Use of `volatile`
 
 Required for anything the compiler can't assume is stable across reads — hardware registers and variables shared with an ISR:
 
-```c
+```ini
 volatile uint32_t * const GPIO_ODR = (uint32_t *)0x40020014;
 ```
 
-## 17. Restricted pointer arithmetic
+## Restricted Pointer Arithmetic
 
-```c
+```ini
 // avoid
 ptr = ptr + 5;
 
@@ -211,7 +211,7 @@ ptr = &array[5];
 
 Indexing through the array expresses the same operation with bounds clearly tied to a named array, rather than raw pointer math.
 
-## 18. Header files declare, they don't define
+## Header Files Declare, They Don't Define
 
 ```c
 #ifndef GPIO_H
@@ -224,9 +224,9 @@ void GPIO_Init(void);
 
 No function definitions in headers, and always guard against multiple inclusion.
 
-## 19. No macro side effects
+## No Macro Side Effects
 
-```c
+```text
 // avoid — SQR(a+b) expands to a+b*a+b, not (a+b)*(a+b)
 #define SQR(x) x*x
 
@@ -234,13 +234,13 @@ No function definitions in headers, and always guard against multiple inclusion.
 #define SQR(x) ((x) * (x))
 ```
 
-## 20. Use the standard library carefully
+## Use the Standard Library Carefully
 
 Some standard functions are restricted or forbidden in safety-critical code — `printf` for timing unpredictability, `strcpy`/`strcat` for buffer-overflow risk. Prefer safer alternatives or custom, bounds-checked equivalents.
 
-## 21. Never silently mix signed and unsigned types
+## Never Silently Mix Signed and Unsigned Types
 
-```c
+```text
 // avoid
 uint32_t a;
 int32_t b;
@@ -250,7 +250,7 @@ if (a > b) { ... }
 if (a > (uint32_t)b) { ... }
 ```
 
-## 22. Limit variable scope
+## Limit Variable Scope
 
 ```c
 void func(void)
@@ -259,7 +259,7 @@ void func(void)
 }
 ```
 
-## 23. Use enums carefully
+## Use Enums Carefully
 
 Don't assume a particular underlying size for an enum, and don't mix enum values with plain integers.
 

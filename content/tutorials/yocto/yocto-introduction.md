@@ -1,5 +1,5 @@
 ---
-title: Yocto Project Comprehensive Guide (Basic to Advanced)
+title: Yocto Project Comprehensive Guide (basic to Advanced)
 description: >-
   This guide provides a comprehensive workflow for setting up the Yocto Project
   (Scarthgap/Kirkstone), building images, customizing layers, and performing
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 This guide provides a comprehensive workflow for setting up the Yocto Project (Scarthgap/Kirkstone), building images, customizing layers, and performing advanced networking simulations with QEMU.
 
-## 1. Prerequisites
+## Prerequisites
 
 Before starting, ensure your host system has the necessary dependencies installed.
 
@@ -38,7 +38,7 @@ sudo dnf install -y \
     mesa-libEGL SDL-devel pylint xterm zstd lz4 \
     libvirt libvirt-daemon-kvm qemu-kvm virt-manager bridge-utils
 ```
-## 2. Setup & Building
+## Setup & Building
 
 ### 2.1 Clone the Repository
 
@@ -71,14 +71,14 @@ Build your target image (e.g., `core-image-minimal`) using Bitbake:
 
 1. **Configure `local.conf`**
 
-```bash
+```ini
 MACHINE ??= "qemux86-64"
 DL_DIR ?= "${TOPDIR}/../downloads"
 ```
 
 2. **Build the Image**
 
-```bash
+```text
 bitbake core-image-minimal
 ```
 
@@ -90,20 +90,20 @@ Built images appear in `tmp/deploy/images/<machine>/`. For example:
 
 - `core-image-minimal-<machine>.rootfs.ext4`
 
-## 3. Advanced Configuration and Layers
+## Advanced Configuration and Layers
 
 ### 3.1 Add Additional Layers
 
 To add external layers (e.g., `meta-odroid`):
 
 1. **Clone the layer:**
-    
+
     ```bash
     git clone https://github.com/akuster/meta-odroid
     ```
-    
+
 2. **Update `conf/bblayers.conf`:**
-    
+
     ```bash
     BBLAYERS ?= " \
       /path/to/poky/meta \
@@ -112,75 +112,75 @@ To add external layers (e.g., `meta-odroid`):
       /path/to/meta-odroid \
     "
     ```
-    
+
 
 ### 3.2 Advanced `local.conf` Options
 
 Edit `conf/local.conf` to optimize builds:
 
 - **Speed up builds:**
-    
+
     ```bash
     BB_NUMBER_THREADS = "8"
     PARALLEL_MAKE = "-j 8"
     ```
-    
+
 - **Enable Debug Tools:**
-    
+
     ```bash
     EXTRA_IMAGE_FEATURES ?= "debug-tweaks tools-debug"
     ```
-    
 
-## 4. Post-Build Steps and Optimizations
+
+## Post-build Steps and Optimizations
 
 1. **Check Artifacts:**
-    
-    - Images: `tmp/deploy/images/<machine>/`
-        
-    - Licenses: `tmp/deploy/licenses/`
-        
-2. **Cleanup:**
-    
-    - `bitbake -c clean <recipe>`: Removes build artifacts for one recipe.
-        
-    - `INHERIT += "rm_work"`: Put this in `local.conf` to remove intermediate work dirs to save disk space.
-        
 
-## 5. Running Images (QEMU)
+    - Images: `tmp/deploy/images/<machine>/`
+
+    - Licenses: `tmp/deploy/licenses/`
+
+2. **Cleanup:**
+
+    - `bitbake -c clean <recipe>`: Removes build artifacts for one recipe.
+
+    - `INHERIT += "rm_work"`: Put this in `local.conf` to remove intermediate work dirs to save disk space.
+
+
+## Running Images (qemu)
 
 ### Standard Boot
 
 To run the image immediately after building:
 
-```bash
+```text
 runqemu qemux86-64 nographic
 ```
 
 _(Remove `nographic` if you want the graphical window)._
 
-## 6. Saving the Kernel and Root Filesystem
+## Saving the Kernel and Root Filesystem
 
 To run images later without rebuilding, or to use them in the advanced networking scripts below, copy them to a safe location.
 
 1. **Create a Directory:**
-    
+
     ```bash
     mkdir -p ~/yocto/saved-images
     ```
-    
+
 2. **Copy Files (Example):**
-    
+
     ```bash
     cp -L tmp/deploy/images/qemux86-64/core-image-minimal-qemux86-64.rootfs.ext4 \
        ~/yocto/saved-images/rootfs-machine1.ext4
-    
+
     cp -L tmp/deploy/images/qemux86-64/bzImage-qemux86-64.bin \
        ~/yocto/saved-images/bzImage-machine1.bin
     ```
-    
 
-## 7. Networking Two Yocto VMs
+
+## Networking Two Yocto Vms
 
 This section sets up a **Bridge Network** allowing two QEMU instances (`node-alpha` and `node-beta`) to communicate via Static IPs.
 
@@ -259,13 +259,13 @@ sudo ip link delete dev br1
 echo "[+] Network cleanup complete."
 ```
 
-### 7.3 Internal Static IP Configuration
+### 7.3 Internal Static Ip Configuration
 
 If you prefer configuring IP inside the OS instead of kernel boot args, edit `/etc/network/interfaces` inside the running VM:
 
 **Machine 1:**
 
-```bash
+```text
 auto eth0
 iface eth0 inet static
     address 10.20.10.2
@@ -273,19 +273,19 @@ iface eth0 inet static
     gateway 10.20.10.1
 ```
 
-## 8. Troubleshooting and Tips
+## Troubleshooting and Tips
 
 - **QEMU Permissions:** If you get "Operation Not Permitted", ensure your user has rights to the tap devices or run with `sudo`.
-    
+
 - **Networking:** If VMs can't ping each other, check if the firewall (ufw/iptables) on the host is blocking the bridge `br1`.
-    
+
 - **Performance:** Add `kvm` to the qemu command (e.g., `runqemu qemux86-64 kvm`) if your host supports virtualization.
-    
+
 - **Debugging:** Use `bitbake -c devshell <recipe>` to enter a development shell for a specific package.
-    
+
 
 ## Resources
 
 - [Yocto Project Documentation](https://docs.yoctoproject.org/index.html "null")
-    
+
 - [OpenEmbedded](https://www.openembedded.org/ "null")

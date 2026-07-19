@@ -15,11 +15,11 @@ author: abdallah-shehawey
 
 An in-depth guide to SSH (Secure Shell): generating and managing keys, connecting to servers securely, and setting up robust authentication. Covers public/private key concepts, key types, hardening, and the tools that pair well with an SSH session.
 
-## 1. What is SSH?
+## What is SSH?
 
 SSH is a protocol that securely connects to remote systems over an untrusted network. It uses cryptographic techniques to ensure data confidentiality, integrity, and secure user authentication — commonly used for remote administration, secure file transfers, and tunneling other protocols through an encrypted connection.
 
-## 2. The science behind SSH
+## The science behind SSH
 
 SSH uses a client-server model. When you connect, a "handshake" occurs to establish trust.
 
@@ -27,7 +27,7 @@ SSH uses a client-server model. When you connect, a "handshake" occurs to establ
 - **Authentication:** SSH supports passwords, public key authentication, and two-factor authentication (2FA).
 - **Integrity:** cryptographic checksums and MACs ensure data isn't tampered with in transit.
 
-## 3. Public and private key concepts
+## Public and private key concepts
 
 SSH key pairs are the industry standard for secure access.
 
@@ -36,14 +36,14 @@ SSH key pairs are the industry standard for secure access.
 
 How they secure connections: a key pair is generated (e.g. with `ssh-keygen`), the public key is shared with the server, and when connecting, the server issues a challenge that only the holder of the corresponding private key can solve.
 
-## 4. Types of SSH keys
+## Types of SSH keys
 
 - **Ed25519 (recommended):** fastest performance, very strong security, small key sizes — the modern standard.
 - **RSA:** widely supported, the "classic" choice. Use 3072 bits or higher (4096 preferred).
 - **ECDSA:** elliptic curves, strong security with smaller key sizes.
 - **DSA:** deprecated due to security concerns — do not use.
 
-## 5. Generating SSH keys
+## Generating SSH keys
 
 Modern standard (Ed25519):
 
@@ -63,7 +63,7 @@ ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 
 Follow the prompts to set the file location (default `~/.ssh/id_...`) and optionally a passphrase.
 
-## 6. Installing SSH
+## Installing SSH
 
 ```bash
 # Ubuntu and Debian
@@ -79,7 +79,7 @@ sudo dnf install openssh-server
 sudo pacman -S openssh
 ```
 
-## 7. Connecting to a server
+## Connecting to a server
 
 ```bash
 ssh username@hostname_or_ip
@@ -93,7 +93,7 @@ ssh root@192.168.1.50
 
 On the first connection you'll be asked to accept the server's fingerprint — type `yes`. Use `-p <port>` if the server listens on a non-standard port.
 
-## 8. The SSH config file (time saver)
+## The SSH config file (time saver)
 
 Instead of remembering IPs and usernames, configure aliases:
 
@@ -127,7 +127,7 @@ Connect using the alias:
 ssh my-web-server
 ```
 
-## 9. Sharing and using SSH keys
+## Sharing and using SSH keys
 
 To log in without a password, place your public key on the server.
 
@@ -154,7 +154,7 @@ chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-## 10. Setting up SSH key authentication
+## Setting up SSH key authentication
 
 Test it:
 
@@ -171,7 +171,7 @@ PasswordAuthentication no
 
 Then restart SSH: `sudo systemctl restart ssh`.
 
-## 11. Transferring data & browsing
+## Transferring data & browsing
 
 ### scp — best for simple, one-off transfers
 
@@ -228,7 +228,7 @@ sudo apt install w3m
 w3m https://example.com
 ```
 
-## 12. Advanced configuration & security best practices
+## Advanced configuration & security best practices
 
 1. **Disable root login** in `/etc/ssh/sshd_config`:
 
@@ -246,7 +246,7 @@ w3m https://example.com
 
 4. **Two-factor authentication** — install `libpam-google-authenticator` and configure PAM to require a code in addition to your key or password.
 
-## 13. Centralized SSH key management
+## Centralized SSH key management
 
 As environments scale, managing keys manually becomes unfeasible:
 
@@ -254,6 +254,6 @@ As environments scale, managing keys manually becomes unfeasible:
 - Key rotation policies to limit the window of compromise
 - SSH Certificate Authorities instead of static keys, issuing credentials that expire automatically
 
-## 14. Conclusion
+## Conclusion
 
 Managing SSH from the command line provides unparalleled control over your network's security. Robust key-based authentication and sensible hardening go a long way toward reducing your attack surface.

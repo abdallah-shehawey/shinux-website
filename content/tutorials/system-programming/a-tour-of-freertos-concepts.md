@@ -1,5 +1,5 @@
 ---
-title: A Tour of FreeRTOS Concepts
+title: A Tour of Freertos Concepts
 description: >-
   Two ideas trip up almost everyone new to RTOS programming: what a "context
   switch" actually moves in memory, and when to reach for a mutex versus a
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Two ideas trip up almost everyone new to RTOS programming: what a "context switch" actually moves in memory, and when to reach for a mutex versus a semaphore. Both are concrete enough to walk through directly rather than just define.
 
-## 1. What a context switch actually saves and restores
+## What a Context Switch Actually Saves and Restores
 
 On an ARM Cortex-M (FreeRTOS's most common target), an interrupt or a `PendSV` exception — the mechanism FreeRTOS itself uses to trigger a context switch — splits register saving into two halves:
 
@@ -29,23 +29,23 @@ Together those two halves cover the entire CPU register file. The handler then d
 
 The task that resumes has no idea it was ever paused: its registers, its stack, and its program counter are exactly what they were the instant it was last interrupted — just with a completely different stack pointer underneath it than the task that was running a moment ago. This is the whole trick behind preemptive multitasking on a single core: there's no real parallelism, just very fast, very disciplined swapping of which stack the same physical registers are currently pointing into.
 
-## 2. Mutex vs. binary semaphore vs. counting semaphore
+## Mutex vs. Binary Semaphore vs. Counting Semaphore
 
 These three FreeRTOS primitives look similar (all are "take"/"give" objects with a count), but they solve genuinely different problems, and picking the wrong one is a classic source of subtle bugs.
 
-### Mutex — protecting a shared resource
+### Mutex Protecting a Shared Resource
 
 - **Strict ownership**: only the task that took the mutex is allowed to give it back. FreeRTOS enforces this — another task calling `xSemaphoreGive()` on a mutex it doesn't hold fails.
 - **Priority inheritance**: if a low-priority task is holding the mutex and a high-priority task blocks waiting for it, FreeRTOS temporarily boosts the holder's priority so it can finish and release the mutex sooner — this specifically prevents **priority inversion**, where a high-priority task is stuck behind a low-priority one indefinitely while an unrelated medium-priority task keeps preempting the holder.
 - **Use it for**: protecting a shared peripheral (I2C/SPI/UART bus), thread-safe access to a global variable, or any read-modify-write critical section.
 
-### Binary semaphore — signaling, not locking
+### Binary Semaphore Signaling, Not Locking
 
 - **No ownership** — unlike a mutex, whoever gives it doesn't need to be whoever takes it. The textbook case is an ISR giving the semaphore (`xSemaphoreGiveFromISR()`) and a task taking it (`xSemaphoreTake()`), which is exactly how **deferred interrupt processing** works: the ISR does the absolute minimum (signal the semaphore) and returns immediately, while a normal task — outside interrupt context, allowed to do real work — wakes up and handles the actual event.
 - **Max count of 1**, which means it's "latching" rather than counting: giving an already-full binary semaphore a second time before it's taken has no additional effect — the event isn't queued, only "an event happened" is recorded.
 - **Use it for**: task-to-task or ISR-to-task synchronization where only "did this happen" matters, not "how many times."
 
-### Counting semaphore — managing a pool
+### Counting Semaphore Managing a Pool
 
 - **Take** decrements the count and blocks if it's already `0`; **give** increments it and fails (or blocks, depending on how it's used) if it's already at its max.
 - Unlike a binary semaphore, a counting semaphore actually **counts** — giving it multiple times before anything takes it accumulates, up to its configured maximum.

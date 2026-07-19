@@ -1,5 +1,5 @@
 ---
-title: Understanding FAT32
+title: Understanding Fat32
 description: >-
   FAT — the File Allocation Table — is one of the oldest file systems still in
   everyday use. It shipped as the default for MS-DOS and the Windows 9x family,
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 FAT — the File Allocation Table — is one of the oldest file systems still in everyday use. It shipped as the default for MS-DOS and the Windows 9x family, dating back to 1977, originally designed for floppy disks and later stretched to hard disks as capacities grew. NTFS replaced it as Windows' default starting with Windows XP, but FAT32 (and its successor exFAT) is still the default choice for USB flash drives, SD cards, and embedded/eMMC storage — precisely because almost every OS and embedded system on Earth can read and write it with minimal effort.
 
-## 1. The four regions of a FAT volume
+## The Four Regions of a Fat Volume
 
 | Region | Size | Contents |
 | --- | --- | --- |
@@ -23,7 +23,7 @@ FAT — the File Allocation Table — is one of the oldest file systems still in
 
 The traditional sector size is 512 bytes, though most modern drives physically use 4096-byte sectors (Advanced Format). The key architectural change in FAT32 versus FAT12/FAT16 is that the **root directory moved into the Data Region**, stored like any other folder — which is why FAT32 doesn't impose a fixed maximum size on the root directory the way FAT12/16 do. Because the Directory Entry uses a 32-bit field for file size, a single file on FAT32 is capped at **4 GB**, full stop — no way around it without leaving FAT32 entirely (which is exactly why exFAT exists).
 
-## 2. The Directory Entry
+## The Directory Entry
 
 Every file and folder has a 32-byte Directory Entry — its metadata card. The fields that matter most:
 
@@ -33,7 +33,7 @@ Every file and folder has a 32-byte Directory Entry — its metadata card. The f
 - **File Size (4 bytes)** — the field responsible for the 4 GB ceiling.
 - **First Cluster # (4 bytes)** — the address of the file's *first* cluster on disk. Everything else about where the file's data lives is derived from here via the FAT itself.
 
-## 3. The File Allocation Table
+## The File Allocation Table
 
 The FAT is the filesystem's master index: one entry per cluster, where the entry's position *is* the cluster number. Each entry holds one of three things:
 
@@ -41,7 +41,7 @@ The FAT is the filesystem's master index: one entry per cluster, where the entry
 - `EOC` (End of Chain) — this is the last cluster of the file.
 - Another cluster number — "after this cluster, continue reading at cluster N."
 
-## 4. How a file gets read, end to end
+## How a File Gets Read, End to End
 
 1. The OS reads the Directory Entry to learn the file's first cluster (say, cluster `4`) and its total size.
 2. It looks up entry `4` in the FAT and finds `6` — "the next part is at cluster 6."

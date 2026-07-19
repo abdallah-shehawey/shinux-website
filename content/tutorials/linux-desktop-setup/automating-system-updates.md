@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 Keeping a Linux desktop current means touching several update mechanisms every time: the system package manager, Flatpak, GNOME extensions, and firmware. Running each one by hand gets old fast, so it's worth wrapping them in a single script — one for Ubuntu, one for Fedora — that updates everything except NVIDIA drivers by default (those are best updated deliberately, not as a side effect of a routine update).
 
-## 1. What the script covers
+## What the Script Covers
 
 Both scripts do the same job on their respective distro:
 
@@ -23,7 +23,7 @@ Both scripts do the same job on their respective distro:
 - Cleanup of unused packages afterward
 - NVIDIA drivers **skipped by default**, with an explicit `--with-nvidia` flag to opt in
 
-## 2. Installing the script
+## Installing the Script
 
 Save the script as an executable on your `$PATH` so it's callable as a plain command:
 
@@ -34,12 +34,12 @@ sudo chmod +x /usr/local/bin/update-every-thing
 
 Usage is identical on both distros:
 
-```bash
+```text
 update-every-thing              # normal update, NVIDIA skipped
 update-every-thing --with-nvidia # also update NVIDIA drivers
 ```
 
-## 3. The Ubuntu script
+## The Ubuntu Script
 
 ```bash
 #!/bin/bash
@@ -85,7 +85,7 @@ echo "Update finished!"
 
 The key trick is `apt-mark hold`/`unhold`: instead of trying to exclude NVIDIA packages from an `apt upgrade` run (fragile with wildcards), the script freezes them before the upgrade and unfreezes them right after, so a normal upgrade simply can't touch them unless `--with-nvidia` was passed.
 
-## 4. The Fedora script
+## The Fedora Script
 
 ```bash
 #!/bin/bash

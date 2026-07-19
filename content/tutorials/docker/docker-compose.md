@@ -1,5 +1,5 @@
 ---
-title: 'Docker Compose: The Ultimate Master Guide'
+title: 'Docker Compose: the Ultimate Master Guide'
 description: >-
   This guide covers Docker Compose from basic concepts to advanced networking
   and versioning. It explains how to manage multi-container applications easily
@@ -12,15 +12,15 @@ author: abdallah-shehawey
 ---
 This guide covers Docker Compose from basic concepts to advanced networking and versioning. It explains how to manage multi-container applications easily using a YAML file instead of running complex commands manually.
 
-## 1. The Problem: The "Matrix from Hell"
+## The Problem: the "matrix From Hell"
 
 Before Docker Compose, if you wanted to run a complex application (like the Voting App), you had to run many commands manually and link them together.
 
-### The Hard Way (Manual `docker run`)
+### The Hard Way (manual `docker Run`)
 
 Imagine you have an app with a Web Server, Database, Redis, and Ansible. You would have to type this every time:
 
-```bash
+```text
 # 1. Start the Web App
 docker run -d --name simple-webapp mmumshad/simple-webapp
 
@@ -42,15 +42,15 @@ docker run -d --name ansible ansible
 
 3. **Dependencies:** You must remember to start the Database _before_ the Web App.
 
-## 2. The Solution: `docker-compose.yml`
+## The Solution: `docker-compose.yml`
 
 Docker Compose allows you to write all these configurations into a single file named `docker-compose.yml`.
 
-### Example 1: Simple WebApp
+### Example 1: Simple Webapp
 
 Here is how the commands above translate into a Compose file:
 
-```bash
+```text
 # docker-compose.yml
 version: '3'  # Always specify the version
 
@@ -59,13 +59,13 @@ services:     # Define your containers here
     image: mmumshad/simple-webapp
     ports:
       - "8080:80"
-  
+
   database:
     image: mongodb
-  
+
   messaging:
     image: redis:alpine
-  
+
   orchestration:
     image: ansible
 ```
@@ -76,13 +76,13 @@ Instead of typing 4 commands, you simply type:
 
 **Command:**
 
-```bash
+```text
 docker-compose up
 ```
 
 - **What it does:** It reads the file, pulls the images, creates the network, and starts all containers in the correct order.
 
-## 3. Essential Docker Compose Commands
+## Essential Docker Compose Commands
 
 These are the commands you will use daily.
 
@@ -118,7 +118,7 @@ These are the commands you will use daily.
 
 - **What it does:** Lists only the containers related to the current `docker-compose.yml` file.
 
-## 4. Real World Scenario: The Voting App
+## Real World Scenario: the Voting App
 
 Let's look at the complex example provided in your notes (The "Cats vs Dogs" voting app). This app has 5 components:
 
@@ -132,11 +132,11 @@ Let's look at the complex example provided in your notes (The "Cats vs Dogs" vot
 
 5. **Result-App** (NodeJS): Front-end to show results.
 
-### Configuration A: Using Images (The Basic Way)
+### Configuration A: Using Images (the Basic Way)
 
 If all images are already built and pushed to Docker Hub:
 
-```bash
+```text
 redis:
   image: redis
 db:
@@ -160,11 +160,11 @@ worker:
     - db
 ```
 
-### Configuration B: Using `build` (The Developer Way)
+### Configuration B: Using `build` (the Developer Way)
 
 Usually, you have the source code on your laptop and want Docker to **build** the image for you.
 
-```bash
+```text
 redis:
   image: redis
 db:
@@ -187,11 +187,11 @@ worker:
 
 - `build: ./xxx`: Docker runs `docker build -t ...` using the Dockerfile in that folder.
 
-## 5. Evolution of Versions (v1 vs v2 vs v3)
+## Evolution of Versions (v1 vs V2 vs V3)
 
 Docker Compose has changed over time.
 
-### Version 1 (Legacy)
+### Version 1 (legacy)
 
 - **Structure:** No `version` line. Just lists containers directly.
 
@@ -199,7 +199,7 @@ Docker Compose has changed over time.
 
 - **Status:** **Deprecated**. Do not use.
 
-### Version 2 (Major Change)
+### Version 2 (major Change)
 
 - **Structure:** Must start with `version: "2"` and put containers under `services:`.
 
@@ -207,7 +207,7 @@ Docker Compose has changed over time.
 
 - **Feature (`depends_on`):** Introduced to specify startup order. For example, ensuring Redis starts before the Voting App.
 
-```bash
+```text
 version: "2"
 services:
   redis:
@@ -220,7 +220,7 @@ services:
       - redis
 ```
 
-### Version 3 (Swarm Compatible)
+### Version 3 (swarm Compatible)
 
 - **Structure:** Similar to v2 (`version: "3"`).
 
@@ -228,7 +228,7 @@ services:
 
 - **Changes:** Some options like `mem_limit` moved under `deploy` key.
 
-## 6. Advanced Networking (Front-end vs Back-end)
+## Advanced Networking (front-end vs Back-end)
 
 In a professional setup, you don't want everyone talking to everyone.
 
@@ -250,7 +250,7 @@ In a professional setup, you don't want everyone talking to everyone.
 
 ### The Docker Compose File
 
-```bash
+```text
 version: "2"
 
 services:
@@ -297,7 +297,7 @@ networks:
 
 - **Organization:** Keeps traffic clean.
 
-## 7. Deprecation Warning: Links
+## Deprecation Warning: Links
 
 You might see `--link` in old tutorials.
 

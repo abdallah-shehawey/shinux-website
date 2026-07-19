@@ -43,13 +43,13 @@ sudo apt install ffmpeg libsdl2-2.0-0 adb wget \
 
 ## Phone setup (Android)
 
-### 1. Enable Developer Options
+### Enable Developer Options
 
 1. Open **Settings** → **About phone**
 2. Tap **Build number** 7 times
 3. You will see: _"You are now a developer"_
 
-### 2. Enable debugging
+### Enable debugging
 
 Go to **Settings → Developer options** and enable:
 

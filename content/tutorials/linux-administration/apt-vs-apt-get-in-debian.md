@@ -14,57 +14,57 @@ The commands `apt` and `apt-get` are both package management tools used in Debia
 
 ---
 
-## 1. Overview
+## Overview
 
 ### **`apt-get`**
 
 - Introduced first (older tool).
-    
+
 - Designed for scripting and backward compatibility.
-    
+
 - Provides low-level package management operations.
-    
+
 - Outputs more technical and verbose information.
-    
+
 
 ### **`apt`**
 
 - Introduced later (Ubuntu 16.04+).
-    
+
 - Designed for interactive use by end users.
-    
+
 - Combines common functions of `apt-get` and `apt-cache`.
-    
+
 - Provides cleaner, more user-friendly output.
-    
+
 
 ---
 
-## 2. Output and User Experience
+## Output and User Experience
 
 ### **`apt-get`**
 
 - Traditional, verbose output.
-    
+
 - Less readable for everyday users.
-    
+
 - Better suited for automation and scripts.
-    
+
 
 ### **`apt`**
 
 - Clean, simplified output.
-    
+
 - Shows progress bars.
-    
+
 - Displays additional useful information (e.g., package size, number of upgrades).
-    
+
 
 ---
 
-## 3. Command Differences
+## Command Differences
 
-### **Common operations**
+### **common Operations**
 
 Both support installing, upgrading, and removing packages, but syntax differs slightly.
 
@@ -82,29 +82,29 @@ Both support installing, upgrading, and removing packages, but syntax differs sl
 
 ---
 
-## 4. Recommended Use
+## Recommended Use
 
-### **Use `apt` when:**
+### **use `apt` When:**
 
 - You are working interactively.
-    
-- You want human-friendly output.
-    
-- You want access to the combined functionality of `apt-get` + `apt-cache`.
-    
 
-### **Use `apt-get` when:**
+- You want human-friendly output.
+
+- You want access to the combined functionality of `apt-get` + `apt-cache`.
+
+
+### **use `apt-get` When:**
 
 - Writing scripts (because it is stable and backward-compatible).
-    
+
 - You need advanced flags not available in `apt`.
-    
+
 - You require exact, predictable output.
-    
+
 
 ---
 
-## 5. Summary
+## Summary
 
 | Feature             | `apt`                          | `apt-get`                              |
 | ------------------- | ------------------------------ | -------------------------------------- |
@@ -119,9 +119,9 @@ Both support installing, upgrading, and removing packages, but syntax differs sl
 ## Final Notes
 
 - `apt` is essentially a **front-end wrapper** around `apt-get` and `apt-cache`.
-    
+
 - Both tools still exist, and neither is being removed.
-    
+
 - For everyday use: **use `apt`**.
-    
+
 - For scripting and automation: **use `apt-get`**.

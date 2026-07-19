@@ -1,5 +1,5 @@
 ---
-title: "\U0001F510 Ansible Vault Guide"
+title: Ansible Vault Guide
 description: >-
   A comprehensive guide to Ansible Vault, the built-in feature for keeping
   sensitive data (passwords, keys, tokens) secure. This document covers
@@ -12,7 +12,7 @@ author: abdallah-shehawey
 ---
 A comprehensive guide to **Ansible Vault**, the built-in feature for keeping sensitive data (passwords, keys, tokens) secure. This document covers everything from creating encrypted files to automating decryption.
 
-## 🧠 What is Ansible Vault?
+## What is Ansible Vault?
 
 Ansible Vault allows you to encrypt files or individual variables so that they are stored as garbled text (AES-256 encryption) instead of plain text.
 
@@ -20,13 +20,13 @@ Ansible Vault allows you to encrypt files or individual variables so that they a
 
 - **Solution:** Encrypt them with Vault, and Ansible decrypts them on the fly when running the playbook.
 
-## 🚀 Part 1: Basic Commands (CRUD Operations)
+## Part 1: Basic Commands (crud Operations)
 
-### 1. Create a New Encrypted File
+### Create a New Encrypted File
 
 Creates a new file and immediately prompts you for a password to encrypt it.
 
-```bash
+```text
 ansible-vault create secrets.yml
 ```
 
@@ -40,65 +40,65 @@ ansible-vault create secrets.yml
 
     4. When you save and exit, the file is saved as encrypted text.
 
-### 2. View an Encrypted File
+### View an Encrypted File
 
 If you try to `cat` the file, you will see garbage. Use this command to read it.
 
-```bash
+```text
 ansible-vault view secrets.yml
 ```
 
 - **Argument:** You will be asked for the vault password to decrypt it temporarily for viewing.
 
-### 3. Edit an Encrypted File
+### Edit an Encrypted File
 
 Modifies an existing encrypted file.
 
-```bash
+```text
 ansible-vault edit secrets.yml
 ```
 
 - **Process:** Ansible decrypts the file in memory, opens the editor, and re-encrypts it immediately when you save.
 
-## 🔧 Part 2: File Management (Encrypting & Decrypting)
+## Part 2: File Management (encrypting & Decrypting)
 
-### 1. Encrypt an Existing Plaintext File
+### Encrypt an Existing Plaintext File
 
 If you already have a `vars.yml` file and want to secure it.
 
-```bash
+```text
 ansible-vault encrypt vars.yml
 ```
 
 - **Result:** The readable file is converted into an encrypted Vault file.
 
-### 2. Decrypt a File (Permanent)
+### Decrypt a File (permanent)
 
 Removes encryption and saves the file as plain text (Dangerous! Use carefully).
 
-```bash
+```text
 ansible-vault decrypt secrets.yml
 ```
 
-### 3. Change Password (Rekey)
+### Change Password (rekey)
 
 If you want to change the vault password without decrypting and re-encrypting manually.
 
-```bash
+```text
 ansible-vault rekey secrets.yml
 ```
 
 - **Input:** Requires the **Old** password first, then the **New** password.
 
-## 🛠️ Part 3: Using Vault in Playbooks
+## Part 3: Using Vault in Playbooks
 
-### 1. The Playbook Structure
+### The Playbook Structure
 
 You include the encrypted file in `vars_files` just like a normal file. Ansible handles the decryption automatically.
 
 **File: `use-vault.yml`**
 
-```yaml
+```bash
 - name: Use encrypted variables
   hosts: all
   become: true
@@ -110,13 +110,13 @@ You include the encrypted file in `vars_files` just like a normal file. Ansible 
         msg: "User: {{ db_user }}, Password: {{ db_pass }}"
 ```
 
-### 2. Running the Playbook
+### Running the Playbook
 
 You must provide the password when running the playbook, otherwise, it will fail.
 
 **Option A: Interactive Prompt**
 
-```bash
+```text
 ansible-playbook use-vault.yml --ask-vault-pass
 ```
 
@@ -136,21 +136,21 @@ ansible-playbook use-vault.yml --ask-vault-pass
     ansible-playbook use-vault.yml --vault-password-file ~/.vault_pass.txt
     ```
 
-## 🌟 Part 4: Advanced Features (Pro Tips)
+## Part 4: Advanced Features (pro Tips)
 
-### 1. Encrypting Single Variables (Inline Vault)
+### Encrypting Single Variables (inline Vault)
 
 Sometimes you don't want to encrypt the _whole_ file, just one specific password (like inside `group_vars/all.yml`).
 
 **Command:**
 
-```bash
+```text
 ansible-vault encrypt_string 'SuperSecret123' --name 'db_password'
 ```
 
 **Output:** It gives you a block of text you can paste directly into your YAML file:
 
-```yaml
+```text
 db_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           36373832656...
@@ -158,15 +158,15 @@ db_password: !vault |
 
 - **Benefit:** You can read the rest of the file (keys, usernames) normally, while only the sensitive value is hidden.
 
-### 2. Multiple Vault Passwords
+### Multiple Vault Passwords
 
 Ansible supports using multiple passwords for different environments (e.g., Dev vs Prod).
 
-```bash
+```text
 ansible-playbook site.yml --vault-id dev@prompt --vault-id prod@~/.prod_pass
 ```
 
-## 🎯 Summary Cheat Sheet
+## Summary Cheat Sheet
 
 | Command                     | Description                  | Key Flag                              |
 | --------------------------- | ---------------------------- | ------------------------------------- |
