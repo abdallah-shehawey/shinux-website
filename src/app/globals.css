@@ -172,7 +172,6 @@ input:not([type]) {
 
 /* ---- Article prose ---- */
 .prose {
-  max-width: 68ch;
   line-height: 1.8;
   color: var(--fg);
 }
