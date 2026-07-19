@@ -52,22 +52,21 @@ export default async function HomePage() {
             {authorName} — embedded systems engineer, Linux tinkerer, open-source enthusiast
           </p>
           <p>
-            <span className="text-muted">$</span> <span className="text-accent">cat currently-learning.txt</span>
+            <span className="text-muted">$</span> <span className="text-accent">history | tail -3</span>
           </p>
-          <p className="text-muted">kernel fundamentals, Yocto, Buildroot — this blog is where I write it down</p>
+          <p className="whitespace-pre text-muted">
+            {"  517  make menuconfig\n  518  dmesg | grep -i usb\n  519  git push origin main"}
+          </p>
+          <p aria-hidden className="text-accent">
+            <span className="text-muted">$</span> <span className="animate-pulse">█</span>
+          </p>
         </div>
         <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
           Notes from below the OS
         </h1>
-        <p className="mx-auto mb-2 max-w-2xl text-lg text-muted sm:mx-0">
+        <p className="mx-auto mb-8 max-w-2xl text-lg text-muted sm:mx-0">
           Embedded Linux, RTOS internals, and everything else on the way from firmware to the
           kernel — write-ups, hands-on tutorials, and a Q&amp;A archive.
-        </p>
-        <p className="mx-auto mb-8 max-w-2xl text-sm text-muted sm:mx-0">
-          <Link href="/about" className="text-accent hover:underline">
-            man {siteAuthor.username}
-          </Link>{" "}
-          for the full story.
         </p>
         <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
           <Link href="/articles" className="btn-primary">
@@ -84,7 +83,7 @@ export default async function HomePage() {
 
       {/* Who's behind the writing — condensed from my portfolio */}
       <section className="pb-12">
-        <div className="card">
+        <div className="card max-w-4xl">
           <p className="mb-1 font-mono text-xs uppercase tracking-wide text-accent">
             // whoami
           </p>
