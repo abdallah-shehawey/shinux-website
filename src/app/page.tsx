@@ -44,8 +44,8 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto w-full px-4 sm:px-8 lg:px-12">
-      <section className="py-12 sm:py-16 lg:py-20">
-        <div className="mx-auto mb-10 max-w-xl sm:mx-0">
+      <section className="pb-12 pt-6 sm:pb-16 sm:pt-8 lg:pb-20 lg:pt-10">
+        <div className="mb-10 w-full">
           <TerminalHero authorName={authorName} />
         </div>
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-14">

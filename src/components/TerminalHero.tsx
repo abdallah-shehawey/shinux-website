@@ -31,7 +31,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
       {
         command: "cat skills.txt",
         output:
-          "C/C++ · Embedded Linux · RTOS · Yocto/Buildroot\nCAN · LIN · UART · SPI · I2C — AUTOSAR stack",
+          "C/C++ · Embedded Linux · RTOS · Yocto/Buildroot\nSTM32 · AVR/ATmega32 · Git · kernel fundamentals\nCAN · LIN · UART · SPI · I2C — AUTOSAR stack",
       },
     ];
 
@@ -91,7 +91,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
           <span className="animate-pulse text-accent">█</span>
         </p>
         <p
-          className="mt-2 min-h-[3.75rem] whitespace-pre-wrap text-start text-muted"
+          className="mt-2 min-h-[5rem] whitespace-pre-wrap text-start text-muted"
           dir="ltr"
         >
           {output}
