@@ -74,7 +74,7 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
             setStatus("idle");
           }}
           maxLength={30}
-          className="w-full bg-transparent text-fg outline-none"
+          className="w-full bg-transparent text-base sm:text-sm text-fg outline-none"
         />
       </div>
       <button

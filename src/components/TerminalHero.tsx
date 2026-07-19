@@ -19,22 +19,22 @@ function holdMsFor(step: TerminalStep) {
 }
 
 export default function TerminalHero({ authorName }: { authorName: string }) {
+  const steps: TerminalStep[] = [
+    {
+      command: "whoami",
+      output: `${authorName} — Embedded Software Engineer\nLinux enthusiast · Open-source tinkerer · Always building something`,
+    },
+    {
+      command: "cat skills.txt",
+      output:
+        "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
+    },
+  ];
+
   const [command, setCommand] = useState("");
   const [output, setOutput] = useState("");
 
   useEffect(() => {
-    const steps: TerminalStep[] = [
-      {
-        command: "whoami",
-        output: `${authorName} — Embedded Software Engineer\nLinux enthusiast · Open-source tinkerer · Always building something`,
-      },
-      {
-        command: "cat skills.txt",
-        output:
-          "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
-      },
-    ];
-
     let cancelled = false;
     const wait = (ms: number) =>
       new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -76,6 +76,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorName]);
 
   return (
@@ -92,9 +93,26 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
           <span className="text-accent">{command}</span>
           <span className="animate-pulse text-accent">█</span>
         </p>
-        <p className="mt-2 min-h-[2.5rem] sm:min-h-[3.25rem] whitespace-pre-wrap text-start text-muted" dir="ltr">
-          {output}
-        </p>
+        {/* Grid overlay: all outputs share one cell so the tallest reserves
+            the height — the box never jumps while the animation types. */}
+        <div className="mt-2 grid">
+          {steps.map((step, idx) => (
+            <p
+              key={idx}
+              className="col-start-1 row-start-1 whitespace-pre-wrap text-start text-transparent select-none pointer-events-none"
+              dir="ltr"
+              aria-hidden="true"
+            >
+              {step.output}
+            </p>
+          ))}
+          <p
+            className="col-start-1 row-start-1 whitespace-pre-wrap text-start text-muted"
+            dir="ltr"
+          >
+            {output}
+          </p>
+        </div>
       </div>
     </div>
   );
