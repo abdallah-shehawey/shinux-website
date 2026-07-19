@@ -68,6 +68,15 @@ export default async function HomePage() {
                 from firmware to the kernel — write-ups, hands-on tutorials,
                 and a Q&amp;A archive.
               </p>
+              <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted sm:mx-0">
+                From bare-metal register programming on ARM Cortex-M to building
+                custom Linux images with Yocto and Buildroot — every article
+                here comes from real projects, real datasheets, and real
+                debugging sessions. Topics span device drivers, AUTOSAR BSW,
+                real-time scheduling, CAN/LIN networking, Linux administration,
+                and DevOps essentials like Ansible, Docker, CI/CD pipelines, and
+                Git workflows.
+              </p>
               <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
                 <Link href="/articles" className="btn-primary">
                   Browse articles
