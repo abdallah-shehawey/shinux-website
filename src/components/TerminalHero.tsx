@@ -33,20 +33,11 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
         output:
           "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
       },
-      {
-        command: "dmesg | tail",
-        output:
-          "[ OK ] Electronics & Communications initialized\n[ OK ] Embedded C loaded — STM32 detected\n[ OK ] FreeRTOS scheduler started\n[ OK ] Linux obsession enabled\n[ OK ] V2X project deployed\n[ .. ] Next adventure loading...",
-      },
-      {
-        command: "sudo hire shehawey",
-        output:
-          "[sudo] password for recruiter: ********\nAccess granted — installing shehawey... 100%\n✓ Embedded skills  ✓ Linux  ✓ Debugging  ✓ Coffee dependency resolved\nReady to start.",
-      },
     ];
 
     let cancelled = false;
-    const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, ms));
 
     async function run() {
       let i = 0;
@@ -88,7 +79,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
   }, [authorName]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card font-mono text-sm shadow-lg">
+    <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card font-mono text-sm shadow-lg">
       <div className="flex items-center gap-1.5 border-b border-border px-3.5 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
@@ -96,14 +87,12 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
         <span className="ms-2 text-xs text-muted">bash</span>
       </div>
       <div className="px-4 py-4">
-        <p className="min-h-[1.25rem] text-start" dir="ltr">
-          <span className="text-muted">$</span> <span className="text-accent">{command}</span>
+        <p className="h-[1.25rem] text-start" dir="ltr">
+          <span className="text-muted">$</span>{" "}
+          <span className="text-accent">{command}</span>
           <span className="animate-pulse text-accent">█</span>
         </p>
-        <p
-          className="mt-2 min-h-[3.75rem] whitespace-pre-wrap text-start text-muted"
-          dir="ltr"
-        >
+        <p className="mt-2 h-[3.25rem] whitespace-pre-wrap text-start text-muted" dir="ltr">
           {output}
         </p>
       </div>
