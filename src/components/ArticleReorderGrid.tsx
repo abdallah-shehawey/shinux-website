@@ -2,6 +2,7 @@
 
 import ArticleCard from "./ArticleCard";
 import DragReorderList from "./DragReorderList";
+import { revalidateArticleCaches } from "@/lib/revalidate-articles";
 import type { ArticleMeta } from "@/lib/articles";
 import type { Author } from "@/lib/site";
 
@@ -37,6 +38,7 @@ export default function ArticleReorderGrid({
       getId={(a) => a.slug}
       table="article_order"
       idColumn="slug"
+      onPersisted={() => void revalidateArticleCaches()}
       gridClassName={gridClassName}
       renderNormal={grid}
       renderCard={(item) => (

@@ -382,3 +382,46 @@ input:not([type]) {
 .copy-code-btn:active {
   transform: scale(0.92);
 }
+
+/* Tabbed code blocks — div.code-tabs wrappers from remarkCodeTabs, made
+   interactive by the CodeTabs component. Panes lose their own border; the
+   group carries it so the strip + code read as one widget. */
+.prose .code-tabs {
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.prose .code-tabs pre {
+  border: none;
+  border-radius: 0;
+}
+/* Un-enhanced (no-JS) fallback: stacked fences stay visually separated. */
+.prose .code-tabs pre + pre {
+  border-top: 1px solid var(--border);
+}
+.code-tabs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.35rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.code-tabs-tab {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.code-tabs-tab:hover {
+  color: var(--fg);
+}
+.code-tabs-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}

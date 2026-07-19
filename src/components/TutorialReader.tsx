@@ -3,6 +3,7 @@
 import TableOfContents from "@/components/TableOfContents";
 import TutorialSidebar from "@/components/TutorialSidebar";
 import CopyCodeButtons from "@/components/CopyCodeButtons";
+import CodeTabs from "@/components/CodeTabs";
 import type { TocItem } from "@/lib/markdown";
 import type { LessonMeta } from "@/lib/tutorials";
 
@@ -85,6 +86,7 @@ export default function TutorialReader({
           dangerouslySetInnerHTML={{ __html: html }}
         />
         <CopyCodeButtons containerId={CONTENT_ID} />
+        <CodeTabs containerId={CONTENT_ID} />
 
         {children}
       </div>

@@ -13,6 +13,9 @@ export async function generateMetadata({
   const { username } = await params;
   const profile = await getPublicProfile(username);
   if (!profile) return {};
+  // Thrown here (not just in the page) so the response is a real 404 —
+  // metadata resolves before streaming starts, the page body after.
+  if (profile.role === "admin") notFound();
   return { title: `Questions asked by ${profile.displayName}` };
 }
 
@@ -24,6 +27,8 @@ export default async function ProfileQuestionsPage({
   const { username } = await params;
   const profile = await getPublicProfile(username);
   if (!profile) notFound();
+  // Mirrors the hidden "Questions Asked" tile on the admin's profile page.
+  if (profile.role === "admin") notFound();
 
   const questions = await getQuestionsByAuthor(profile.id);
 

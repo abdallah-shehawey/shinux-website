@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateAuthorCaches } from "@/lib/revalidate-authors";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -74,6 +75,7 @@ export default function AvatarUploader({
 
     setPreview(bustedUrl);
     setStatus("idle");
+    void revalidateAuthorCaches();
     router.refresh();
   }
 
@@ -109,6 +111,7 @@ export default function AvatarUploader({
 
     setPreview(null);
     setStatus("idle");
+    void revalidateAuthorCaches();
     router.refresh();
   }
 

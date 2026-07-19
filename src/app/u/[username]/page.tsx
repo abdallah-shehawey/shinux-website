@@ -79,15 +79,26 @@ export default async function PublicProfilePage({
         </ul>
       )}
 
-      <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div
+        className={`mt-10 grid grid-cols-2 gap-4 ${
+          profile.role === "admin" ? "sm:grid-cols-3" : "sm:grid-cols-4"
+        }`}
+      >
         {[
           { label: "Articles", count: articles.length, href: `/u/${profile.username}/articles` },
           { label: "Tutorials", count: lessons.length, href: `/u/${profile.username}/tutorials` },
-          {
-            label: "Questions Asked",
-            count: questions.length,
-            href: `/u/${profile.username}/questions`,
-          },
+          // The admin answers questions rather than asking them — the ones
+          // under their id are seeded/FAQ entries, so the tile is hidden on
+          // their profile (the /questions sub-page 404s to match).
+          ...(profile.role === "admin"
+            ? []
+            : [
+                {
+                  label: "Questions Asked",
+                  count: questions.length,
+                  href: `/u/${profile.username}/questions`,
+                },
+              ]),
           {
             label: "Answers Given",
             count: answers.length,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateAuthorCaches } from "@/lib/revalidate-authors";
 
 export default function DisplayNameForm({
   initialDisplayName,
@@ -47,6 +48,7 @@ export default function DisplayNameForm({
 
     setValue(trimmed);
     setStatus("saved");
+    void revalidateAuthorCaches();
     router.refresh();
   }
 

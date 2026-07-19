@@ -12,6 +12,7 @@ import rehypeStringify from "rehype-stringify";
 import { visit } from "unist-util-visit";
 import { toString as hastToString } from "hast-util-to-string";
 import type { Root, Element } from "hast";
+import type { Root as MdastRoot, Parent as MdastParent, Code as MdastCode } from "mdast";
 
 // ------------------------------------------------------------------------------
 // Reusable Markdown → sanitized HTML pipeline.
@@ -43,6 +44,7 @@ export interface RenderOptions {
 // heading ids (for anchors/TOC) and code language classes (for Shiki).
 const sanitizeSchema: Schema = {
   ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "div"],
   attributes: {
     ...defaultSchema.attributes,
     "*": [...(defaultSchema.attributes?.["*"] ?? []), "id", "className"],
@@ -56,6 +58,12 @@ const sanitizeSchema: Schema = {
       ["className", /^admonition(-\w+)?$/] as [string, RegExp],
     ],
     p: [...(defaultSchema.attributes?.p ?? []), ["className", "admonition-title"] as [string, string]],
+    // Tab-group wrappers set by remarkCodeTabs() below.
+    div: [
+      ...(defaultSchema.attributes?.div ?? []),
+      ["className", "code-tabs"] as [string, string],
+      "dataTabTitles",
+    ],
   },
 };
 
@@ -149,6 +157,51 @@ function rehypeAdmonitions() {
   };
 }
 
+// Tabbed code blocks: two or more consecutive fences whose info string
+// carries tab="Title" (e.g. ```bash tab="Ubuntu") merge into one
+// div.code-tabs wrapper carrying the titles. The wrapper is inert HTML —
+// the CodeTabs client component turns it into the interactive tab strip, so
+// without JavaScript the fences simply stack (same graceful-degradation
+// approach as the copy buttons). A lone tab="…" fence stays a normal block.
+const TAB_META = /(?:^|\s)tab="([^"]+)"/;
+
+function remarkCodeTabs() {
+  return (tree: MdastRoot) => {
+    groupCodeTabs(tree);
+  };
+}
+
+function groupCodeTabs(parent: MdastParent) {
+  for (const child of parent.children) {
+    if ("children" in child) groupCodeTabs(child as MdastParent);
+  }
+
+  const children = parent.children;
+  for (let i = 0; i < children.length; i++) {
+    const titles: string[] = [];
+    let end = i;
+    while (end < children.length) {
+      const node = children[end];
+      if (node.type !== "code") break;
+      const match = ((node as MdastCode).meta ?? "").match(TAB_META);
+      if (!match) break;
+      titles.push(match[1]);
+      end++;
+    }
+    if (titles.length < 2) continue;
+
+    const group = {
+      type: "codeTabGroup",
+      children: children.slice(i, end),
+      data: {
+        hName: "div",
+        hProperties: { className: ["code-tabs"], dataTabTitles: JSON.stringify(titles) },
+      },
+    };
+    children.splice(i, titles.length, group as unknown as (typeof children)[number]);
+  }
+}
+
 // Collect h2/h3 headings (after slugs are assigned) into a table of contents.
 function rehypeCollectToc(toc: TocItem[]) {
   return (tree: Root) => {
@@ -206,6 +259,7 @@ async function renderMarkdownUncached(
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkCodeTabs)
     // allowDangerousHtml stays false → raw HTML embedded in Markdown is dropped.
     .use(remarkRehype)
     // Runs before sanitize so the schema below can allow-list its classes.

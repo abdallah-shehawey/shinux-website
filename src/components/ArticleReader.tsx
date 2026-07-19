@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import TableOfContents from "@/components/TableOfContents";
 import CopyCodeButtons from "@/components/CopyCodeButtons";
+import CodeTabs from "@/components/CodeTabs";
 import type { TocItem } from "@/lib/markdown";
 
 // One pre-rendered language of an article: the server turns each language's
@@ -118,6 +119,7 @@ export default function ArticleReader({
             dangerouslySetInnerHTML={{ __html: current.html }}
           />
           <CopyCodeButtons key={`copy-${locale}`} containerId={CONTENT_ID} />
+          <CodeTabs key={`tabs-${locale}`} containerId={CONTENT_ID} />
 
           {children}
         </div>

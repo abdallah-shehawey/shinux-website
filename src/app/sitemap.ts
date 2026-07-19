@@ -1,13 +1,18 @@
 import type { MetadataRoute } from "next";
 import { getArticles } from "@/lib/articles";
-import { getPublicQuestions } from "@/lib/questions";
+import { getCachedPublicQuestions } from "@/lib/questions";
 import { getTracks, getAllLessonParams } from "@/lib/tutorials";
 import { site } from "@/lib/site";
+
+// Static with periodic regeneration: question URLs come from the cookie-free
+// cached read, so crawlers never trigger a live Supabase query. An empty
+// question section (Supabase briefly down) beats failing the whole sitemap.
+export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
   const articles = getArticles();
-  const questions = await getPublicQuestions();
+  const questions = await getCachedPublicQuestions().catch(() => []);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: siteUrl, changeFrequency: "weekly", priority: 1 },

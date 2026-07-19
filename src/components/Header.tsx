@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
-import { createClient, getCurrentUser } from "@/lib/supabase/server";
-import { getUserNotifications } from "@/lib/notifications";
 import ThemeToggle from "./ThemeToggle";
-import NotificationsBell from "./NotificationsBell";
+import HeaderAuth from "./HeaderAuth";
+import AdminNavLink from "./AdminNavLink";
+
+// Deliberately a sync, cookie-free server component: it renders in the root
+// layout, so any cookies()/auth lookup here would force EVERY page in the
+// site dynamic. All auth-dependent UI lives in the HeaderAuth/AdminNavLink
+// client islands instead.
 
 const links = [
   { href: "/", label: "Home" },
@@ -14,21 +18,10 @@ const links = [
   { href: "/about", label: "About" },
 ] as const;
 
-export default async function Header() {
-  const user = await getCurrentUser();
+const navLinkClass =
+  "text-muted transition hover:text-fg active:scale-95 active:text-fg";
 
-  let isAdmin = false;
-  let notifications: Awaited<ReturnType<typeof getUserNotifications>> = [];
-  if (user) {
-    const supabase = await createClient();
-    const [{ data: profile }, notifs] = await Promise.all([
-      supabase.from("profiles").select("role").eq("id", user.id).single(),
-      getUserNotifications(user.id, 8),
-    ]);
-    isAdmin = profile?.role === "admin";
-    notifications = notifs;
-  }
-
+export default function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
       <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-8 lg:px-12">
@@ -42,35 +35,15 @@ export default async function Header() {
 
         <nav className="ms-2 hidden items-center gap-4 text-sm sm:flex">
           {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-muted transition hover:text-fg active:scale-95 active:text-fg"
-            >
+            <Link key={l.href} href={l.href} className={navLinkClass}>
               {l.label}
             </Link>
           ))}
-          {isAdmin && (
-            <Link
-              href="/admin/questions"
-              className="text-muted transition hover:text-fg active:scale-95 active:text-fg"
-            >
-              Admin
-            </Link>
-          )}
+          <AdminNavLink className={navLinkClass} />
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
-          {user && <NotificationsBell initial={notifications} userId={user.id} />}
-          {user ? (
-            <Link href="/me" className="btn-ghost">
-              My account
-            </Link>
-          ) : (
-            <Link href="/login" className="btn-ghost">
-              Log in
-            </Link>
-          )}
+          <HeaderAuth />
           <ThemeToggle />
         </div>
       </div>

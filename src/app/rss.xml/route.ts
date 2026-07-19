@@ -1,12 +1,13 @@
 import { getArticles } from "@/lib/articles";
-import { getPublicQuestions } from "@/lib/questions";
+import { getCachedPublicQuestions } from "@/lib/questions";
 import { site } from "@/lib/site";
 
 // A combined feed of articles and answered questions (spec §4: "خلاصة RSS
-// للمقالات والأسئلة المجابة"), sorted by date, newest first. Reading the
-// live questions_public view means this route can't be static (force-static
-// disallows the cookies()-based Supabase client) — it's server-rendered per
-// request instead, same as the rest of the DB-backed pages.
+// للمقالات والأسئلة المجابة"), sorted by date, newest first. Questions come
+// from the cookie-free cached read (tag "questions"), so the whole feed can
+// be static and regenerate at most every 5 minutes — feed readers never pay
+// a Supabase round trip.
+export const revalidate = 300;
 
 function escapeXml(value: string) {
   return value
@@ -38,9 +39,10 @@ export async function GET() {
     locale: a.locale,
   }));
 
-  const answeredQuestions = await getPublicQuestions({ limit: 50 }).catch(() => []);
+  const answeredQuestions = await getCachedPublicQuestions().catch(() => []);
   const questionItems: FeedItem[] = answeredQuestions
     .filter((q) => q.status === "answered")
+    .slice(0, 50)
     .map((q) => ({
       title: q.title,
       url: `${siteUrl}/questions/${q.slug}`,

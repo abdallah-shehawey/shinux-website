@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getArticles } from "@/lib/articles";
-import { getPublicQuestions } from "@/lib/questions";
+import { getCachedPublicQuestions } from "@/lib/questions";
 import { getAuthorProfile, getAuthorProfiles } from "@/lib/authors";
 import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
 import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
@@ -18,7 +18,7 @@ export default async function HomePage() {
   // lightweight "Featured" pick once they've used it.
   const [articleOrder, allQuestions, questionOrder, author] = await Promise.all([
     getArticleOrder(),
-    getPublicQuestions(),
+    getCachedPublicQuestions(),
     getQuestionOrder(),
     getAuthorProfile(siteAuthor.username).catch(() => null),
   ]);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateAuthorCaches } from "@/lib/revalidate-authors";
 
 const USERNAME_PATTERN = /^[a-z0-9_-]{3,30}$/;
 
@@ -57,6 +58,7 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
 
     setValue(normalized);
     setStatus("saved");
+    void revalidateAuthorCaches();
     router.refresh();
   }
 
