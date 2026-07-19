@@ -26,12 +26,22 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
     const steps: TerminalStep[] = [
       {
         command: "whoami",
-        output: `${authorName} — embedded systems engineer, Linux tinkerer, open-source enthusiast`,
+        output: `${authorName} — Embedded Software Engineer\nLinux enthusiast · Open-source tinkerer · Always building something`,
       },
       {
         command: "cat skills.txt",
         output:
-          "C/C++ · Embedded Linux · RTOS · Yocto/Buildroot\nSTM32 · AVR/ATmega32 · Git · kernel fundamentals\nCAN · LIN · UART · SPI · I2C — AUTOSAR stack",
+          "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
+      },
+      {
+        command: "dmesg | tail",
+        output:
+          "[ OK ] Electronics & Communications initialized\n[ OK ] Embedded C loaded — STM32 detected\n[ OK ] FreeRTOS scheduler started\n[ OK ] Linux obsession enabled\n[ OK ] V2X project deployed\n[ .. ] Next adventure loading...",
+      },
+      {
+        command: "sudo hire shehawey",
+        output:
+          "[sudo] password for recruiter: ********\nAccess granted — installing shehawey... 100%\n✓ Embedded skills  ✓ Linux  ✓ Debugging  ✓ Coffee dependency resolved\nReady to start.",
       },
     ];
 
@@ -91,7 +101,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
           <span className="animate-pulse text-accent">█</span>
         </p>
         <p
-          className="mt-2 min-h-[5rem] whitespace-pre-wrap text-start text-muted"
+          className="mt-2 min-h-[3.75rem] whitespace-pre-wrap text-start text-muted"
           dir="ltr"
         >
           {output}
