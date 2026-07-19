@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getArticles, getAllTags, searchArticles } from "@/lib/articles";
 import { getAuthorProfiles } from "@/lib/authors";
-import { getArticleOrder, applyCustomOrder } from "@/lib/article-order";
+import { getArticleOrder } from "@/lib/article-order";
+import { applyCustomOrder } from "@/lib/custom-order";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import ArticleReorderGrid from "@/components/ArticleReorderGrid";
 

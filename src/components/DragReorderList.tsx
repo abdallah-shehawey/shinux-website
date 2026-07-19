@@ -41,9 +41,13 @@ export default function DragReorderList<T>({
   const [items, setItems] = useState(initialItems);
   const [reordering, setReordering] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const scrollSpeedRef = useRef(0);
+  // The rendered card node per item id, so the drag ghost can be a picture of
+  // the card itself rather than whatever the browser picks (see onDragStart).
+  const cardRefs = useRef(new Map<string, HTMLDivElement>());
 
   // Auto-scroll the page while a card is dragged near the top/bottom edge of
   // the viewport — a reorderable grid is routinely taller than the screen.
@@ -94,7 +98,27 @@ export default function DragReorderList<T>({
     else onPersisted?.();
   }
 
+  // Every card contains a full-cover <a> (the link that opens the article /
+  // question / track). Left to itself the browser treats that anchor as the
+  // drag source and shows its generic link-or-file icon as the ghost, which is
+  // what made dragging look like dragging a file around. Two things fix it:
+  // the card content is pointer-events-none while reordering (so the wrapper,
+  // not the anchor, is always the drag source), and the ghost is explicitly set
+  // to a snapshot of the card, grabbed under the cursor where it was picked up.
+  // setData() is also required for Firefox to start a drag at all.
+  function onDragStart(e: React.DragEvent<HTMLDivElement>, index: number, id: string) {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+    const card = cardRefs.current.get(id);
+    if (card) {
+      const rect = card.getBoundingClientRect();
+      e.dataTransfer.setDragImage(card, e.clientX - rect.left, e.clientY - rect.top);
+    }
+  }
+
   function onDrop(targetIndex: number) {
+    setOverIndex(null);
     if (dragIndex === null || dragIndex === targetIndex) return;
     const next = [...items];
     const [moved] = next.splice(dragIndex, 1);
@@ -139,44 +163,71 @@ export default function DragReorderList<T>({
 
       {reordering ? (
         <div className={gridClassName}>
-          {items.map((item, i) => (
-            <div
-              key={getId(item)}
-              draggable
-              onDragStart={() => setDragIndex(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => onDrop(i)}
-              className="relative cursor-grab active:cursor-grabbing"
-            >
-              <span
-                className="absolute end-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-md bg-bg/90 font-mono text-muted shadow-sm"
-                aria-hidden
+          {items.map((item, i) => {
+            const id = getId(item);
+            return (
+              <div
+                key={id}
+                draggable
+                onDragStart={(e) => onDragStart(e, i, id)}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={() => setOverIndex(i)}
+                onDragEnd={() => {
+                  setDragIndex(null);
+                  setOverIndex(null);
+                }}
+                onDrop={() => onDrop(i)}
+                className={`relative cursor-grab rounded-xl transition active:cursor-grabbing ${
+                  dragIndex === i
+                    ? "opacity-40"
+                    : overIndex === i && dragIndex !== null
+                      ? "ring-2 ring-accent ring-offset-2 ring-offset-bg"
+                      : ""
+                }`}
               >
-                ⠿
-              </span>
-              <span className="absolute start-2 top-2 z-10 flex flex-col gap-1">
-                <button
-                  type="button"
-                  onClick={() => move(i, -1)}
-                  disabled={i === 0}
-                  aria-label="Move up"
-                  className="flex h-11 w-11 items-center justify-center rounded-md bg-bg/90 font-mono text-muted shadow-sm disabled:opacity-30"
+                {/* z-20: above the card's own full-cover link *and* above
+                    AuthorInline's z-10 link, otherwise a tap on ↑ lands on the
+                    author underneath it and opens their profile. */}
+                <span
+                  className="absolute end-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-md border border-border bg-bg/95 font-mono text-muted shadow-sm"
+                  aria-hidden
                 >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  onClick={() => move(i, 1)}
-                  disabled={i === items.length - 1}
-                  aria-label="Move down"
-                  className="flex h-11 w-11 items-center justify-center rounded-md bg-bg/90 font-mono text-muted shadow-sm disabled:opacity-30"
+                  ⠿
+                </span>
+                <span className="absolute start-2 top-2 z-20 flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => move(i, -1)}
+                    disabled={i === 0}
+                    aria-label="Move up"
+                    className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-bg/95 font-mono text-muted shadow-sm disabled:opacity-30"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 1)}
+                    disabled={i === items.length - 1}
+                    aria-label="Move down"
+                    className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-bg/95 font-mono text-muted shadow-sm disabled:opacity-30"
+                  >
+                    ↓
+                  </button>
+                </span>
+                {/* Inert while reordering: the card's links must not swallow
+                    the drag (see onDragStart) or navigate on a mis-tap. */}
+                <div
+                  ref={(node) => {
+                    if (node) cardRefs.current.set(id, node);
+                    else cardRefs.current.delete(id);
+                  }}
+                  className="pointer-events-none h-full select-none"
                 >
-                  ↓
-                </button>
-              </span>
-              {renderCard(item)}
-            </div>
-          ))}
+                  {renderCard(item)}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         renderNormal(items)

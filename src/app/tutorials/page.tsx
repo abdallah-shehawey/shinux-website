@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTracks, referenceRepos, searchLessons } from "@/lib/tutorials";
 import { getAuthorProfiles } from "@/lib/authors";
-import AuthorInline from "@/components/AuthorInline";
+import { getTutorialTrackOrder } from "@/lib/tutorial-order";
+import { applyCustomOrder } from "@/lib/custom-order";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
+import TutorialReorderGrid from "@/components/TutorialReorderGrid";
 
 export const metadata: Metadata = { title: "Tutorials" };
 
@@ -12,7 +15,19 @@ export default async function TutorialsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const tracks = getTracks();
+
+  const user = await getCurrentUser();
+  let isAdmin = false;
+  if (user) {
+    const supabase = await createClient();
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    isAdmin = profile?.role === "admin";
+  }
+
+  // Same rule as /articles: the admin's pin order applies to the default,
+  // unfiltered view, and drag-to-reorder is only offered there — reordering a
+  // search result set would be ambiguous.
+  const tracks = applyCustomOrder(getTracks(), await getTutorialTrackOrder());
   const authors = await getAuthorProfiles(tracks.flatMap((t) => t.authors));
   const results = q ? searchLessons(q) : [];
 
@@ -64,46 +79,7 @@ export default async function TutorialsPage({
       ) : tracks.length === 0 ? (
         <p className="text-muted">No tutorials yet.</p>
       ) : (
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tracks.map((track) => (
-            <div
-              key={track.slug}
-              className="card active:scale-[0.98] active:opacity-90 relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-colors hover:border-accent"
-            >
-              <Link
-                href={`/tutorials/${track.slug}`}
-                className="absolute inset-0 z-0"
-                aria-label={track.title}
-              />
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold text-fg">{track.title}</h2>
-                {track.tag && <span className="tag-chip">{track.tag}</span>}
-              </div>
-              {track.description ? (
-                <div className="flex-grow flex-1 min-h-0">
-                  <p className="line-clamp-3 text-sm text-muted">{track.description}</p>
-                </div>
-              ) : (
-                <div className="flex-1" />
-              )}
-              <p className="mt-1 font-mono text-xs text-muted">
-                {track.lessonCount} {track.lessonCount === 1 ? "lesson" : "lessons"}
-              </p>
-              {track.authors.length > 0 && (
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2 text-xs text-muted">
-                  {track.authors.map((username) => (
-                    <AuthorInline
-                      key={username}
-                      name={authors[username]?.name ?? username}
-                      username={username}
-                      avatar={authors[username]?.avatar}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <TutorialReorderGrid initialItems={tracks} authors={authors} isAdmin={isAdmin} />
       )}
 
       <section className="mt-14">
