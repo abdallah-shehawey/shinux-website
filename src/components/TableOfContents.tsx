@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TocItem } from "@/lib/markdown";
 
 // Generic table-of-contents renderer — takes plain TocItem[] as props, no
@@ -24,6 +24,14 @@ export default function TableOfContents({
   lang?: string;
 }) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id ?? "");
+  const navRef = useRef<HTMLElement>(null);
+
+  // Auto-scroll the sidebar so the active link stays visible.
+  useEffect(() => {
+    if (!activeId || !navRef.current) return;
+    const activeEl = navRef.current.querySelector<HTMLElement>(`a[aria-current="location"]`);
+    activeEl?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeId]);
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -53,7 +61,7 @@ export default function TableOfContents({
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label={title} className="card">
+    <nav ref={navRef} aria-label={title} className="card">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
         {title}
       </p>

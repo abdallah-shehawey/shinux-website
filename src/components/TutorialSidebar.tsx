@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import type { LessonMeta } from "@/lib/tutorials";
 
@@ -7,6 +10,9 @@ import type { LessonMeta } from "@/lib/tutorials";
 // Desktop gets a sticky card; below `lg` it collapses into a <details>
 // disclosure above the article body (see globals.css/AboutPage for the same
 // disclosure pattern), so jumping between lessons isn't desktop-only.
+//
+// Converted to a client component so we can auto-scroll the active lesson
+// into view on mount (keeps it visible inside the scrollable sidebar).
 export default function TutorialSidebar({
   track,
   lessons,
@@ -18,6 +24,15 @@ export default function TutorialSidebar({
   currentSlug: string;
   collapsedOnMobile?: boolean;
 }) {
+  const navRef = useRef<HTMLElement>(null);
+
+  // On mount, scroll the active lesson link into view within the sidebar.
+  useEffect(() => {
+    if (!navRef.current) return;
+    const activeEl = navRef.current.querySelector<HTMLElement>(`a[aria-current="page"]`);
+    activeEl?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [currentSlug]);
+
   if (lessons.length === 0) return null;
 
   const list = (
@@ -57,7 +72,7 @@ export default function TutorialSidebar({
   }
 
   return (
-    <nav aria-label="Lessons in this track" className="card">
+    <nav ref={navRef} aria-label="Lessons in this track" className="card">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Lessons</p>
       {list}
     </nav>
