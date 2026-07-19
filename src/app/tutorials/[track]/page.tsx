@@ -60,10 +60,12 @@ export default async function TrackPage({
       <ol className="grid auto-rows-fr gap-4 md:grid-cols-2">
         {lessons.map((lesson, i) => (
           <li key={lesson.slug}>
-            <Link
-              href={`/tutorials/${track}/${lesson.slug}`}
-              className="card active:scale-[0.98] active:opacity-90 flex h-full items-start gap-4 transition-colors hover:border-accent"
-            >
+            <div className="card relative flex h-full items-start gap-4 transition-colors hover:border-accent">
+              <Link
+                href={`/tutorials/${track}/${lesson.slug}`}
+                className="absolute inset-0 z-[1]"
+                aria-label={lesson.title}
+              />
               <span className="mt-0.5 font-mono text-sm text-muted">
                 {String(i + 1).padStart(2, "0")}
               </span>
@@ -79,8 +81,17 @@ export default async function TrackPage({
                 <span className="font-mono text-xs text-muted">
                   {lesson.readingMinutes} min read
                 </span>
+                {lesson.author && authors[lesson.author] && (
+                  <span className="relative z-[2] mt-1 border-t border-border pt-2 text-xs text-muted">
+                    <AuthorInline
+                      name={authors[lesson.author]?.name ?? lesson.author}
+                      username={lesson.author}
+                      avatar={authors[lesson.author]?.avatar}
+                    />
+                  </span>
+                )}
               </span>
-            </Link>
+            </div>
           </li>
         ))}
       </ol>

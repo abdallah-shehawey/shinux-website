@@ -36,7 +36,7 @@ export default function TutorialReader({
   return (
     <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_16rem_minmax(0,44rem)_17rem_1fr]">
       <aside className="hidden lg:col-start-2 lg:block">
-        <div className="sticky top-20">
+        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TutorialSidebar track={track} lessons={lessons} currentSlug={currentSlug} />
         </div>
       </aside>
@@ -76,7 +76,7 @@ export default function TutorialReader({
       </div>
 
       <aside className="hidden lg:col-start-4 lg:block">
-        <div className="sticky top-20">
+        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TableOfContents items={toc} title="On this page" />
         </div>
       </aside>

@@ -30,7 +30,9 @@ export default function TutorialSidebar({
               href={`/tutorials/${track}/${l.slug}`}
               aria-current={active ? "page" : undefined}
               className={`block rounded-md px-2 py-1.5 transition-colors hover:bg-card ${
-                active ? "bg-card font-medium text-accent" : "text-muted"
+                active
+                  ? "border-s-2 border-accent bg-card font-medium text-accent"
+                  : "text-muted"
               }`}
             >
               <span className="font-mono text-xs text-muted">{i + 1}.</span> {l.title}
