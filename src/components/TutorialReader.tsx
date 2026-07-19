@@ -1,13 +1,15 @@
 "use client";
 
 import TableOfContents from "@/components/TableOfContents";
+import TutorialSidebar from "@/components/TutorialSidebar";
 import CopyCodeButtons from "@/components/CopyCodeButtons";
 import type { TocItem } from "@/lib/markdown";
+import type { LessonMeta } from "@/lib/tutorials";
 
 // English-only lesson reader: the server renders the lesson Markdown to HTML + a
-// TOC once, and this view lays it out (body + sticky "On this page") and wires up
-// the copy-code buttons. Deliberately simpler than <ArticleReader> — tutorials
-// carry no per-lesson language toggle.
+// TOC once, and this view lays it out (lesson sidebar + body + sticky "On this
+// page") and wires up the copy-code buttons. Deliberately simpler than
+// <ArticleReader> — tutorials carry no per-lesson language toggle.
 const CONTENT_ID = "lesson-body";
 
 export default function TutorialReader({
@@ -16,6 +18,9 @@ export default function TutorialReader({
   readingMinutes,
   html,
   toc,
+  track,
+  lessons,
+  currentSlug,
   children,
 }: {
   title: string;
@@ -23,11 +28,29 @@ export default function TutorialReader({
   readingMinutes: number;
   html: string;
   toc: TocItem[];
+  track: string;
+  lessons: LessonMeta[];
+  currentSlug: string;
   children?: React.ReactNode;
 }) {
   return (
-    <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_minmax(0,46rem)_17rem_1fr]">
-      <div className="lg:col-start-2">
+    <article className="mt-6 grid gap-10 lg:grid-cols-[1fr_16rem_minmax(0,44rem)_17rem_1fr]">
+      <aside className="hidden lg:col-start-2 lg:block">
+        <div className="sticky top-20">
+          <TutorialSidebar track={track} lessons={lessons} currentSlug={currentSlug} />
+        </div>
+      </aside>
+
+      <div className="lg:col-start-3">
+        <div className="mb-6 lg:hidden">
+          <TutorialSidebar
+            track={track}
+            lessons={lessons}
+            currentSlug={currentSlug}
+            collapsedOnMobile
+          />
+        </div>
+
         <header className="mb-8">
           <p className="mb-3 font-mono text-xs text-muted">{readingMinutes} min read</p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
@@ -52,7 +75,7 @@ export default function TutorialReader({
         {children}
       </div>
 
-      <aside className="hidden lg:col-start-3 lg:block">
+      <aside className="hidden lg:col-start-4 lg:block">
         <div className="sticky top-20">
           <TableOfContents items={toc} title="On this page" />
         </div>

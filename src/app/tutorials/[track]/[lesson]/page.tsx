@@ -9,7 +9,10 @@ import {
   type LessonMeta,
 } from "@/lib/tutorials";
 import { renderMarkdown } from "@/lib/markdown";
+import { getAuthorProfile } from "@/lib/authors";
+import { siteAuthor } from "@/lib/site";
 import TutorialReader from "@/components/TutorialReader";
+import AuthorCard from "@/components/AuthorCard";
 
 export function generateStaticParams() {
   return getAllLessonParams();
@@ -49,7 +52,7 @@ function AdjacentCard({
   return (
     <Link
       href={`/tutorials/${track}/${lesson.slug}`}
-      className={`card ${align === "end" ? "sm:text-end" : ""}`}
+      className={`card active:scale-[0.98] active:opacity-90 transition-colors hover:border-accent ${align === "end" ? "sm:text-end" : ""}`}
     >
       <p className="text-xs text-muted">
         {align === "end" ? <>{label} &rarr;</> : <>&larr; {label}</>}
@@ -69,9 +72,10 @@ export default async function LessonPage({
   const found = getLesson(track, lesson);
   if (!found) notFound();
 
-  const trackMeta = getTrack(track)?.meta;
+  const trackData = getTrack(track);
   const { html, toc } = await renderMarkdown(found.body);
   const { prev, next } = getAdjacentLessons(track, lesson);
+  const author = (found.author && (await getAuthorProfile(found.author))) || siteAuthor;
 
   return (
     <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
@@ -79,7 +83,7 @@ export default async function LessonPage({
         href={`/tutorials/${track}`}
         className="text-sm text-muted hover:text-accent"
       >
-        &larr; {trackMeta?.title ?? "Back to track"}
+        &larr; {trackData?.meta.title ?? "Back to track"}
       </Link>
 
       <TutorialReader
@@ -88,7 +92,14 @@ export default async function LessonPage({
         readingMinutes={found.readingMinutes}
         html={html}
         toc={toc}
+        track={track}
+        lessons={trackData?.lessons ?? []}
+        currentSlug={lesson}
       >
+        <div className="mt-10">
+          <AuthorCard author={author} label="Written by" />
+        </div>
+
         {(prev || next) && (
           <nav className="mt-8 grid gap-3 sm:grid-cols-2">
             {prev && <AdjacentCard track={track} lesson={prev} label="Previous" align="start" />}

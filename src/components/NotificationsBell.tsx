@@ -102,7 +102,11 @@ export default function NotificationsBell({
           <div className="flex items-center justify-between px-2 py-1">
             <p className="text-sm font-semibold text-fg">Notifications</p>
             {unreadCount > 0 && (
-              <button type="button" onClick={markAllRead} className="text-xs text-accent hover:underline">
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="text-xs text-accent hover:underline active:opacity-70"
+              >
                 Mark all read
               </button>
             )}
@@ -120,7 +124,7 @@ export default function NotificationsBell({
                 };
                 const inner = (
                   <div
-                    className={`rounded-md px-2 py-2 transition-colors hover:bg-bg ${!n.is_read ? "bg-bg/60" : ""}`}
+                    className={`rounded-md px-2 py-2 transition hover:bg-bg active:scale-[0.98] ${!n.is_read ? "bg-bg/60" : ""}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm text-fg">{notificationLabel(n.type)}</p>

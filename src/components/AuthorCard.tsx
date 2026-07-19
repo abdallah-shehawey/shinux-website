@@ -14,7 +14,10 @@ export default function AuthorCard({
   const initial = author.name.trim().charAt(0).toUpperCase();
 
   return (
-    <Link href={`/u/${author.username}`} className="card flex items-center gap-3 hover:border-accent">
+    <Link
+      href={`/u/${author.username}`}
+      className="card active:scale-[0.98] active:opacity-90 flex items-center gap-3 transition-colors hover:border-accent"
+    >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-mono text-lg font-bold text-accent-fg">
         {author.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element

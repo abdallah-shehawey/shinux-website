@@ -29,6 +29,8 @@ export interface TrackMeta {
   /** Short label shown on the track card (e.g. "docker"). */
   tag?: string;
   lessonCount: number;
+  /** Distinct `author` usernames across the track's lessons, derived live from lesson frontmatter. */
+  authors: string[];
 }
 
 export interface LessonMeta {
@@ -108,17 +110,26 @@ function stripBody(l: Lesson): LessonMeta {
   return meta;
 }
 
+/** Distinct, defined author usernames across a track's lessons, in first-seen order. */
+function distinctAuthors(lessons: { author?: string }[]): string[] {
+  return Array.from(new Set(lessons.map((l) => l.author).filter((a): a is string => !!a)));
+}
+
 /** All tracks (with published lesson counts), ordered by their `order` field. */
 export function getTracks(): TrackMeta[] {
   return readTrackDirs()
-    .map(({ slug, dir, data }) => ({
-      slug,
-      title: typeof data.title === "string" ? data.title : slug,
-      description: typeof data.description === "string" ? data.description : "",
-      order: toNumber(data.order, 9999),
-      tag: typeof data.tag === "string" ? data.tag : undefined,
-      lessonCount: readLessons(slug, dir).length,
-    }))
+    .map(({ slug, dir, data }) => {
+      const lessons = readLessons(slug, dir);
+      return {
+        slug,
+        title: typeof data.title === "string" ? data.title : slug,
+        description: typeof data.description === "string" ? data.description : "",
+        order: toNumber(data.order, 9999),
+        tag: typeof data.tag === "string" ? data.tag : undefined,
+        lessonCount: lessons.length,
+        authors: distinctAuthors(lessons),
+      };
+    })
     .filter((t) => t.lessonCount > 0)
     .sort((a, b) =>
       a.order !== b.order ? a.order - b.order : a.title.localeCompare(b.title),
@@ -141,6 +152,7 @@ export function getTrack(
       order: toNumber(found.data.order, 9999),
       tag: typeof found.data.tag === "string" ? found.data.tag : undefined,
       lessonCount: lessons.length,
+      authors: distinctAuthors(lessons),
     },
     lessons: lessons.map(stripBody),
   };
@@ -190,6 +202,26 @@ export function getLessonsByAuthor(username: string): LessonByAuthor[] {
   });
 }
 
+/**
+ * Case-insensitive search across every lesson's title, description, tags, and
+ * body, across all tracks. Returns metas (no bodies), each tagged with its
+ * track's title for display — mirrors searchArticles() in articles.ts.
+ */
+export function searchLessons(query: string): LessonByAuthor[] {
+  const term = query.trim().toLowerCase();
+  if (!term) return [];
+
+  return readTrackDirs().flatMap(({ slug, dir, data }) => {
+    const trackTitle = typeof data.title === "string" ? data.title : slug;
+    return readLessons(slug, dir)
+      .filter((l) => {
+        const haystacks = [l.title, l.description, ...l.tags, l.body];
+        return haystacks.some((h) => h.toLowerCase().includes(term));
+      })
+      .map((l) => ({ ...stripBody(l), trackTitle }));
+  });
+}
+
 // ------------------------------------------------------------------------------
 // Reference repos: the owner's other repos worth linking from the Tutorials hub
 // but which have no prose to convert into lessons (driver source only, or content
@@ -213,7 +245,7 @@ export const referenceRepos: ReferenceRepo[] = [
   {
     title: "Dotfiles & Scripts",
     description:
-      "My Linux dotfiles: Neovim & Zsh configs, GNOME tweaks, themes and day-to-day scripts, with setup guides for tools like Distrobox and QuestaSim.",
+      "My Linux dotfiles: Neovim & Zsh configs, GNOME tweaks, themes and day-to-day scripts — the setup guides themselves are lessons in the Linux Desktop & Dev Environment track; this is the actual configs to steal.",
     href: "https://github.com/abdallah-shehawey/dotfiles-linux",
     tag: "Linux",
   },
@@ -234,8 +266,8 @@ export const referenceRepos: ReferenceRepo[] = [
   {
     title: "System Programming in Linux",
     description:
-      "From-scratch C systems training: processes & signals, a custom shell, memory allocators, static/dynamic linking, OOP in C, a small RTOS and QEMU. Deep material — best explored in the repo (notes ship as PDFs).",
+      "From-scratch C systems training: processes & signals, a custom shell, memory allocators, static/dynamic linking, OOP in C, a small RTOS and QEMU — worked into lessons in the System Programming in C track. This is the full repo: every exercise's source, plus the lecture-slide PDFs the lessons don't cover directly.",
     href: "https://github.com/abdallah-shehawey/System-programming-in-Linux",
-    tag: "Linux / Systems",
+    tag: "Systems",
   },
 ];

@@ -50,6 +50,12 @@ const sanitizeSchema: Schema = {
       ...(defaultSchema.attributes?.code ?? []),
       ["className", /^language-./] as [string, RegExp],
     ],
+    // Admonition classes set by rehypeAdmonitions() above.
+    blockquote: [
+      ...(defaultSchema.attributes?.blockquote ?? []),
+      ["className", /^admonition(-\w+)?$/] as [string, RegExp],
+    ],
+    p: [...(defaultSchema.attributes?.p ?? []), ["className", "admonition-title"] as [string, string]],
   },
 };
 
@@ -74,6 +80,71 @@ function rehypeBidiAuto() {
       const parentTag = parent && parent.type === "element" ? parent.tagName : null;
       if (parentTag === "li") return;
       node.properties = { ...node.properties, dir: "auto" };
+    });
+  };
+}
+
+// Admonitions: a blockquote whose first line is a bolded label (`> **Note:**`,
+// `> **Warning:** …`) becomes a styled callout instead of a plain quote. This
+// is detected on the rendered tree rather than a new Markdown syntax, so it
+// applies retroactively to every `> **Label:**` blockquote already written
+// across the site's content — no markdown changes, no content migration.
+const ADMONITION_LABELS: Record<string, { type: string; label: string }> = {
+  note: { type: "note", label: "Note" },
+  notes: { type: "note", label: "Note" },
+  tip: { type: "tip", label: "Tip" },
+  tips: { type: "tip", label: "Tip" },
+  warning: { type: "warning", label: "Warning" },
+  warnings: { type: "warning", label: "Warning" },
+  important: { type: "important", label: "Important" },
+  danger: { type: "danger", label: "Danger" },
+  caution: { type: "danger", label: "Caution" },
+};
+
+function firstElementChild(node: Element): Element | null {
+  return (node.children.find((c) => c.type === "element") as Element | undefined) ?? null;
+}
+
+function rehypeAdmonitions() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "blockquote") return;
+      const firstPara = firstElementChild(node);
+      if (!firstPara || firstPara.tagName !== "p") return;
+      const firstInline = firstElementChild(firstPara);
+      if (!firstInline || firstInline.tagName !== "strong") return;
+
+      const rawLabel = hastToString(firstInline).replace(/:\s*$/, "").trim().toLowerCase();
+      const match = ADMONITION_LABELS[rawLabel];
+      if (!match) return;
+
+      // Drop the bold label from its paragraph, trimming any leftover ": ".
+      const rest = firstPara.children.filter((c) => c !== firstInline);
+      const [head, ...tail] = rest;
+      if (head?.type === "text") head.value = head.value.replace(/^[:\s]+/, "");
+      firstPara.children = [head, ...tail].filter(
+        (c) => c && !(c.type === "text" && c.value === ""),
+      ) as typeof firstPara.children;
+
+      // If removing the label leaves its paragraph empty, drop that paragraph
+      // entirely — the label becomes the callout's own title instead.
+      const body =
+        firstPara.children.length === 0
+          ? node.children.filter((c) => c !== firstPara)
+          : node.children;
+
+      const title: Element = {
+        type: "element",
+        tagName: "p",
+        properties: { className: ["admonition-title"] },
+        children: [{ type: "text", value: match.label }],
+      };
+
+      node.properties = {
+        ...node.properties,
+        className: ["admonition", `admonition-${match.type}`],
+      };
+      node.children = [title, ...body];
     });
   };
 }
@@ -136,7 +207,9 @@ async function renderMarkdownUncached(
     .use(remarkParse)
     .use(remarkGfm)
     // allowDangerousHtml stays false → raw HTML embedded in Markdown is dropped.
-    .use(remarkRehype);
+    .use(remarkRehype)
+    // Runs before sanitize so the schema below can allow-list its classes.
+    .use(rehypeAdmonitions);
 
   // Sanitize BEFORE highlighting so Shiki's own (trusted) inline styles survive.
   if (sanitize) {

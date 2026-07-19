@@ -34,7 +34,7 @@ export default async function Header() {
       <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-8 lg:px-12">
         <Link
           href="/"
-          className="flex items-center gap-1.5 font-mono text-sm font-semibold text-fg"
+          className="flex items-center gap-1.5 font-mono text-sm font-semibold text-fg active:scale-95 transition-transform"
         >
           <span className="text-accent">$</span>
           <span>{site.name}</span>
@@ -45,13 +45,16 @@ export default async function Header() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-muted transition-colors hover:text-fg"
+              className="text-muted transition hover:text-fg active:scale-95 active:text-fg"
             >
               {l.label}
             </Link>
           ))}
           {isAdmin && (
-            <Link href="/admin/questions" className="text-muted transition-colors hover:text-fg">
+            <Link
+              href="/admin/questions"
+              className="text-muted transition hover:text-fg active:scale-95 active:text-fg"
+            >
               Admin
             </Link>
           )}

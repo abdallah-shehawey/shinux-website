@@ -28,7 +28,7 @@ export default function TableOfContents({
           <li key={item.id} style={item.depth === 3 ? { paddingInlineStart: "1rem" } : undefined}>
             <a
               href={`#${item.id}`}
-              className="text-muted transition-colors hover:text-accent"
+              className="text-muted transition hover:text-accent active:opacity-60"
             >
               {item.text}
             </a>

@@ -39,6 +39,12 @@ export default async function AboutPage() {
           C and embedded systems through AZEX and Google Developer Student Club at my
           university — and I sharpen my skills in coding competitions and hackathons.
         </p>
+        <p>
+          In my free time I do a lot of vibe coding — I love picking up new things,
+          which is really what pulled me into it in the first place. I&apos;m
+          constantly building something different every few days, just to learn
+          and explore.
+        </p>
       </div>
 
       {site.socials.length > 0 && (

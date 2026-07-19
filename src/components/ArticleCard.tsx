@@ -27,7 +27,7 @@ export default function ArticleCard({
     // Relative + a full-cover link underneath so the whole card still opens
     // the article, while the author footer's own link (above it, z-10) stays
     // independently clickable to their profile.
-    <div className="card relative flex flex-col gap-2 transition-colors hover:border-accent">
+    <div className="card active:scale-[0.98] active:opacity-90 relative flex h-full flex-col gap-2 transition-colors hover:border-accent">
       <Link
         href={`/articles/${article.slug}`}
         className="absolute inset-0 z-0"
@@ -39,12 +39,12 @@ export default function ArticleCard({
         </span>
         {langBadge && <span className="tag-chip">{langBadge}</span>}
       </p>
-      <div dir={isRtl ? "rtl" : "ltr"} lang={article.locale}>
-        <h3 className="text-lg font-semibold text-fg" dir="auto">
+      <div className="flex-1" dir={isRtl ? "rtl" : "ltr"} lang={article.locale}>
+        <h3 className="line-clamp-2 text-lg font-semibold text-fg" dir="auto">
           {article.title}
         </h3>
         {article.description && (
-          <p className="text-sm text-muted" dir="auto">
+          <p className="line-clamp-2 text-sm text-muted" dir="auto">
             {article.description}
           </p>
         )}

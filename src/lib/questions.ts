@@ -35,6 +35,8 @@ export interface QuestionSummary {
   published_at: string | null;
   /** coalesce(published_at, created_at) — what the public listing sorts by, so a freshly-approved question jumps to the top. */
   sort_at: string;
+  /** status === "answered", exposed as a real boolean so the listing can sort unanswered questions first. */
+  is_answered: boolean;
 }
 
 export interface QuestionDetail extends QuestionSummary {
@@ -65,7 +67,7 @@ export interface OwnQuestion {
 }
 
 const SUMMARY_COLUMNS =
-  "id, title, locale, status, slug, tags, created_at, is_anonymous, upvote_count, answer_count, author_id, author_display, author_avatar, author_username, published_at, sort_at";
+  "id, title, locale, status, slug, tags, created_at, is_anonymous, upvote_count, answer_count, author_id, author_display, author_avatar, author_username, published_at, sort_at, is_answered";
 
 const ANSWER_COLUMNS =
   "id, question_id, body, is_accepted, created_at, author_id, author_display, author_avatar, author_username";
@@ -79,7 +81,8 @@ const REPLY_COLUMNS =
 // writes that bypass the app (e.g. edits straight in the Supabase dashboard).
 const QUESTIONS_CACHE_REVALIDATE = 300;
 
-/** Published/answered questions, newest first, with optional search + tag filter. */
+/** Published/answered questions — unanswered ones first, newest first within
+ *  each group — with optional search + tag filter. */
 export async function getPublicQuestions(opts: {
   search?: string;
   tag?: string;
@@ -89,6 +92,7 @@ export async function getPublicQuestions(opts: {
   let query = supabase
     .from("questions_public")
     .select(SUMMARY_COLUMNS)
+    .order("is_answered", { ascending: true })
     .order("sort_at", { ascending: false });
 
   if (opts.tag) query = query.contains("tags", [opts.tag]);
@@ -114,6 +118,7 @@ export const getCachedPublicQuestions = unstable_cache(
     let query = supabase
       .from("questions_public")
       .select(SUMMARY_COLUMNS)
+      .order("is_answered", { ascending: true })
       .order("sort_at", { ascending: false });
     if (tag) query = query.contains("tags", [tag]);
     const { data, error } = await query;

@@ -14,7 +14,7 @@ export default function ArticleReorderGrid({
   authors: Record<string, Author>;
   isAdmin: boolean;
 }) {
-  const gridClassName = "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
+  const gridClassName = "grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3";
 
   const grid = (items: ArticleMeta[]) => (
     <div className={gridClassName}>

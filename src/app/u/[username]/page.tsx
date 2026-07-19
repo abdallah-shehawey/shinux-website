@@ -79,100 +79,39 @@ export default async function PublicProfilePage({
         </ul>
       )}
 
-      <div className="mt-10">
-        <h2 className="mb-3 text-lg font-semibold">
-          Articles {articles.length > 0 && `(${articles.length})`}
-        </h2>
-        {articles.length === 0 ? (
-          <p className="text-sm text-muted">No public articles yet.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {articles.map((a) => (
-              <Link
-                key={a.slug}
-                href={`/articles/${a.slug}`}
-                className="card hover:border-accent"
-              >
-                <p className="text-sm font-medium text-fg" dir="auto">
-                  {a.title}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="mb-3 text-lg font-semibold">
-          Tutorials {lessons.length > 0 && `(${lessons.length})`}
-        </h2>
-        {lessons.length === 0 ? (
-          <p className="text-sm text-muted">No public tutorials yet.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {lessons.map((l) => (
-              <Link
-                key={`${l.track}/${l.slug}`}
-                href={`/tutorials/${l.track}/${l.slug}`}
-                className="card flex items-center justify-between gap-3 hover:border-accent"
-              >
-                <span className="text-sm font-medium text-fg">{l.title}</span>
-                <span className="tag-chip shrink-0">{l.trackTitle}</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="mb-3 text-lg font-semibold">
-          Questions asked {questions.length > 0 && `(${questions.length})`}
-        </h2>
-        {questions.length === 0 ? (
-          <p className="text-sm text-muted">No public questions yet.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {questions.map((q) => (
-              <Link
-                key={q.id}
-                href={`/questions/${q.slug}`}
-                className="card flex items-center justify-between gap-3 hover:border-accent"
-              >
-                <span className="text-sm font-medium text-fg" dir="auto">
-                  {q.title}
-                </span>
-                <span className="tag-chip shrink-0">
-                  {q.answer_count} {q.answer_count === 1 ? "answer" : "answers"}
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="mb-3 text-lg font-semibold">
-          Answers given {answers.length > 0 && `(${answers.length})`}
-        </h2>
-        {answers.length === 0 ? (
-          <p className="text-sm text-muted">No public answers yet.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {answers.map((a) => (
-              <Link
-                key={a.id}
-                href={`/questions/${a.question_slug}`}
-                className="card hover:border-accent"
-              >
-                <p className="text-sm font-medium text-fg" dir="auto">
-                  {a.question_title}
-                </p>
-                <p className="mt-1 truncate text-xs text-muted" dir="auto">
-                  {a.body}
-                </p>
-              </Link>
-            ))}
-          </div>
+      <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[
+          { label: "Articles", count: articles.length, href: `/u/${profile.username}/articles` },
+          { label: "Tutorials", count: lessons.length, href: `/u/${profile.username}/tutorials` },
+          {
+            label: "Questions Asked",
+            count: questions.length,
+            href: `/u/${profile.username}/questions`,
+          },
+          {
+            label: "Answers Given",
+            count: answers.length,
+            href: `/u/${profile.username}/answers`,
+          },
+        ].map((stat) =>
+          stat.count > 0 ? (
+            <Link
+              key={stat.label}
+              href={stat.href}
+              className="card active:scale-[0.98] active:opacity-90 flex flex-col items-center gap-1 py-6 text-center transition-colors hover:border-accent"
+            >
+              <span className="font-mono text-2xl font-bold text-accent">{stat.count}</span>
+              <span className="text-sm text-muted">{stat.label}</span>
+            </Link>
+          ) : (
+            <div
+              key={stat.label}
+              className="card flex flex-col items-center gap-1 py-6 text-center opacity-50"
+            >
+              <span className="font-mono text-2xl font-bold text-muted">0</span>
+              <span className="text-sm text-muted">{stat.label}</span>
+            </div>
+          ),
         )}
       </div>
     </div>

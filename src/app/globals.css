@@ -78,10 +78,14 @@ input:not([type]) {
   padding: 0.55rem 1.1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .btn-primary:hover {
   opacity: 0.9;
+}
+.btn-primary:active {
+  opacity: 0.85;
+  transform: scale(0.96);
 }
 
 .btn-ghost {
@@ -95,11 +99,15 @@ input:not([type]) {
   padding: 0.55rem 1.1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 .btn-ghost:hover {
   background: var(--card);
   border-color: var(--accent);
+}
+.btn-ghost:active {
+  transform: scale(0.96);
+  background: var(--card);
 }
 .btn-ghost[data-active="true"] {
   background: var(--accent);
@@ -123,10 +131,14 @@ input:not([type]) {
   font-size: 0.75rem;
   font-family: var(--font-jetbrains-mono), monospace;
   color: var(--muted);
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 .tag-chip:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+.tag-chip:active {
+  transform: scale(0.94);
 }
 .tag-chip[data-active="true"] {
   color: var(--accent-fg);
@@ -142,13 +154,16 @@ input:not([type]) {
   color: var(--muted);
   background: transparent;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .lang-toggle-btn + .lang-toggle-btn {
   border-inline-start: 1px solid var(--border);
 }
 .lang-toggle-btn:hover {
   color: var(--accent);
+}
+.lang-toggle-btn:active {
+  transform: scale(0.94);
 }
 .lang-toggle-btn[data-active="true"] {
   color: var(--accent-fg);
@@ -199,6 +214,81 @@ input:not([type]) {
   border-inline-start: 3px solid var(--accent);
   padding-inline-start: 1em;
   color: var(--muted);
+}
+
+/* Admonitions: `> **Note:**` / **Tip:** / **Warning:** / **Important:** /
+   **Danger:** blockquotes (see rehypeAdmonitions in markdown.ts), styled as
+   callouts instead of plain quotes. Colors follow GitHub's alert convention. */
+.prose blockquote.admonition {
+  border-inline-start-width: 3px;
+  border-radius: 0.4em;
+  padding: 0.85em 1em;
+  background: var(--card);
+  color: var(--fg);
+}
+.prose .admonition-title {
+  margin: 0 0 0.4em;
+  font-weight: 700;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.prose .admonition > :last-child {
+  margin-bottom: 0;
+}
+.prose .admonition-note {
+  border-inline-start-color: #0969da;
+}
+.prose .admonition-note .admonition-title {
+  color: #0969da;
+}
+.dark .prose .admonition-note {
+  border-inline-start-color: #58a6ff;
+}
+.dark .prose .admonition-note .admonition-title {
+  color: #58a6ff;
+}
+.prose .admonition-tip {
+  border-inline-start-color: var(--accent);
+}
+.prose .admonition-tip .admonition-title {
+  color: var(--accent);
+}
+.prose .admonition-important {
+  border-inline-start-color: #8250df;
+}
+.prose .admonition-important .admonition-title {
+  color: #8250df;
+}
+.dark .prose .admonition-important {
+  border-inline-start-color: #a371f7;
+}
+.dark .prose .admonition-important .admonition-title {
+  color: #a371f7;
+}
+.prose .admonition-warning {
+  border-inline-start-color: #9a6700;
+}
+.prose .admonition-warning .admonition-title {
+  color: #9a6700;
+}
+.dark .prose .admonition-warning {
+  border-inline-start-color: #d29922;
+}
+.dark .prose .admonition-warning .admonition-title {
+  color: #d29922;
+}
+.prose .admonition-danger {
+  border-inline-start-color: #cf222e;
+}
+.prose .admonition-danger .admonition-title {
+  color: #cf222e;
+}
+.dark .prose .admonition-danger {
+  border-inline-start-color: #f85149;
+}
+.dark .prose .admonition-danger .admonition-title {
+  color: #f85149;
 }
 .prose table {
   width: 100%;
@@ -280,7 +370,7 @@ input:not([type]) {
   font-family: var(--font-jetbrains-mono), monospace;
   padding: 0.2rem 0.55rem;
   opacity: 0;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  transition: opacity 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 .prose pre:hover .copy-code-btn,
 .copy-code-btn:focus-visible {
@@ -289,4 +379,7 @@ input:not([type]) {
 .copy-code-btn:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+.copy-code-btn:active {
+  transform: scale(0.92);
 }

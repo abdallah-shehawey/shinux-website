@@ -101,6 +101,7 @@ export default function QuestionContent({
       setErrorMessage(error.message);
       return;
     }
+    await revalidateQuestionCaches();
     router.push("/questions");
   }
 
@@ -114,7 +115,11 @@ export default function QuestionContent({
         {isAdmin && !editing && (
           <>
             <span>&middot;</span>
-            <button type="button" onClick={() => setEditing(true)} className="hover:text-accent">
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="hover:text-accent active:opacity-60"
+            >
               Edit
             </button>
           </>
@@ -122,7 +127,11 @@ export default function QuestionContent({
         {canDelete && !editing && (
           <>
             <span>&middot;</span>
-            <button type="button" onClick={handleDelete} className="hover:text-red-400">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="hover:text-red-400 active:opacity-60"
+            >
               Delete
             </button>
           </>

@@ -61,7 +61,7 @@ function AdjacentCard({
   return (
     <Link
       href={`/articles/${article.slug}`}
-      className={`card ${align === "end" ? "sm:text-end" : ""}`}
+      className={`card active:scale-[0.98] active:opacity-90 transition-colors hover:border-accent ${align === "end" ? "sm:text-end" : ""}`}
     >
       <p className="text-xs text-muted">
         {align === "end" ? <>{label} &rarr;</> : <>&larr; {label}</>}
@@ -156,7 +156,7 @@ export default async function ArticlePage({
         {related.length > 0 && (
           <div className="mt-10">
             <h2 className="mb-4 text-lg font-semibold">Related articles</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
               {related.map((a) => (
                 <ArticleCard
                   key={a.slug}

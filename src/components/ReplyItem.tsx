@@ -51,7 +51,11 @@ export default function ReplyItem({
         {canDelete && (
           <>
             <span>&middot;</span>
-            <button type="button" onClick={handleDelete} className="hover:text-red-400">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="hover:text-red-400 active:opacity-60"
+            >
               Delete
             </button>
           </>
