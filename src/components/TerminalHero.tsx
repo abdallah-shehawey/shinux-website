@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type TerminalStep = {
   command: string;
   output: string;
+  render?: () => ReactNode;
 };
 
 const TYPE_SPEED_MS = 45;
@@ -25,14 +26,42 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
       output: `${authorName} — Embedded Software Engineer\nLinux enthusiast · Open-source tinkerer · Always building something`,
     },
     {
+      command: "uname -a",
+      output: "ShehaweyOS · Embedded/Linux · x86_64\nKernel: curiosity-driven · Uptime: still learning",
+    },
+    {
+      command: "cat /proc/shehawey/status",
+      output: "Role: Embedded Software Engineer · State: R (running)\nFocus: Embedded Systems · Linux · Networking",
+      render: () => (
+        <span>
+          Role: Embedded Software Engineer · State: <span className="text-accent">R (running)</span>{"\n"}
+          Focus: Embedded Systems · Linux · Networking
+        </span>
+      ),
+    },
+    {
+      command: "systemctl status shehawey",
+      output: "● shehawey.service — Embedded Software Engineer\nActive: active (running) · Building · Learning · Debugging",
+      render: () => (
+        <span>
+          <span className="text-accent">●</span> shehawey.service — Embedded Software Engineer{"\n"}
+          Active: <span className="text-accent">active (running)</span> · Building · Learning · Debugging
+        </span>
+      ),
+    },
+    {
       command: "cat skills.txt",
-      output:
-        "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
+      output: "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
+    },
+    {
+      command: "echo $TOOLCHAIN",
+      output: "GCC · GDB · CMake · Git · VS Code · STM32CubeIDE\nLinux · Docker · Proteus · MATLAB",
     },
   ];
 
   const [command, setCommand] = useState("");
   const [output, setOutput] = useState("");
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +72,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
       let i = 0;
       while (!cancelled) {
         const step = steps[i % steps.length];
+        setCurrentStepIndex(i % steps.length);
 
         for (let c = 1; c <= step.command.length; c++) {
           if (cancelled) return;
@@ -97,21 +127,27 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
             the height — the box never jumps while the animation types. */}
         <div className="mt-2 grid">
           {steps.map((step, idx) => (
-            <p
+            <div
               key={idx}
-              className="col-start-1 row-start-1 whitespace-pre-wrap text-start text-transparent select-none pointer-events-none"
+              className="col-start-1 row-start-1 invisible pointer-events-none select-none text-start whitespace-pre-wrap"
               dir="ltr"
               aria-hidden="true"
             >
-              {step.output}
-            </p>
+              {step.render ? step.render() : step.output}
+            </div>
           ))}
-          <p
-            className="col-start-1 row-start-1 whitespace-pre-wrap text-start text-muted"
+          <div
+            className="col-start-1 row-start-1 text-muted text-start whitespace-pre-wrap"
             dir="ltr"
           >
-            {output}
-          </p>
+            {output ? (
+              steps[currentStepIndex]?.render ? (
+                steps[currentStepIndex].render!()
+              ) : (
+                output
+              )
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
