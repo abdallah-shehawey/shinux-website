@@ -53,44 +53,46 @@ export default function ArticleReader({
 
   // RTL: TOC on the left, content on the right (natural Arabic reading flow).
   // LTR: content on the left, TOC on the right (standard English layout).
-  // On lg+: viewport-filling grid — each column scrolls independently.
+  // The document is the only scroller — the TOC rides along as a sticky rail
+  // (.reader-rail), so the page ends where the article text ends.
   const gridBase = isRtl
     ? "lg:grid-cols-[17rem_1fr]"
     : "lg:grid-cols-[1fr_17rem]";
-  const gridCls = `grid gap-6 lg:h-full lg:gap-4 ${gridBase}`;
+  const gridCls = `grid gap-6 lg:gap-4 ${gridBase}`;
 
   return (
-    <article className="mt-4 flex h-full flex-col lg:mt-0 lg:overflow-hidden">
-      {/* Metadata bar (always left-aligned under the back button) */}
-      <div className="mb-4 shrink-0 flex flex-wrap items-center gap-3 lg:pt-3" dir="ltr">
-        <p className="font-mono text-xs text-muted">
-          {date} · {current.readingMinutes} min read
-        </p>
-        {locales.length > 1 && (
-          <div
-            className="inline-flex overflow-hidden rounded-lg border border-border"
-            role="group"
-            aria-label="Article language"
-          >
-            {locales.map((loc) => (
-              <button
-                key={loc}
-                type="button"
-                onClick={() => setLocale(loc)}
-                className="lang-toggle-btn"
-                data-active={loc === locale}
-                aria-pressed={loc === locale}
-                lang={loc}
+    <article className="mt-4 lg:mt-0">
+      <div className={gridCls}>
+        <div className={`min-w-0 ${isRtl ? "lg:order-2" : ""}`}>
+          {/* Metadata bar. Lives inside the content column (not above the grid)
+              so the TOC rail starts level with it — pinned from scroll 0. */}
+          <div className="mb-4 flex flex-wrap items-center gap-3" dir="ltr">
+            <p className="font-mono text-xs text-muted">
+              {date} · {current.readingMinutes} min read
+            </p>
+            {locales.length > 1 && (
+              <div
+                className="inline-flex overflow-hidden rounded-lg border border-border"
+                role="group"
+                aria-label="Article language"
               >
-                {localeLabel(loc)}
-              </button>
-            ))}
+                {locales.map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => setLocale(loc)}
+                    className="lang-toggle-btn"
+                    data-active={loc === locale}
+                    aria-pressed={loc === locale}
+                    lang={loc}
+                  >
+                    {localeLabel(loc)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div className={`min-h-0 flex-1 ${gridCls}`}>
-        <div className={`min-w-0 lg:min-h-0 lg:overflow-y-auto lg:pb-8 ${isRtl ? "lg:order-2" : ""}`}>
           <header className="mb-8" dir={isRtl ? "rtl" : "ltr"} lang={locale} style={langStyle}>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl" dir="auto">
               {current.title}
@@ -127,7 +129,7 @@ export default function ArticleReader({
           {children}
         </div>
 
-        <aside className={`hidden lg:flex lg:min-h-0 lg:flex-col ${isRtl ? "lg:order-1" : ""}`}>
+        <aside className={`hidden lg:flex lg:flex-col ${isRtl ? "lg:order-1" : ""}`}>
           <TableOfContents
             items={current.toc}
             title="On this page"

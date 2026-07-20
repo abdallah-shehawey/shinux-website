@@ -1,5 +1,5 @@
-// Skeleton that mirrors the real TutorialReader viewport-filling layout:
-// sticky back-bar + 3-column grid [Lessons | Content | TOC] — no layout shift.
+// Skeleton that mirrors the real TutorialReader layout: sticky back-bar +
+// 3-column grid [Lessons | Content | TOC] with sticky rails — no layout shift.
 export default function Loading() {
   return (
     <>
@@ -10,11 +10,11 @@ export default function Loading() {
         </div>
       </div>
 
-      <div className="mx-auto w-full animate-pulse px-4 pt-4 pb-12 sm:px-8 lg:h-[calc(100vh-6.25rem)] lg:overflow-hidden lg:px-12 lg:pb-0 lg:pt-0">
-        <div className="mt-6 grid gap-6 lg:mt-0 lg:h-full lg:gap-4 lg:grid-cols-[16rem_1fr_17rem] lg:py-3">
+      <div className="mx-auto w-full animate-pulse px-4 pt-4 pb-12 sm:px-8 lg:px-12">
+        <div className="mt-6 grid gap-6 lg:mt-0 lg:gap-4 lg:grid-cols-[16rem_1fr_17rem]">
           {/* ── Left sidebar: Lessons ── */}
-          <aside className="hidden lg:flex lg:min-h-0 lg:flex-col">
-            <div className="card flex h-full flex-col overflow-hidden">
+          <aside className="hidden lg:flex lg:flex-col">
+            <div className="card reader-rail flex flex-col overflow-hidden">
               <div className="mb-4 h-3 w-16 shrink-0 rounded bg-border" />
               <div className="min-h-0 flex-1 space-y-2 overflow-hidden">
                 <div className="h-7 w-full rounded-md bg-border/60" />
@@ -30,7 +30,7 @@ export default function Loading() {
           </aside>
 
           {/* ── Content column ── */}
-          <div className="min-w-0 lg:min-h-0 lg:overflow-y-auto lg:pb-8">
+          <div className="min-w-0">
             {/* Reading time */}
             <div className="mb-3 h-3 w-20 rounded bg-card" />
             {/* Title */}
@@ -64,8 +64,8 @@ export default function Loading() {
           </div>
 
           {/* ── Right sidebar: On this page ── */}
-          <aside className="hidden lg:flex lg:min-h-0 lg:flex-col">
-            <div className="card flex h-full flex-col overflow-hidden">
+          <aside className="hidden lg:flex lg:flex-col">
+            <div className="card reader-rail flex flex-col overflow-hidden">
               <div className="mb-4 h-3 w-24 shrink-0 rounded bg-border" />
               <div className="min-h-0 flex-1 space-y-2.5 overflow-hidden">
                 <div className="h-3.5 w-full rounded bg-border" />

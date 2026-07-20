@@ -148,7 +148,7 @@ export default async function QuestionDetailPage({
         </div>
       </div>
 
-      <div className="mx-auto w-full px-4 pt-4 pb-12 sm:px-8 lg:h-[calc(100vh-6.25rem)] lg:overflow-y-auto lg:px-12 lg:pt-4">
+      <div className="mx-auto w-full px-4 pt-4 pb-12 sm:px-8 lg:px-12">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

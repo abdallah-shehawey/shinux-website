@@ -1,5 +1,5 @@
 // Skeleton that mirrors the real question detail layout:
-// sticky back-bar + scrollable content area — no layout shift.
+// sticky back-bar + content in normal document flow — no layout shift.
 export default function Loading() {
   return (
     <>
@@ -10,7 +10,7 @@ export default function Loading() {
         </div>
       </div>
 
-      <div className="mx-auto w-full animate-pulse px-4 pt-4 pb-12 sm:px-8 lg:h-[calc(100vh-6.25rem)] lg:overflow-y-auto lg:px-12 lg:pt-4">
+      <div className="mx-auto w-full animate-pulse px-4 pt-4 pb-12 sm:px-8 lg:px-12">
         <div className="mt-4 h-4 w-44 rounded bg-card" />
         <div className="mt-3 h-9 w-3/4 rounded bg-card" />
         <div className="mt-6 flex flex-col gap-3">

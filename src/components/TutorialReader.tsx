@@ -40,22 +40,23 @@ export default function TutorialReader({
 
   // LTR: Lessons sidebar (left) | Content (middle) | TOC sidebar (right)
   // RTL: TOC sidebar (left) | Content (middle) | Lessons sidebar (right)
-  // On lg+: viewport-filling grid — each column scrolls independently.
-  // On mobile: normal document flow with single-column scroll.
+  // The document is the only scroller at every breakpoint, so the page ends
+  // where the lesson text ends. Both sidebars ride along as sticky rails
+  // (.reader-rail) rather than as separate viewport-height scroll panes.
   const gridBase = isRtl
     ? "lg:grid-cols-[17rem_1fr_16rem]"
     : "lg:grid-cols-[16rem_1fr_17rem]";
-  const gridCls = `mt-6 grid gap-6 lg:mt-0 lg:h-full lg:gap-4 lg:py-3 ${gridBase}`;
+  const gridCls = `mt-6 grid gap-6 lg:mt-0 lg:gap-4 ${gridBase}`;
 
   return (
     <article className={gridCls}>
       {/* 1. Lessons Sidebar (left column in LTR, right column in RTL) */}
-      <aside className={`hidden lg:flex lg:min-h-0 lg:flex-col ${isRtl ? "lg:order-3" : ""}`}>
+      <aside className={`hidden lg:flex lg:flex-col ${isRtl ? "lg:order-3" : ""}`}>
         <TutorialSidebar track={track} lessons={lessons} currentSlug={currentSlug} />
       </aside>
 
       {/* 2. Main Content */}
-      <div className={`min-w-0 lg:min-h-0 lg:overflow-y-auto lg:pb-8 ${isRtl ? "lg:order-2" : ""}`}>
+      <div className={`min-w-0 ${isRtl ? "lg:order-2" : ""}`}>
         <div className="mb-6 lg:hidden">
           <TutorialSidebar
             track={track}
@@ -94,7 +95,7 @@ export default function TutorialReader({
       </div>
 
       {/* 3. TOC sidebar (right column in LTR, left column in RTL) */}
-      <aside className={`hidden lg:flex lg:min-h-0 lg:flex-col ${isRtl ? "lg:order-1" : ""}`}>
+      <aside className={`hidden lg:flex lg:flex-col ${isRtl ? "lg:order-1" : ""}`}>
         <TableOfContents
           items={toc}
           title="On this page"

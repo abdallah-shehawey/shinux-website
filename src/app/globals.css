@@ -124,6 +124,30 @@ input:not([type]) {
   padding: 1.5rem;
 }
 
+/* ---- Reader layout ----
+   Height of the sticky chrome stacked above a reader page — the site header
+   (3.5rem + its 1px bottom border) plus the back-link bar (2.75rem). Anything
+   that sits or scrolls below that chrome measures itself from here. */
+:root {
+  --reader-top: calc(6.25rem + 1px);
+  /* Where a rail is pinned = the chrome + the reader wrapper's own pt-4. That
+     is exactly where the card already sits at scroll 0, so it latches without
+     drifting up on the first scroll — the rails never visibly move. */
+  --reader-rail-top: calc(var(--reader-top) + 1rem);
+}
+
+/* Sidebar rail (Lessons / On this page) on reader pages. The document itself
+   is the only scroller — the rail sticks below the chrome and caps at the
+   viewport, so a long list scrolls INSIDE the card instead of turning the
+   column into a second full-page scroller. */
+@media (min-width: 1024px) {
+  .reader-rail {
+    position: sticky;
+    top: var(--reader-rail-top);
+    max-height: calc(100vh - var(--reader-rail-top) - 1.5rem);
+  }
+}
+
 .tag-chip {
   display: inline-flex;
   align-items: center;
@@ -186,13 +210,13 @@ input:not([type]) {
   font-size: 1.4rem;
   font-weight: 700;
   margin-top: 2em;
-  scroll-margin-top: 7rem;
+  scroll-margin-top: calc(var(--reader-top) + 0.75rem);
 }
 .prose h3 {
   font-size: 1.15rem;
   font-weight: 700;
   margin-top: 1.75em;
-  scroll-margin-top: 7rem;
+  scroll-margin-top: calc(var(--reader-top) + 0.75rem);
 }
 .prose a {
   color: var(--accent);

@@ -90,7 +90,7 @@ export default async function LessonPage({
         </div>
       </div>
 
-      <div className="mx-auto w-full px-4 pt-4 pb-12 sm:px-8 lg:h-[calc(100vh-6.25rem)] lg:overflow-hidden lg:px-12 lg:pb-0 lg:pt-0">
+      <div className="mx-auto w-full px-4 pt-4 pb-12 sm:px-8 lg:px-12">
         <TutorialReader
           title={found.title}
           tags={found.tags}

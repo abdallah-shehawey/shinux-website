@@ -20,7 +20,10 @@ export function useActiveHeading(items: { id: string }[]) {
         const vis = entries.filter((e) => e.isIntersecting);
         if (vis.length) setActiveId(vis[0].target.id);
       },
-      { rootMargin: "0px 0px -60% 0px", threshold: 0.1 },
+      // Top inset skips the sticky chrome (see --reader-top) so a heading
+      // scrolled up behind the header stops counting as the active one.
+      // rootMargin takes px/% only, hence the literal rather than the var.
+      { rootMargin: "-100px 0px -60% 0px", threshold: 0.1 },
     );
     els.forEach((el) => obs.observe(el));
     return () => obs.disconnect();
