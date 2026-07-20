@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { TrackMeta } from "@/lib/tutorials";
 import type { Author } from "@/lib/site";
 import AuthorInline from "./AuthorInline";
+import { FaGithub } from "react-icons/fa";
 
 // Extracted from /tutorials so the admin reorder view can render the exact same
 // card it drags (see TutorialReorderGrid), the way ArticleCard/QuestionCard do.
@@ -34,15 +35,29 @@ export default function TrackCard({
         {track.lessonCount} {track.lessonCount === 1 ? "lesson" : "lessons"}
       </p>
       {track.authors.length > 0 && (
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2 text-xs text-muted">
-          {track.authors.map((username) => (
-            <AuthorInline
-              key={username}
-              name={authors[username]?.name ?? username}
-              username={username}
-              avatar={authors[username]?.avatar}
-            />
-          ))}
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-border pt-2 text-xs text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {track.authors.map((username) => (
+              <AuthorInline
+                key={username}
+                name={authors[username]?.name ?? username}
+                username={username}
+                avatar={authors[username]?.avatar}
+              />
+            ))}
+          </div>
+          {track.githubUrl && (
+            <a
+              href={track.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative z-10 flex items-center gap-1.5 p-1 hover:text-accent transition-colors duration-200"
+              title="View on GitHub"
+            >
+              <FaGithub className="h-4 w-4" />
+              <span>View on GitHub</span>
+            </a>
+          )}
         </div>
       )}
     </div>

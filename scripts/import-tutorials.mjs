@@ -32,6 +32,7 @@ const TRACKS = [
     tag: "Linux",
     order: 1,
     src: "/media/Local-Disk2/DevOps/Documents/01_Linux",
+    githubUrl: "https://github.com/abdallah-shehawey/DevOps/tree/main/Documents/01_Linux",
   },
   {
     slug: "git-github",
@@ -41,6 +42,7 @@ const TRACKS = [
     tag: "Git",
     order: 2,
     src: "/media/Local-Disk2/DevOps/Documents/02_Git&GitHub",
+    githubUrl: "https://github.com/abdallah-shehawey/DevOps/tree/main/Documents/02_Git%26GitHub",
   },
   {
     slug: "ansible",
@@ -50,6 +52,7 @@ const TRACKS = [
     tag: "DevOps",
     order: 3,
     src: "/media/Local-Disk2/DevOps/Documents/03_Ansible",
+    githubUrl: "https://github.com/abdallah-shehawey/DevOps/tree/main/Documents/03_Ansible",
   },
   {
     slug: "docker",
@@ -59,6 +62,7 @@ const TRACKS = [
     tag: "DevOps",
     order: 4,
     src: "/media/Local-Disk2/DevOps/Documents/04_Docker",
+    githubUrl: "https://github.com/abdallah-shehawey/DevOps/tree/main/Documents/04_Docker",
   },
   {
     slug: "raspberry-pi-interfacing",
@@ -69,6 +73,7 @@ const TRACKS = [
     order: 5,
     src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Raspberry pi interfacing",
     optional: true,
+    githubUrl: "https://github.com/abdallah-shehawey/Embedded-Linux-Notes/tree/main/Raspberry%20pi%20interfacing",
   },
   {
     slug: "qemu",
@@ -79,6 +84,7 @@ const TRACKS = [
     order: 6,
     src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Qemu",
     optional: true,
+    githubUrl: "https://github.com/abdallah-shehawey/Embedded-Linux-Notes/tree/main/Qemu",
   },
   {
     slug: "yocto",
@@ -88,6 +94,7 @@ const TRACKS = [
     order: 7,
     src: "/media/Local-Disk2/Embedded_Linux/Embedded-Linux-Notes/Yocto",
     optional: true,
+    githubUrl: "https://github.com/abdallah-shehawey/Embedded-Linux-Notes/tree/main/Yocto",
   },
   {
     slug: "linux-desktop-setup",
@@ -98,16 +105,18 @@ const TRACKS = [
     order: 8,
     src: "/media/Local-Disk2/Embedded_Linux/dotfiles-linux/Website_Notes",
     optional: true,
+    githubUrl: "https://github.com/abdallah-shehawey/dotfiles-linux/tree/main/docs",
   },
   {
     slug: "system-programming",
-    title: "System Programming in C",
+    title: "System Programming in Linux",
     description:
       "From-scratch C systems training: filesystems and permissions, the build process, fork() and a hand-built shell, Unix utility clones, memory allocation, static/dynamic linking, OOP patterns in C, FreeRTOS concepts, and building a minimal Linux distro.",
     tag: "Systems",
     order: 9,
     src: "/media/Local-Disk2/System_Programming_under_Linux/Website_Notes",
     optional: true,
+    githubUrl: "https://github.com/abdallah-shehawey/System-programming-in-Linux",
   },
 ];
 
@@ -254,6 +263,7 @@ function importTrack(track) {
     description: track.description,
     tag: track.tag,
     order: track.order,
+    githubUrl: track.githubUrl,
   });
   fs.writeFileSync(path.join(outDir, "_index.md"), indexOut, "utf8");
 

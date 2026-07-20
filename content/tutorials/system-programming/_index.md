@@ -1,5 +1,5 @@
 ---
-title: System Programming in C
+title: System Programming in Linux
 description: >-
   From-scratch C systems training: filesystems and permissions, the build
   process, fork() and a hand-built shell, Unix utility clones, memory
@@ -7,5 +7,6 @@ description: >-
   building a minimal Linux distro.
 tag: Systems
 order: 9
+githubUrl: 'https://github.com/abdallah-shehawey/System-programming-in-Linux'
 ---
 

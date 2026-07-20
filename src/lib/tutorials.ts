@@ -28,6 +28,7 @@ export interface TrackMeta {
   order: number;
   /** Short label shown on the track card (e.g. "docker"). */
   tag?: string;
+  githubUrl?: string;
   lessonCount: number;
   /** Distinct `author` usernames across the track's lessons, derived live from lesson frontmatter. */
   authors: string[];
@@ -126,6 +127,7 @@ export function getTracks(): TrackMeta[] {
         description: typeof data.description === "string" ? data.description : "",
         order: toNumber(data.order, 9999),
         tag: typeof data.tag === "string" ? data.tag : undefined,
+        githubUrl: typeof data.githubUrl === "string" ? data.githubUrl : undefined,
         lessonCount: lessons.length,
         authors: distinctAuthors(lessons),
       };
@@ -151,6 +153,7 @@ export function getTrack(
       description: typeof found.data.description === "string" ? found.data.description : "",
       order: toNumber(found.data.order, 9999),
       tag: typeof found.data.tag === "string" ? found.data.tag : undefined,
+      githubUrl: typeof found.data.githubUrl === "string" ? found.data.githubUrl : undefined,
       lessonCount: lessons.length,
       authors: distinctAuthors(lessons),
     },
@@ -266,7 +269,7 @@ export const referenceRepos: ReferenceRepo[] = [
   {
     title: "System Programming in Linux",
     description:
-      "From-scratch C systems training: processes & signals, a custom shell, memory allocators, static/dynamic linking, OOP in C, a small RTOS and QEMU — worked into lessons in the System Programming in C track. This is the full repo: every exercise's source, plus the lecture-slide PDFs the lessons don't cover directly.",
+      "From-scratch C systems training: processes & signals, a custom shell, memory allocators, static/dynamic linking, OOP in C, a small RTOS and QEMU — worked into lessons in the System Programming in Linux track. This is the full repo: every exercise's source, plus the lecture-slide PDFs the lessons don't cover directly.",
     href: "https://github.com/abdallah-shehawey/System-programming-in-Linux",
     tag: "Systems",
   },

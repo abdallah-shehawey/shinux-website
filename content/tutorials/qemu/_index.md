@@ -5,5 +5,6 @@ description: >-
   both ARM and x86.
 tag: Embedded Linux
 order: 6
+githubUrl: 'https://github.com/abdallah-shehawey/Embedded-Linux-Notes/tree/main/Qemu'
 ---
 

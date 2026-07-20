@@ -5,5 +5,6 @@ description: >-
   distributions.
 tag: Embedded Linux
 order: 7
+githubUrl: 'https://github.com/abdallah-shehawey/Embedded-Linux-Notes/tree/main/Yocto'
 ---
 
