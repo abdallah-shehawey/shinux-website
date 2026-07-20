@@ -30,5 +30,5 @@ export function applyQuestionOrder<T extends { id: string }>(
   const ordered = questions.filter((q) => order[q.id] !== undefined);
   const rest = questions.filter((q) => order[q.id] === undefined);
   ordered.sort((a, b) => order[a.id] - order[b.id]);
-  return [...ordered, ...rest];
+  return [...rest, ...ordered];
 }

@@ -6,9 +6,12 @@ import { getAuthorProfile, getAuthorProfiles } from "@/lib/authors";
 import { getArticleOrder } from "@/lib/article-order";
 import { applyCustomOrder } from "@/lib/custom-order";
 import { getQuestionOrder, applyQuestionOrder } from "@/lib/question-order";
+import { getTracks } from "@/lib/tutorials";
+import { getTutorialTrackOrder } from "@/lib/tutorial-order";
 import { site, siteAuthor } from "@/lib/site";
 import ArticleCard from "@/components/ArticleCard";
 import QuestionCard from "@/components/QuestionCard";
+import TrackCard from "@/components/TrackCard";
 import TerminalHero from "@/components/TerminalHero";
 
 function readingLabel(minutes: number) {
@@ -27,15 +30,20 @@ export default async function HomePage() {
   // The admin's pin order (see the "Reorder" button on /articles and
   // /questions) drives both of these sections too, so "Latest" doubles as a
   // lightweight "Featured" pick once they've used it.
-  const [articleOrder, allQuestions, questionOrder, author] = await Promise.all(
+  const [articleOrder, allQuestions, questionOrder, tutorialOrder, author] = await Promise.all(
     [
       getArticleOrder(),
       getCachedPublicQuestions(),
       getQuestionOrder(),
+      getTutorialTrackOrder(),
       getAuthorProfile(siteAuthor.username).catch(() => null),
     ],
   );
   const latestArticles = applyCustomOrder(getArticles(), articleOrder).slice(
+    0,
+    3,
+  );
+  const latestTutorials = applyCustomOrder(getTracks(), tutorialOrder).slice(
     0,
     3,
   );
@@ -44,7 +52,10 @@ export default async function HomePage() {
     questionOrder,
   ).slice(0, 3);
   const authors = await getAuthorProfiles(
-    latestArticles.map((a) => a.author).filter((a): a is string => Boolean(a)),
+    [
+      ...latestArticles.map((a) => a.author),
+      ...latestTutorials.flatMap((t) => t.authors),
+    ].filter((a): a is string => Boolean(a)),
   );
   const authorName = author?.name ?? siteAuthor.name;
 
@@ -157,6 +168,31 @@ export default async function HomePage() {
                   article={article}
                   readingLabel={readingLabel(article.readingMinutes)}
                   author={article.author ? authors[article.author] : null}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section>
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="text-lg font-semibold">Latest tutorials</h2>
+            <Link
+              href="/tutorials"
+              className="text-sm text-accent hover:underline"
+            >
+              Explore tutorials &rarr;
+            </Link>
+          </div>
+          {latestTutorials.length === 0 ? (
+            <p className="text-sm text-muted">Coming soon&hellip;</p>
+          ) : (
+            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {latestTutorials.map((track) => (
+                <TrackCard
+                  key={track.slug}
+                  track={track}
+                  authors={authors}
                 />
               ))}
             </div>

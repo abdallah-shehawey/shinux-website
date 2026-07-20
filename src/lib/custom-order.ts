@@ -16,5 +16,5 @@ export function applyCustomOrder<T extends { slug: string }>(
   const ordered = items.filter((a) => order[a.slug] !== undefined);
   const rest = items.filter((a) => order[a.slug] === undefined);
   ordered.sort((a, b) => order[a.slug] - order[b.slug]);
-  return [...ordered, ...rest];
+  return [...rest, ...ordered];
 }
