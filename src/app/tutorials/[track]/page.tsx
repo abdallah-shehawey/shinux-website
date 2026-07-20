@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getTracks, getTrack } from "@/lib/tutorials";
 import { getAuthorProfiles } from "@/lib/authors";
 import AuthorInline from "@/components/AuthorInline";
+import { FaGithub } from "react-icons/fa";
 
 export function generateStaticParams() {
   return getTracks().map((t) => ({ track: t.slug }));
@@ -53,6 +54,21 @@ export default async function TrackPage({
                 avatar={authors[username]?.avatar}
               />
             ))}
+            {meta.githubUrl && (
+              <>
+                <span className="text-muted select-none">&bull;</span>
+                <a
+                  href={meta.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-accent transition-colors duration-200"
+                  title="View on GitHub"
+                >
+                  <FaGithub className="h-4 w-4" />
+                  <span>View on GitHub</span>
+                </a>
+              </>
+            )}
           </div>
         )}
       </header>
