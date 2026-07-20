@@ -400,7 +400,7 @@ input:not([type]) {
   background: #ff5f56;
   box-shadow: 1.05rem 0 #ffbd2e, 2.1rem 0 #27c93f; /* three macOS-style dots from one element */
   flex: none;
-  margin-inline-end: 1.4rem;
+  margin-inline-end: 2.1rem;
 }
 .code-lang {
   font-family: var(--font-jetbrains-mono), monospace;
