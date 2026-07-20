@@ -1,7 +1,7 @@
 // Skeleton matching the Ask page: title + subtitle + form fields.
 export default function Loading() {
   return (
-    <div className="mx-auto w-full animate-pulse px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       {/* Title */}
       <div className="mb-2 h-9 w-52 rounded bg-card" />
       <div className="mb-8 h-4 w-96 max-w-full rounded bg-card" />

@@ -1,7 +1,7 @@
 // Skeleton matching the user track lessons listing: back link + title + lesson list.
 export default function Loading() {
   return (
-    <div className="mx-auto w-full animate-pulse px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <div className="h-4 w-40 rounded bg-card" />
 
       <div className="mb-8 mt-4">

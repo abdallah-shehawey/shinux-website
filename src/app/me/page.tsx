@@ -43,7 +43,7 @@ export default async function MePage() {
   ]);
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <h1 className="mb-8 text-3xl font-bold tracking-tight">My account</h1>
 
       <ProfileEditor

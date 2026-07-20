@@ -32,7 +32,7 @@ export default async function TutorialsPage({
   const results = q ? searchLessons(q) : [];
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Tutorials</h1>
         <p className="mt-2 text-muted">

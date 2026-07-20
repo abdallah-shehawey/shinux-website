@@ -16,7 +16,7 @@ export default async function LoginPage({
   if (user) redirect(next ?? "/");
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-20 sm:px-8">
+    <div className="mx-auto max-w-sm px-4 pt-6 pb-12 sm:px-8">
       <h1 className="mb-2 text-center text-2xl font-bold tracking-tight">
         Log in
       </h1>

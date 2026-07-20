@@ -14,7 +14,7 @@ export default async function AboutPage() {
   const author = (await getAuthorProfile(siteAuthor.username).catch(() => null)) ?? siteAuthor;
 
   return (
-    <div className="mx-auto w-full px-4 py-16 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <h1 className="mb-6 text-3xl font-bold tracking-tight">About</h1>
 
       <div className="mb-8">

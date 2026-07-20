@@ -4,9 +4,9 @@
 // - Latest answered questions section (3 cards)
 export default function Loading() {
   return (
-    <div className="mx-auto w-full animate-pulse px-4 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       {/* Hero section */}
-      <section className="py-20 text-center sm:text-start">
+      <section className="pb-12 text-center sm:text-start">
         {/* Terminal whoami / currently learning */}
         <div className="mx-auto mb-8 max-w-xl font-mono text-sm sm:mx-0">
           <div className="flex items-center gap-1.5">

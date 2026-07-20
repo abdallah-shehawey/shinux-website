@@ -33,7 +33,7 @@ export default async function WelcomePage({
   const initial = displayName.trim().charAt(0).toUpperCase();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-8">
+    <div className="mx-auto max-w-2xl px-4 pt-6 pb-12 sm:px-8">
       <h1 className="mb-2 text-3xl font-bold tracking-tight">Welcome!</h1>
       <p className="mb-8 text-sm text-muted">
         We pulled this from your account. Check it over and change anything you

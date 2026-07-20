@@ -1,7 +1,7 @@
 // Skeleton matching the About page: title + author card + paragraphs + social links.
 export default function Loading() {
   return (
-    <div className="mx-auto w-full animate-pulse px-4 py-16 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       {/* Title */}
       <div className="mb-6 h-9 w-24 rounded bg-card" />
 

@@ -33,7 +33,7 @@ export default async function TrackPage({
   const authors = await getAuthorProfiles(meta.authors);
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <Link href="/tutorials" className="text-sm text-muted hover:text-accent">
         &larr; All tutorials
       </Link>

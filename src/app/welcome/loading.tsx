@@ -1,7 +1,7 @@
 // Skeleton matching the Welcome/onboarding page.
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-2xl animate-pulse px-4 py-16 sm:px-8">
+    <div className="mx-auto max-w-2xl animate-pulse px-4 pt-6 pb-12 sm:px-8">
       <div className="mb-2 h-9 w-36 rounded bg-card" />
       <div className="mb-8 h-4 w-80 max-w-full rounded bg-card" />
 

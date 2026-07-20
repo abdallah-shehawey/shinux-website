@@ -49,7 +49,7 @@ export default async function HomePage() {
   const authorName = author?.name ?? siteAuthor.name;
 
   return (
-    <div className="mx-auto w-full px-4 pt-8 pb-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <div className="space-y-12">
         <section>
           {/* Terminal box — sized to content, not full width */}

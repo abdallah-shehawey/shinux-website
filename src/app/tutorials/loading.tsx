@@ -1,7 +1,7 @@
 // Skeleton matching the tutorials hub: title + search bar + 3-col grid of track cards.
 export default function Loading() {
   return (
-    <div className="mx-auto w-full animate-pulse px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       {/* Title */}
       <div className="mb-2 h-9 w-40 rounded bg-card" />
       <div className="h-4 w-96 max-w-full rounded bg-card" />

@@ -32,7 +32,7 @@ export default async function ProfileTutorialsTrackPage({
   if (lessons.length === 0) notFound();
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
       <Link href={`/u/${profile.username}/tutorials`} className="text-sm text-muted hover:text-accent">
         &larr; Back to tutorials by {profile.displayName}
       </Link>
