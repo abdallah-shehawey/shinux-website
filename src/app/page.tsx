@@ -19,7 +19,7 @@ function readingLabel(minutes: number) {
 // so the home page says who's behind the writing at a glance.
 const authorHighlights = [
   { value: "20+", label: "Embedded projects" },
-  { value: "200+", label: "Students trained" },
+  { value: "650+", label: "Training Hours" },
   { value: "5★", label: "HackerRank C" },
 ];
 
@@ -61,7 +61,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 items-stretch gap-10 lg:grid-cols-[1fr_1.1fr]">
             {/* Left column: hero text + buttons, centered vertically, natural flow */}
             <div className="flex h-full flex-col justify-center space-y-6 text-center sm:text-start">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-5xl">
                 Notes from below the OS
               </h1>
               <p className="mx-auto max-w-2xl text-lg text-muted sm:mx-0">
@@ -94,7 +94,7 @@ export default async function HomePage() {
             {/* Right column: Who's behind the writing — condensed from my portfolio */}
             <div className="card flex flex-col justify-center">
               <p className="mb-1 font-mono text-xs uppercase tracking-wide text-accent">
-                // whoami
+                {"// whoami"}
               </p>
               <h2 className="mb-3 text-xl font-semibold tracking-tight">
                 {authorName}
