@@ -53,14 +53,16 @@ export default function ArticleReader({
 
   // RTL: TOC on the left, content on the right (natural Arabic reading flow).
   // LTR: content on the left, TOC on the right (standard English layout).
-  const gridCls = isRtl
-    ? "grid gap-10 lg:grid-cols-[17rem_1fr]"
-    : "grid gap-10 lg:grid-cols-[1fr_17rem]";
+  // On lg+: viewport-filling grid — each column scrolls independently.
+  const gridBase = isRtl
+    ? "lg:grid-cols-[17rem_1fr]"
+    : "lg:grid-cols-[1fr_17rem]";
+  const gridCls = `grid gap-6 lg:h-full lg:gap-4 ${gridBase}`;
 
   return (
-    <article className="mt-6">
+    <article className="mt-4 flex h-full flex-col lg:mt-0 lg:overflow-hidden">
       {/* Metadata bar (always left-aligned under the back button) */}
-      <div className="mb-4 flex flex-wrap items-center gap-3" dir="ltr">
+      <div className="mb-4 shrink-0 flex flex-wrap items-center gap-3 lg:pt-3" dir="ltr">
         <p className="font-mono text-xs text-muted">
           {date} · {current.readingMinutes} min read
         </p>
@@ -87,8 +89,8 @@ export default function ArticleReader({
         )}
       </div>
 
-      <div className={gridCls}>
-        <div className={isRtl ? "min-w-0 lg:order-2" : "min-w-0"}>
+      <div className={`min-h-0 flex-1 ${gridCls}`}>
+        <div className={`min-w-0 lg:min-h-0 lg:overflow-y-auto lg:pb-8 ${isRtl ? "lg:order-2" : ""}`}>
           <header className="mb-8" dir={isRtl ? "rtl" : "ltr"} lang={locale} style={langStyle}>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl" dir="auto">
               {current.title}
@@ -125,15 +127,13 @@ export default function ArticleReader({
           {children}
         </div>
 
-        <aside className={`hidden lg:block ${isRtl ? "lg:order-1" : ""}`}>
-          <div className="sticky top-[100px] max-h-[calc(100vh-7.75rem)] overflow-y-auto">
-            <TableOfContents
-              items={current.toc}
-              title="On this page"
-              dir={isRtl ? "rtl" : "ltr"}
-              lang={locale}
-            />
-          </div>
+        <aside className={`hidden lg:flex lg:min-h-0 lg:flex-col ${isRtl ? "lg:order-1" : ""}`}>
+          <TableOfContents
+            items={current.toc}
+            title="On this page"
+            dir={isRtl ? "rtl" : "ltr"}
+            lang={locale}
+          />
         </aside>
       </div>
 

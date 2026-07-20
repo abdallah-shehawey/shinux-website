@@ -72,9 +72,11 @@ export default function TutorialSidebar({
   }
 
   return (
-    <nav ref={navRef} aria-label="Lessons in this track" className="card">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Lessons</p>
-      {list}
+    <nav ref={navRef} aria-label="Lessons in this track" className="card flex h-full flex-col overflow-hidden">
+      <p className="mb-3 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">Lessons</p>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {list}
+      </div>
     </nav>
   );
 }

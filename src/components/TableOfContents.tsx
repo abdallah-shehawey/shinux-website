@@ -37,30 +37,32 @@ export default function TableOfContents({
   if (items.length === 0) return null;
 
   return (
-    <nav ref={navRef} aria-label={title} className="card">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+    <nav ref={navRef} aria-label={title} className="card flex h-full flex-col overflow-hidden">
+      <p className="mb-3 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">
         {title}
       </p>
-      <ul className="space-y-1 text-sm" dir={dir} lang={lang}>
-        {items.map((item) => {
-          const active = item.id === activeId;
-          return (
-            <li key={item.id} style={item.depth === 3 ? { paddingInlineStart: "1rem" } : undefined}>
-              <a
-                href={`#${item.id}`}
-                aria-current={active ? "location" : undefined}
-                className={`block rounded-md px-2 py-1 transition-colors hover:bg-card ${
-                  active
-                    ? "border-s-2 border-accent bg-card font-medium text-accent"
-                    : "text-muted"
-                }`}
-              >
-                {item.text}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <ul className="space-y-1 text-sm" dir={dir} lang={lang}>
+          {items.map((item) => {
+            const active = item.id === activeId;
+            return (
+              <li key={item.id} style={item.depth === 3 ? { paddingInlineStart: "1rem" } : undefined}>
+                <a
+                  href={`#${item.id}`}
+                  aria-current={active ? "location" : undefined}
+                  className={`block rounded-md px-2 py-1 transition-colors hover:bg-card ${
+                    active
+                      ? "border-s-2 border-accent bg-card font-medium text-accent"
+                      : "text-muted"
+                  }`}
+                >
+                  {item.text}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }
