@@ -79,7 +79,7 @@ export default async function LessonPage({
 
   return (
     <>
-      <div className="sticky top-14 z-10 border-b border-border bg-bg/80 backdrop-blur">
+      <div className="sticky top-14 z-10 bg-bg">
         <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
           <Link
             href={`/tutorials/${track}`}

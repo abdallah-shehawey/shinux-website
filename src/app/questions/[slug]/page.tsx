@@ -140,7 +140,7 @@ export default async function QuestionDetailPage({
 
   return (
     <>
-      <div className="sticky top-14 z-10 border-b border-border bg-bg/80 backdrop-blur">
+      <div className="sticky top-14 z-10 bg-bg">
         <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
           <Link href="/questions" className="text-sm text-muted hover:text-accent transition-colors">
             &larr; Back to questions

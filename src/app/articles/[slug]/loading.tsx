@@ -4,7 +4,7 @@ export default function Loading() {
   return (
     <>
       {/* Sticky subheader skeleton */}
-      <div className="sticky top-14 z-10 border-b border-border bg-bg/80 backdrop-blur">
+      <div className="sticky top-14 z-10 bg-bg">
         <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
           <div className="h-4 w-28 animate-pulse rounded bg-card" />
         </div>
