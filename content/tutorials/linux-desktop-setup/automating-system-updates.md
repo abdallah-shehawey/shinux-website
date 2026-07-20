@@ -87,67 +87,69 @@ The key trick is `apt-mark hold`/`unhold`: instead of trying to exclude NVIDIA p
 
 ## The Fedora Script
 
+The Fedora version in this repository includes a robust **retry mechanism** for network-dependent commands (like repository updates, firmware downloads, and Flatpaks) so that network instability or temporary server issues do not abort the entire update sequence.
+
 ```bash
-#!/bin/bash
-# Script: update-everything-fedora
-# Function: Update everything in Fedora
-# Default: skip NVIDIA drivers
-# Option: --with-nvidia (update NVIDIA as well)
+#!/usr/bin/env bash
+# Script: update-everything-fedora-retry
+# Function: Update everything in Fedora with retry mechanism
 
-echo "Starting full Fedora update..."
+set -e
 
-WITH_NVIDIA=false
-EXCLUDE_NVIDIA=""
+# A retry helper that loops indefinitely until the command exits successfully
+retry_command() {
+    local cmd="$1"
+    local name="$2"
 
-if [[ "$1" == "--with-nvidia" ]]; then
-  WITH_NVIDIA=true
-  echo "NVIDIA drivers WILL be updated."
-else
-  echo "NVIDIA drivers will be skipped."
-  EXCLUDE_NVIDIA="--exclude=\*nvidia\* --exclude=\*cuda\*"
-fi
+    while true; do
+        echo "🔄 Trying: $name..."
 
-echo "Optimizing DNF..."
-sudo dnf -y install dnf-plugins-core >/dev/null 2>&1
-sudo dnf makecache --refresh
+        if eval "$cmd"; then
+            echo "✅ $name finished successfully"
+            break
+        else
+            echo "❌ $name failed, retrying in 2 seconds..."
+            sleep 2
+        fi
+    done
+}
 
-echo "Updating Fedora packages..."
-sudo dnf upgrade -y --refresh $EXCLUDE_NVIDIA
+echo "🚀 Starting full Fedora update..."
 
-echo "Updating firmware (fwupd)..."
-sudo fwupdmgr refresh --force
-sudo fwupdmgr update -y || true
+# DNF Package & Repository Update
+retry_command "sudo dnf upgrade -y --refresh" "DNF System Update"
 
+# Firmware Updates
+retry_command "sudo fwupdmgr refresh --force" "fwupd refresh"
+retry_command "sudo fwupdmgr update -y" "fwupd update"
+
+# Flatpak Packages
 if command -v flatpak &> /dev/null; then
-  echo "Updating Flatpak packages..."
-  flatpak update -y
+    retry_command "flatpak update -y" "Flatpak Update"
 fi
 
+# GNOME Extensions (via RPM packages)
 if command -v gnome-extensions &> /dev/null; then
-  echo "Checking GNOME extensions..."
-  if command -v dnf &> /dev/null; then
-    sudo dnf upgrade -y "gnome-shell-extension-*" || true
-  fi
-  echo "Installed extensions:"
-  gnome-extensions list || true
+    retry_command "sudo dnf upgrade -y 'gnome-shell-extension-*'" "GNOME Extensions Update"
+
+    echo "📋 Installed GNOME extensions:"
+    gnome-extensions list || true
 fi
 
-if [[ "$WITH_NVIDIA" == true ]]; then
-  echo "Verifying NVIDIA driver state..."
-  sudo dnf list installed \*nvidia\* || true
-fi
-
-echo "Cleaning system..."
-sudo dnf autoremove -y
-sudo dnf clean all
-
-echo "Fedora update finished!"
+echo "🎉 All updates completed successfully!"
 ```
 
-Fedora's exclusion mechanism differs from Ubuntu's: instead of holding packages, it passes `--exclude` globs straight to `dnf upgrade`, and separately checks firmware via `fwupdmgr` — something Ubuntu's script doesn't need to handle explicitly.
+### Why the Retry Helper is Critical
+
+Updating packages on Linux often fails due to:
+1. **Repository Mirrors**: A specific mirror might temporarily time out or return a gateway error.
+2. **Network Drops**: Temporary Wi-Fi or router drops.
+3. **Flatpak Hubs**: Flathub occasionally experiences high-traffic load causing temporary connection errors.
+
+By wrapping commands in the `retry_command` function, the script keeps trying the operation after a 2-second sleep until it successfully completes, ensuring you don't return to an unfinished update.
 
 > **Notes:**
 >
-> - Fedora requires RPMFusion for NVIDIA drivers to be manageable via `dnf` at all.
-> - Ubuntu's script uses `apt-mark hold` to freeze NVIDIA packages; Fedora's uses `--exclude` globs.
-> - Both scripts are safe to run repeatedly — every step is idempotent.
+> - The DNF command refresh ensures your packages cache is forced to synchronize with the mirrors.
+> - The `set -e` flag ensures the script exits immediately if any un-handled command fails outside the retry helper.
+> - The script checks if `flatpak` and `gnome-extensions` commands exist before running them, making it safe to run on systems without Flatpak or GNOME desktops.
