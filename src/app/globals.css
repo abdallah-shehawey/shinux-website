@@ -186,13 +186,13 @@ input:not([type]) {
   font-size: 1.4rem;
   font-weight: 700;
   margin-top: 2em;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 7rem;
 }
 .prose h3 {
   font-size: 1.15rem;
   font-weight: 700;
   margin-top: 1.75em;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 7rem;
 }
 .prose a {
   color: var(--accent);

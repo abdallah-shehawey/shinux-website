@@ -139,68 +139,74 @@ export default async function QuestionDetailPage({
   };
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <>
+      <div className="sticky top-14 z-10 border-b border-border bg-bg/80 backdrop-blur">
+        <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
+          <Link href="/questions" className="text-sm text-muted hover:text-accent transition-colors">
+            &larr; Back to questions
+          </Link>
+        </div>
+      </div>
 
-      <Link href="/questions" className="text-sm text-muted hover:text-accent">
-        &larr; Back to questions
-      </Link>
-
-      <QuestionContent
-        questionId={question.id}
-        authorId={question.author_id}
-        currentUserId={user?.id ?? null}
-        title={question.title}
-        body={question.body}
-        bodyHtml={questionHtml}
-        locale={question.locale}
-        tags={question.tags}
-        authorDisplay={question.author_display}
-        authorUsername={question.author_username}
-        authorAvatar={question.author_avatar}
-        createdAt={question.created_at}
-        isAdmin={isAdmin}
-      />
-
-      <div className="mt-6">
-        <UpvoteButton
-          questionId={question.id}
-          initialUpvoted={upvoted}
-          initialCount={question.upvote_count}
-          isLoggedIn={Boolean(user)}
-          loginNext={currentPath}
+      <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-      </div>
 
-      <div className="mt-10">
-        <h2 className="mb-4 text-lg font-semibold">
-          {answers.length} {answers.length === 1 ? "Answer" : "Answers"}
-        </h2>
-        {answers.length === 0 ? (
-          <p className="text-sm text-muted">No answers yet — be the first to help out.</p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {answers.map((answer) => (
-              <AnswerBlock
-                key={answer.id}
-                answer={answer}
-                replies={repliesByAnswer[answer.id] ?? []}
-                isLoggedIn={Boolean(user)}
-                loginNext={currentPath}
-                isAdmin={isAdmin}
-                currentUserId={user?.id ?? null}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+        <QuestionContent
+          questionId={question.id}
+          authorId={question.author_id}
+          currentUserId={user?.id ?? null}
+          title={question.title}
+          body={question.body}
+          bodyHtml={questionHtml}
+          locale={question.locale}
+          tags={question.tags}
+          authorDisplay={question.author_display}
+          authorUsername={question.author_username}
+          authorAvatar={question.author_avatar}
+          createdAt={question.created_at}
+          isAdmin={isAdmin}
+        />
 
-      <div className="mt-8">
-        <AnswerForm questionId={question.id} isLoggedIn={Boolean(user)} loginNext={currentPath} />
+        <div className="mt-6">
+          <UpvoteButton
+            questionId={question.id}
+            initialUpvoted={upvoted}
+            initialCount={question.upvote_count}
+            isLoggedIn={Boolean(user)}
+            loginNext={currentPath}
+          />
+        </div>
+
+        <div className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold">
+            {answers.length} {answers.length === 1 ? "Answer" : "Answers"}
+          </h2>
+          {answers.length === 0 ? (
+            <p className="text-sm text-muted">No answers yet — be the first to help out.</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {answers.map((answer) => (
+                <AnswerBlock
+                  key={answer.id}
+                  answer={answer}
+                  replies={repliesByAnswer[answer.id] ?? []}
+                  isLoggedIn={Boolean(user)}
+                  loginNext={currentPath}
+                  isAdmin={isAdmin}
+                  currentUserId={user?.id ?? null}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8">
+          <AnswerForm questionId={question.id} isLoggedIn={Boolean(user)} loginNext={currentPath} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

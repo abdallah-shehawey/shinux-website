@@ -78,35 +78,41 @@ export default async function LessonPage({
   const author = (found.author && (await getAuthorProfile(found.author))) || siteAuthor;
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
-      <Link
-        href={`/tutorials/${track}`}
-        className="text-sm text-muted hover:text-accent"
-      >
-        &larr; {trackData?.meta.title ?? "Back to track"}
-      </Link>
-
-      <TutorialReader
-        title={found.title}
-        tags={found.tags}
-        readingMinutes={found.readingMinutes}
-        html={html}
-        toc={toc}
-        track={track}
-        lessons={trackData?.lessons ?? []}
-        currentSlug={lesson}
-      >
-        <div className="mt-10">
-          <AuthorCard author={author} label="Written by" />
+    <>
+      <div className="sticky top-14 z-10 border-b border-border bg-bg/80 backdrop-blur">
+        <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
+          <Link
+            href={`/tutorials/${track}`}
+            className="text-sm text-muted hover:text-accent transition-colors"
+          >
+            &larr; {trackData?.meta.title ?? "Back to track"}
+          </Link>
         </div>
+      </div>
 
-        {(prev || next) && (
-          <nav className="mt-8 grid gap-3 sm:grid-cols-2">
-            {prev && <AdjacentCard track={track} lesson={prev} label="Previous" align="start" />}
-            {next && <AdjacentCard track={track} lesson={next} label="Next" align="end" />}
-          </nav>
-        )}
-      </TutorialReader>
-    </div>
+      <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
+        <TutorialReader
+          title={found.title}
+          tags={found.tags}
+          readingMinutes={found.readingMinutes}
+          html={html}
+          toc={toc}
+          track={track}
+          lessons={trackData?.lessons ?? []}
+          currentSlug={lesson}
+        >
+          <div className="mt-10">
+            <AuthorCard author={author} label="Written by" />
+          </div>
+
+          {(prev || next) && (
+            <nav className="mt-8 grid gap-3 sm:grid-cols-2">
+              {prev && <AdjacentCard track={track} lesson={prev} label="Previous" align="start" />}
+              {next && <AdjacentCard track={track} lesson={next} label="Next" align="end" />}
+            </nav>
+          )}
+        </TutorialReader>
+      </div>
+    </>
   );
 }

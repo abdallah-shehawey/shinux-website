@@ -125,50 +125,56 @@ export default async function ArticlePage({
   };
 
   return (
-    <div className="mx-auto w-full px-4 py-12 sm:px-8 lg:px-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      <Link href="/articles" className="text-sm text-muted hover:text-accent">
-        &larr; Back to articles
-      </Link>
-
-      <ArticleReader
-        date={article.date}
-        tags={article.tags}
-        locales={article.locales}
-        defaultLocale={article.locale}
-        rendered={rendered}
-      >
-        <div className="mt-10">
-          <AuthorCard author={author} label="Written by" />
+    <>
+      <div className="sticky top-14 z-10 border-b border-border bg-bg/80 backdrop-blur">
+        <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
+          <Link href="/articles" className="text-sm text-muted hover:text-accent transition-colors">
+            &larr; Back to articles
+          </Link>
         </div>
+      </div>
 
-        {(prev || next) && (
-          <nav className="mt-8 grid gap-3 sm:grid-cols-2">
-            {prev && <AdjacentCard article={prev} label="Previous" align="start" />}
-            {next && <AdjacentCard article={next} label="Next" align="end" />}
-          </nav>
-        )}
+      <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
 
-        {related.length > 0 && (
+        <ArticleReader
+          date={article.date}
+          tags={article.tags}
+          locales={article.locales}
+          defaultLocale={article.locale}
+          rendered={rendered}
+        >
           <div className="mt-10">
-            <h2 className="mb-4 text-lg font-semibold">Related articles</h2>
-            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
-              {related.map((a) => (
-                <ArticleCard
-                  key={a.slug}
-                  article={a}
-                  readingLabel={readingLabel(a.readingMinutes)}
-                  author={a.author ? authors[a.author] : null}
-                />
-              ))}
-            </div>
+            <AuthorCard author={author} label="Written by" />
           </div>
-        )}
-      </ArticleReader>
-    </div>
+
+          {(prev || next) && (
+            <nav className="mt-8 grid gap-3 sm:grid-cols-2">
+              {prev && <AdjacentCard article={prev} label="Previous" align="start" />}
+              {next && <AdjacentCard article={next} label="Next" align="end" />}
+            </nav>
+          )}
+
+          {related.length > 0 && (
+            <div className="mt-10">
+              <h2 className="mb-4 text-lg font-semibold">Related articles</h2>
+              <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
+                {related.map((a) => (
+                  <ArticleCard
+                    key={a.slug}
+                    article={a}
+                    readingLabel={readingLabel(a.readingMinutes)}
+                    author={a.author ? authors[a.author] : null}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </ArticleReader>
+      </div>
+    </>
   );
 }

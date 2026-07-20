@@ -126,7 +126,7 @@ export default function ArticleReader({
         </div>
 
         <aside className={`hidden lg:block ${isRtl ? "lg:order-1" : ""}`}>
-          <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+          <div className="sticky top-[100px] max-h-[calc(100vh-7.75rem)] overflow-y-auto">
             <TableOfContents
               items={current.toc}
               title="On this page"

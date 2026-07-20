@@ -48,7 +48,7 @@ export default function TutorialReader({
     <article className={gridCls}>
       {/* 1. Lessons Sidebar (left column in LTR, right column in RTL) */}
       <aside className={`hidden lg:block ${isRtl ? "lg:order-3" : ""}`}>
-        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="sticky top-[100px] max-h-[calc(100vh-7.75rem)] overflow-y-auto">
           <TutorialSidebar track={track} lessons={lessons} currentSlug={currentSlug} />
         </div>
       </aside>
@@ -94,7 +94,7 @@ export default function TutorialReader({
 
       {/* 3. TOC sidebar (right column in LTR, left column in RTL) */}
       <aside className={`hidden lg:block ${isRtl ? "lg:order-1" : ""}`}>
-        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="sticky top-[100px] max-h-[calc(100vh-7.75rem)] overflow-y-auto">
           <TableOfContents
             items={toc}
             title="On this page"
