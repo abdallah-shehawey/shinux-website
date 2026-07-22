@@ -66,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       dir="ltr"
       suppressHydrationWarning
-      className={`${inter.variable} ${ibmPlexArabic.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`dark ${inter.variable} ${ibmPlexArabic.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>
         <ThemeScript />
