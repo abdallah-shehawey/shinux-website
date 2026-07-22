@@ -15,50 +15,7 @@ This document goes far beyond the basics to explain **why journaling exists, how
 
 ---
 
-## Table of Contents
 
-1. The Filesystem Consistency Problem
-
-2. What Journaling Actually Guarantees (and What It Does Not)
-
-3. Transaction Theory in Filesystems
-
-4. Journaling Architecture & On-Disk Layout
-
-5. Write Ordering, Caches, and Barriers
-
-6. Journaling Modes (Deep Comparison)
-
-7. ext4 Journaling Internals
-
-8. XFS Journaling Model
-
-9. Btrfs and Copy-on-Write vs Journaling
-
-10. JFS & ReiserFS (Historical Perspective)
-
-11. Crash Scenarios Explained Step-by-Step
-
-12. Journal Replay & Recovery Process
-
-13. Tuning Journaling for Performance
-
-14. Reliability, Wear & SSD Considerations
-
-15. Journaling vs fsck
-
-16. Enterprise & Server Design Patterns
-
-17. Hands-On Labs (Beginner → Advanced)
-
-18. Common Myths & Misunderstandings
-
-19. Troubleshooting & Diagnostics
-
-20. Summary & Best Practices
-
-
----
 
 ## the Filesystem Consistency Problem
 

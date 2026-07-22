@@ -23,11 +23,19 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `linux-blog-${VERSION}`;
 
-// Pages we always want available offline regardless of the sitemap.
-const CORE_URLS = ["/", "/offline"];
+// Pages and essential shell assets we always want available offline.
+const CORE_URLS = [
+  "/",
+  "/offline",
+  "/manifest.webmanifest",
+  "/icon.svg",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/favicon.ico",
+];
 
 // A synthetic cache key that stores the list of page paths we have precached,
 // so content syncs can diff a fresh sitemap against it without scanning every
@@ -49,7 +57,9 @@ async function fetchSitemapPaths() {
   while ((m = re.exec(xml))) {
     try {
       const u = new URL(m[1], self.location.origin);
-      paths.add(u.pathname + u.search);
+      const rawPath = u.pathname + u.search;
+      paths.add(rawPath);
+      paths.add(decodeURIComponent(rawPath));
     } catch {
       /* skip malformed <loc> */
     }
@@ -202,6 +212,11 @@ self.addEventListener("fetch", (event) => {
     request.mode === "navigate" ||
     (request.headers.get("accept") || "").includes("text/html");
 
+  const isRsc =
+    url.searchParams.has("_rsc") ||
+    request.headers.get("RSC") === "1" ||
+    (request.headers.get("accept") || "").includes("text/x-component");
+
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);
@@ -214,17 +229,38 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       } catch {
-        // Offline: serve whatever we have; ignore the query string for pages so
-        // a cached "/articles/foo" still answers "/articles/foo?_rsc=…".
-        const cached =
-          (await cache.match(request)) ||
-          (await cache.match(url.pathname)) ||
-          (await caches.match(request));
+        // 1. Try exact match (matches exact URL including query strings or RSC cache if available)
+        let cached = await cache.match(request);
         if (cached) return cached;
+
+        // 2. Try pathname variations (decoded and encoded)
+        const decPath = decodeURIComponent(url.pathname);
+        const encPath = encodeURI(url.pathname);
+        cached =
+          (await cache.match(url.pathname)) ||
+          (await cache.match(decPath)) ||
+          (await cache.match(encPath));
+
+        if (cached) {
+          // If Next.js made an RSC request for a soft navigation while offline and we only
+          // have the full HTML cached, returning HTML for RSC would crash Next.js client router.
+          // Returning a 503 error forces Next.js to perform a hard browser navigation to url.pathname,
+          // which then triggers a normal navigate fetch that successfully gets this cached HTML!
+          const isHtmlResponse = cached.headers.get("content-type")?.includes("text/html");
+          if (isRsc && isHtmlResponse) {
+            return new Response("RSC payload unavailable offline", {
+              status: 503,
+              statusText: "Offline RSC Fallback",
+            });
+          }
+          return cached;
+        }
+
         if (isNavigation) {
           const offline = await cache.match("/offline");
           if (offline) return offline;
         }
+
         return new Response("You are offline and this page is not cached.", {
           status: 503,
           statusText: "Offline",

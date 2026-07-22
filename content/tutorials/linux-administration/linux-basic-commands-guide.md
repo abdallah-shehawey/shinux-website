@@ -16,40 +16,7 @@ Welcome to the **Linux Basic Commands Guide**! This repository serves as a compr
 
 ---
 
-## Table of Contents
 
-1. Introduction
-
-2. Getting Started
-
-3. Navigating the File System
-
-4. File and Directory Operations
-
-5. Viewing and Editing Files
-
-6. System Information
-
-7. Managing Permissions
-
-8. Networking Commands
-
-9. Searching and Sorting
-
-10. Package Management
-
-11. Process Management
-
-12. Disk Management
-
-13. User and Group Management
-
-14. Miscellaneous Commands
-
-15. Tips and Best Practices
-
-
----
 
 ## Introduction
 

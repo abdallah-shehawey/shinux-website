@@ -15,50 +15,7 @@ This guide expands on history, architecture, scripting models, interactive behav
 
 ---
 
-## Table of Contents
 
-1. What Is a Shell?
-
-2. Shell Architecture & Execution Model
-
-3. Login vs Non‑Login Shells
-
-4. Interactive vs Non‑Interactive Shells
-
-5. Environment Variables & Scope
-
-6. Shell Configuration Files
-
-7. Job Control & Signals
-
-8. POSIX Compliance Explained
-
-9. Shell Comparison Matrix
-
-10. C Shell (csh)
-
-11. Bourne Shell (sh)
-
-12. Korn Shell (ksh)
-
-13. TENEX C Shell (tcsh)
-
-14. Bourne Again Shell (bash)
-
-15. Z Shell (zsh)
-
-16. Friendly Interactive Shell (fish)
-
-17. Choosing the Right Shell
-
-18. Security Best Practices
-
-19. Common Pitfalls
-
-20. Learning Path & Recommendations
-
-
----
 
 ## What is a Shell?
 

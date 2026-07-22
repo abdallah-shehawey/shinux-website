@@ -15,52 +15,7 @@ It does **not repeat** basic usage—instead it explains how these APIs work **i
 
 ---
 
-## Table of Contents
 
-1. Philosophy of Unix Command-Line Interfaces
-
-2. How getopt Actually Works Internally
-
-3. Global State in getopt (optind, optarg, optopt)
-
-4. Option Ordering Rules (POSIX vs GNU)
-
-5. Short Options Deep Rules
-
-6. Long Options Deep Rules
-
-7. Optional Arguments — Why They Are Dangerous
-
-8. `struct option` Design Patterns
-
-9. Flag vs Return-Value Handling (When to Use Each)
-
-10. Parsing Termination (`--`) Explained
-
-11. Handling Non-Option Arguments Correctly
-
-12. Error Handling & UX Best Practices
-
-13. Re-entrant & Thread-Safe Parsing
-
-14. getopt vs getopt_long vs getopt_long_only
-
-15. Portability Pitfalls (Linux vs BSD vs macOS)
-
-16. Designing Professional CLI Interfaces
-
-17. Debugging & Tracing Option Parsing
-
-18. Security Considerations
-
-19. Real-World Case Studies (ls, tar, ip)
-
-20. Advanced Examples
-
-21. Summary & Design Checklist
-
-
----
 
 ## Philosophy of Unix Command-line Interfaces
 

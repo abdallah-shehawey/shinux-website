@@ -15,48 +15,7 @@ This document goes far beyond basic definitions and explains **kernel vs user-sp
 
 ---
 
-## Table of Contents
 
-1. What Magic Numbers Really Are
-
-2. Why File Extensions Are Unreliable
-
-3. Magic Numbers vs MIME Types
-
-4. Kernel vs User Space File Identification
-
-5. libmagic Architecture (How `file` Really Works)
-
-6. File Header Layouts & Binary Structure
-
-7. Common Magic Numbers (Extended Reference)
-
-8. ELF Internals & Program Headers
-
-9. Executable Formats & Interpreters (Shebang)
-
-10. Disk Structures as Magic Numbers (MBR & GPT)
-
-11. Inspecting Files at Byte Level
-
-12. Writing Reliable File Detectors
-
-13. Custom Magic Files (Advanced Patterns)
-
-14. Security Implications & Content Sniffing
-
-15. Reverse Engineering with Magic Numbers
-
-16. Cross-Platform Considerations
-
-17. Performance & Scaling Considerations
-
-18. Practical Labs (Beginner → Advanced)
-
-19. Further Reading & Research Directions
-
-
----
 
 ## What Magic Numbers _really_ Are
 

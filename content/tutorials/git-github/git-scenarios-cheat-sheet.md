@@ -11,14 +11,6 @@ author: abdallah-shehawey
 ---
 This repository contains a quick reference guide for common, yet specific, Git scenarios.
 
-## Table of Contents
-
-1. Update a Forked Repository
-
-2. Reset a Local Branch to Match Remote
-
-3. Bring a Specific File from Another Branch
-
 
 ### Update a Forked Repository From the Original
 

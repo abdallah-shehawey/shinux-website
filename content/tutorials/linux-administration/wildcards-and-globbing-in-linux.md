@@ -15,44 +15,7 @@ This guide goes far beyond basic usage to explain **how globbing really works, h
 
 ---
 
-## Table of Contents
 
-1. What Wildcards Really Are
-
-2. Globbing vs Regular Expressions (Critical Difference)
-
-3. Where and When Expansion Happens
-
-4. Types of Wildcards (In Depth)
-
-5. Brace Expansion (Pre-Globbing Phase)
-
-6. Advanced Globbing Patterns
-
-7. Hidden Files and Dotfiles
-
-8. Recursive Globbing (`**`)
-
-9. Wildcards with Common Commands
-
-10. Wildcards vs `find`
-
-11. Quoting, Escaping & Disabling Expansion
-
-12. Error Handling & Safety Techniques
-
-13. Performance Considerations
-
-14. Shell Differences (bash, zsh, sh)
-
-15. Real-World Use Cases
-
-16. Common Mistakes & Debugging
-
-17. Exercises (Beginner → Advanced)
-
-
----
 
 ## What Wildcards _really_ Are
 

@@ -21,10 +21,10 @@
 .dark {
   color-scheme: dark;
   --bg: #0d1117;
-  --fg: #e6edf3;
-  --muted: #9198a1;
+  --fg: #f0f6fc;
+  --muted: #a3b3c6;
   --accent: #3fb950;
-  --accent-fg: #051b0d;
+  --accent-fg: #041409;
   --border: #30363d;
   --card: #161b22;
 }

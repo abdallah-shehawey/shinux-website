@@ -15,44 +15,7 @@ This document does not repeat basic commands only—it explains **how Linux mode
 
 ---
 
-## Table of Contents
 
-1. Why Users & Groups Exist (Design Philosophy)
-
-2. Identity Model in Linux (UID, GID, IDs)
-
-3. System vs Normal Users
-
-4. Where Linux Stores User & Group Data
-
-5. Authentication vs Authorization
-
-6. User Management Deep Dive
-
-7. Group Management Deep Dive
-
-8. Primary vs Supplementary Groups (Internal Mechanics)
-
-9. useradd vs adduser (Real Truth)
-
-10. Group-Based Access Control (Design Patterns)
-
-11. File Ownership & Permission Resolution
-
-12. setgid, umask & Collaborative Directories
-
-13. Advanced Permission Scenarios
-
-14. Auditing & Troubleshooting
-
-15. Security Best Practices
-
-16. Enterprise & Server Scenarios
-
-17. Hands-On Labs (Beginner → Advanced)
-
-
----
 
 ## Why Users & Groups Exist
 
