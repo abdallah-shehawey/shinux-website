@@ -49,7 +49,7 @@ export default function MobileNav({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-fg active:scale-95"
+        className="inline-flex h-11 min-w-[7.5rem] items-center justify-between gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-fg active:scale-95"
       >
         {current?.label ?? "Menu"}
         <ChevronIcon
@@ -60,7 +60,7 @@ export default function MobileNav({
       {open && (
         <nav
           role="menu"
-          className="dropdown-panel absolute end-0 top-full z-30 mt-2 min-w-40 rounded-lg border border-border bg-card p-1.5 shadow-lg"
+          className="dropdown-panel absolute start-0 top-full z-30 mt-2 min-w-[7.5rem] rounded-lg border border-border bg-card p-1.5 shadow-lg"
         >
           {links.map((l) => (
             <Link
