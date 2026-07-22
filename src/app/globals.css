@@ -67,6 +67,28 @@ input:not([type]) {
   unicode-bidi: plaintext;
 }
 
+/* Popover-style dropdown menus (mobile nav, notifications): a quick pop-in
+   on open. Vertical-only so it stays correct in both LTR and RTL regardless
+   of which side (start/end) the panel is anchored to. */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.dropdown-panel {
+  animation: dropdown-in 0.16s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-panel {
+    animation: none;
+  }
+}
+
 /* Small reusable component classes (plain CSS to stay Tailwind-v4 safe). */
 .btn-primary {
   display: inline-flex;

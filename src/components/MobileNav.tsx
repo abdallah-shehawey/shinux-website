@@ -60,7 +60,7 @@ export default function MobileNav({
       {open && (
         <nav
           role="menu"
-          className="absolute end-0 top-full z-30 mt-2 min-w-40 rounded-lg border border-border bg-card p-1.5 shadow-lg"
+          className="dropdown-panel absolute end-0 top-full z-30 mt-2 min-w-40 rounded-lg border border-border bg-card p-1.5 shadow-lg"
         >
           {links.map((l) => (
             <Link
