@@ -27,7 +27,7 @@ export default function HeaderAuth() {
         href="/me"
         aria-label="My account"
         title="My account"
-        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted transition hover:border-accent hover:text-fg active:scale-90 sm:h-9 sm:w-9"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-muted transition hover:border-accent hover:text-fg active:scale-90 sm:h-9 sm:w-9"
       >
         <svg
           viewBox="0 0 24 24"
