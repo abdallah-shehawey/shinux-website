@@ -3,8 +3,10 @@
 /* Class-based dark mode: the `dark` class on <html> controls the theme. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Light theme (GitHub-light inspired, terminal-green accent). */
+/* Light theme (GitHub-light inspired, terminal-green accent). Applied only
+   when the `dark` class is removed (via the `light` theme cookie). */
 :root {
+  color-scheme: light;
   --bg: #ffffff;
   --fg: #1f2328;
   --muted: #59636e;
@@ -14,8 +16,10 @@
   --card: #f6f8fa;
 }
 
-/* Dark theme is the default look of the site. */
+/* Dark theme is the default look of the site — <html> ships with the `dark`
+   class from the server, so this is what renders unless the visitor opts out. */
 .dark {
+  color-scheme: dark;
   --bg: #0d1117;
   --fg: #e6edf3;
   --muted: #9198a1;
