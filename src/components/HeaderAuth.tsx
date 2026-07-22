@@ -22,12 +22,12 @@ export default function HeaderAuth() {
   return session.user ? (
     <>
       <NotificationsBell initial={[]} userId={session.user.id} />
-      {/* Mobile: a compact profile icon so it doesn't crowd the header. */}
+      {/* A compact profile icon so it doesn't crowd the header. */}
       <Link
         href="/me"
         aria-label="My account"
         title="My account"
-        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted transition hover:border-accent hover:text-fg active:scale-90 sm:hidden"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted transition hover:border-accent hover:text-fg active:scale-90 sm:h-9 sm:w-9"
       >
         <svg
           viewBox="0 0 24 24"
@@ -43,10 +43,6 @@ export default function HeaderAuth() {
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
-      </Link>
-      {/* Desktop: the full labelled button. */}
-      <Link href="/me" className="btn-ghost hidden sm:inline-flex">
-        My account
       </Link>
     </>
   ) : (
