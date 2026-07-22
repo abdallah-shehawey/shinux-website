@@ -88,5 +88,7 @@ cat /sys/block/zram0/comp_algorithm    # check the active algorithm
 >
 > - On Fedora, no manual service start is needed after reboot — the systemd generator sets zram up early at boot.
 > - For most desktop workloads, the kernel's default compression algorithm is more than sufficient; there's rarely a need to tune it further.
+> - **Priority**: Always ensure `zram` has a higher priority (e.g., `PRIORITY=100`) than traditional disk swap files/partitions, so compressed RAM is consumed before writing to SSD/HDD storage.
+
 
 **References:** [kernel.org zram docs](https://www.kernel.org/doc/html/latest/admin-guide/blockdev/zram.html), [systemd/zram-generator](https://github.com/systemd/zram-generator)
