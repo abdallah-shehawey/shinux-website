@@ -16,6 +16,7 @@ export default function ProfileEditor({
   username,
   email,
   memberSince,
+  roleLabel,
   socialLinks,
 }: {
   avatarUrl: string | null;
@@ -24,6 +25,7 @@ export default function ProfileEditor({
   initialDisplayName: string;
   username: string;
   email: string;
+  roleLabel: string;
   memberSince: string | null;
   socialLinks: SocialLink[];
 }) {
@@ -46,7 +48,7 @@ export default function ProfileEditor({
             <p className="text-sm text-muted">@{username || "—"}</p>
             <p className="text-sm text-muted">{email}</p>
             {memberSince && (
-              <p className="text-sm text-muted">Member since {memberSince}</p>
+              <p className="text-sm text-muted">{roleLabel} since {memberSince}</p>
             )}
           </div>
         </div>

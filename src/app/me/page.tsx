@@ -24,12 +24,14 @@ export default async function MePage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, display_name, avatar_url, social_links, created_at")
+    .select("username, display_name, avatar_url, social_links, role, created_at")
     .eq("id", user.id)
     .single();
 
   const displayName = profile?.display_name || profile?.username || "there";
   const initial = displayName.trim().charAt(0).toUpperCase();
+  const isOwner = profile?.role === "admin";
+  const roleLabel = isOwner ? "Owner" : "Member";
   const memberSince = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-US", {
         year: "numeric",
@@ -53,6 +55,7 @@ export default async function MePage() {
         initialDisplayName={profile?.display_name ?? ""}
         username={profile?.username ?? ""}
         email={user.email ?? ""}
+        roleLabel={roleLabel}
         memberSince={memberSince}
         socialLinks={profile?.social_links ?? []}
       />
