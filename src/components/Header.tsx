@@ -25,7 +25,7 @@ const navLinkClass =
 export default function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full items-center gap-4 px-5 sm:px-8 lg:px-12">
+      <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-6 lg:px-6">
         <Link
           href="/"
           className="flex items-center gap-1.5 font-mono text-sm font-semibold text-fg active:scale-95 transition-transform"
@@ -43,7 +43,7 @@ export default function Header() {
           <AdminNavLink className={navLinkClass} />
         </nav>
 
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex items-center gap-2.5 sm:gap-3">
           <MobileNav links={links} />
           <HeaderAuth />
           <ThemeToggle />
