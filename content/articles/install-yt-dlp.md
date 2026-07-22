@@ -1,24 +1,45 @@
 ---
 title: Installing and Using yt-dlp
 description: >-
-  Install yt-dlp on Ubuntu, Fedora, and Windows, and the handful of commands
-  you'll actually use.
+  yt-dlp هي أداة سطر أوامر ممتازة لتنزيل الفيديوهات والصوتيات من يوتيوب، زوم، تيمز، وجوجل درايف وغيرها بكفاءة عالية.
 date: 2026-06-07T00:00:00.000Z
 tags:
   - tools
   - cli
-locale: en
+  - linux
+locale: ar
 draft: false
 author: abdallah-shehawey
 ---
 
-**yt-dlp** is an advanced command-line tool for downloading videos and audio from YouTube and hundreds of other sites — a feature-rich fork of `youtube-dl` with frequent updates and better performance. This guide covers installing it on Ubuntu/Debian, Fedora, and Windows.
+لا يا قوم 🤍
+
+بما إننا اتفقنا قبل كده إن أي حاجة إحنا شايفينها **"بديهيات"** ومفكرين إن كل الناس عارفينها، لازم نحط في دماغنا دايمًا إن أكيد فيه على الأقل شخص واحد مش عارفها... وأول مرة يعرفها هيعرفها منك 😅
+
+لو لسه ما اتعاملتش معاها، ففيه أداة ممتازة اسمها **`yt-dlp`**!
+
+دي عبارة عن **Command Line Tool** (أداة سطر أوامر)، كل اللي عليك إنك تديها اللينك وهي تتكفل بالباقي:
+- تنزيل فيديو بأعلى جودة 🎥
+- تنزيل قوائم تشغيل (Playlist) كاملة 🎶
+- تنزيل الصوت فقط وتحويله لـ MP3 🎧
+
+🔥 **الميزة الأهم:** أنها بتنزل أي ميديا من أي موقع تقريباً طالما اللينك عام (Public)، زي مثلاً:
+- اجتماعات مسجلة من **Zoom**
+- اجتماعات مسجلة من **Microsoft Teams**
+- فيديوهات مرفوعة على **Google Drive**
+- وبشكل عام... أي فيديو أو صوت يخطر على بالك طالما اللينك Public! 😅
+
+---
+
+## Overview / نبذة عن الأداة
+
+`yt-dlp` is an advanced command-line tool for downloading videos and audio from YouTube and hundreds of other sites — a feature-rich fork of `youtube-dl` with frequent updates and better performance. This guide covers installing it on Ubuntu/Debian, Fedora, and Windows.
+
+---
 
 ## Install on Ubuntu / Debian
 
 ### Method 1: apt (official repo)
-
-The easiest method for most users.
 
 ```bash
 sudo apt update
@@ -27,15 +48,11 @@ sudo apt install yt-dlp -y
 
 ### Method 2: pip (latest version)
 
-Requires Python 3. Best for getting the absolute latest features.
-
 ```bash
 python3 -m pip install -U yt-dlp
 ```
 
 ### Method 3: standalone binary (recommended)
-
-Downloads the binary directly — good if you don't want dependencies.
 
 ```bash
 sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
@@ -47,6 +64,8 @@ Verify installation:
 ```bash
 yt-dlp --version
 ```
+
+---
 
 ## Install on Fedora
 
@@ -69,6 +88,8 @@ Verify installation:
 yt-dlp --version
 ```
 
+---
+
 ## Install on Windows
 
 ### Method 1: standalone EXE (easiest way)
@@ -88,7 +109,9 @@ yt-dlp --version
 choco install yt-dlp -y
 ```
 
-## Quick usage examples
+---
+
+## Quick usage examples / أمثلة استخدام سريعة
 
 Download best quality video:
 
@@ -108,7 +131,9 @@ Download a full playlist:
 yt-dlp -f best "PLAYLIST_URL"
 ```
 
-## Update yt-dlp
+---
+
+## Update yt-dlp / التحديث
 
 If you installed via the standalone binary or pip, update easily:
 
@@ -116,10 +141,11 @@ If you installed via the standalone binary or pip, update easily:
 yt-dlp -U
 ```
 
-## Notes
+---
 
-- Stay updated — always use the latest version for better site support
-- Some sites may block excessive downloads; use responsibly
-- Respect copyrights and platform policies
+> **Notes:**
+> - Stay updated — always use the latest version for better site support
+> - Some sites may block excessive downloads; use responsibly
+> - Respect copyrights and platform policies
 
-Official repository: [github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)
+🔗 **Official Repository**: 👉 [https://github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)

@@ -1,40 +1,70 @@
 ---
 title: Downloading Media with Yt-dlp
 description: >-
-  yt-dlp is an actively-maintained fork of youtube-dl for downloading video and
-  audio from YouTube and hundreds of other sites, with better performance and
-  much more frequent updates than the project…
+  yt-dlp هي أداة سطر أوامر ممتازة لتنزيل الفيديوهات والصوتيات من يوتيوب، زوم، تيمز، وجوجل درايف وغيرها بكفاءة عالية.
 order: 7
 tags:
   - linux
+  - cli
+  - tools
 draft: false
 author: abdallah-shehawey
 ---
-`yt-dlp` is an actively-maintained fork of `youtube-dl` for downloading video and audio from YouTube and hundreds of other sites, with better performance and much more frequent updates than the project it forked from.
+
+لا يا قوم 🤍
+
+بما إننا اتفقنا قبل كده إن أي حاجة إحنا شايفينها **"بديهيات"** ومفكرين إن كل الناس عارفينها، لازم نحط في دماغنا دايمًا إن أكيد فيه على الأقل شخص واحد مش عارفها... وأول مرة يعرفها هيعرفها منك 😅
+
+لو لسه ما اتعاملتش معاها، ففيه أداة ممتازة اسمها **`yt-dlp`**!
+
+دي عبارة عن **Command Line Tool** (أداة سطر أوامر)، كل اللي عليك إنك تديها اللينك وهي تتكفل بالباقي:
+- تنزيل فيديو بأعلى جودة 🎥
+- تنزيل قوائم تشغيل (Playlist) كاملة 🎶
+- تنزيل الصوت فقط وتحويله لـ MP3 🎧
+
+🔥 **الميزة الأهم:** أنها بتنزل أي ميديا من أي موقع تقريباً طالما اللينك عام (Public)، زي مثلاً:
+- اجتماعات مسجلة من **Zoom**
+- اجتماعات مسجلة من **Microsoft Teams**
+- فيديوهات مرفوعة على **Google Drive**
+- وبشكل عام... أي فيديو أو صوت يخطر على بالك طالما اللينك Public! 😅
+
+---
+
+## Overview / نبذة عن الأداة
+
+`yt-dlp` is a feature-rich, actively-maintained command-line utility for downloading video and audio from YouTube, Zoom, Teams, Google Drive, and hundreds of other platforms. It is an improved fork of `youtube-dl` with faster updates and better performance.
+
+---
 
 ## Install on Ubuntu / Debian
 
-**Via apt** (simplest):
+### Method 1: apt (simplest)
 
 ```bash
 sudo apt update
 sudo apt install yt-dlp -y
 ```
 
-**Via pip** (latest release, needs Python 3):
+### Method 2: pip (latest features)
 
-```text
+```bash
 python3 -m pip install -U yt-dlp
 ```
 
-**Standalone binary** (no dependencies to manage):
+### Method 3: standalone binary (recommended)
 
 ```bash
 sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
 sudo chmod +x /usr/local/bin/yt-dlp
 ```
 
-Verify with `yt-dlp --version` regardless of which method was used.
+Verify installation:
+
+```bash
+yt-dlp --version
+```
+
+---
 
 ## Install on Fedora
 
@@ -42,39 +72,50 @@ Verify with `yt-dlp --version` regardless of which method was used.
 sudo dnf install yt-dlp -y
 ```
 
-Or the same standalone-binary method shown above.
+---
 
 ## Install on Windows
 
-Download `yt-dlp.exe` from the [GitHub releases page](https://github.com/yt-dlp/yt-dlp/releases/latest), move it somewhere permanent (e.g. `C:\yt-dlp\`), and add that folder to `PATH` via "Edit the system environment variables" → Environment Variables → Path → New. Or, with Chocolatey installed:
+1. Download `yt-dlp.exe` from the [Official Releases Page](https://github.com/yt-dlp/yt-dlp/releases/latest).
+2. Save it to a directory like `C:\yt-dlp\`.
+3. Add the folder path to your System Environment Variables (`PATH`).
 
-```text
+Or using Chocolatey:
+
+```bash
 choco install yt-dlp -y
 ```
 
-## Quick Usage Examples
+---
 
-```ini
-# best quality video
+## Quick Usage Examples / أمثلة استخدام سريعة
+
+```bash
+# Download best quality video
 yt-dlp "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# audio only, converted to mp3
+# Download audio only (convert to MP3)
 yt-dlp -x --audio-format mp3 "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# a full playlist
+# Download a full playlist
 yt-dlp -f best "PLAYLIST_URL"
 ```
 
-## Keeping it Updated
+---
 
-If installed via the standalone binary or pip:
+## Update yt-dlp / التحديث
 
-```text
+If installed via standalone binary or pip:
+
+```bash
 yt-dlp -U
 ```
 
+---
+
 > **Notes:**
->
-> - Stay on the latest version — site support changes constantly as platforms tweak their players.
+> - Stay updated — site support changes constantly as platforms tweak their players.
 > - Some sites throttle or block excessive automated downloads; use it responsibly.
 > - Respect copyright and each platform's terms of service.
+
+🔗 **Official Repository**: 👉 [https://github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)
