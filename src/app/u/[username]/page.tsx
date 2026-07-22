@@ -39,6 +39,9 @@ export default async function PublicProfilePage({
   const lessons = getLessonsByAuthor(profile.username);
 
   const initial = profile.displayName.trim().charAt(0).toUpperCase();
+  // The site has a single owner: the admin account. Everyone else is a member.
+  const isOwner = profile.role === "admin";
+  const roleLabel = isOwner ? "Owner" : "Member";
 
   return (
     <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
@@ -52,9 +55,16 @@ export default async function PublicProfilePage({
           )}
         </div>
         <div>
-          <p className="text-lg font-semibold text-fg">{profile.displayName}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-lg font-semibold text-fg">{profile.displayName}</p>
+            {isOwner && (
+              <span className="inline-flex items-center rounded-full border border-accent bg-accent/10 px-2 py-0.5 font-mono text-xs font-semibold text-accent">
+                Owner
+              </span>
+            )}
+          </div>
           <p className="text-sm text-muted">@{profile.username}</p>
-          <p className="text-sm text-muted">Member since {formatDate(profile.createdAt)}</p>
+          <p className="text-sm text-muted">{roleLabel} since {formatDate(profile.createdAt)}</p>
         </div>
       </div>
 
