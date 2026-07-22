@@ -1,33 +1,36 @@
 // Service worker for the PWA.
 //
 // Strategy overview:
-//  - On install we pull every page URL out of /sitemap.xml and precache it, so
-//    the whole site (articles, tutorials, questions, public profiles) is
-//    available offline even for pages the user never opened. HTML pages are
-//    small; images and other media are intentionally NOT precached — they are
-//    cached opportunistically at runtime only when actually requested, so the
-//    on-device footprint stays light on both laptop and phone.
-//  - At runtime we use network-first: try the network, cache a fresh copy on
-//    success, fall back to the cached copy when offline. A navigation to a page
-//    that was never cached falls back to /offline.
-//  - The cache name is versioned; activate() deletes every cache from an older
-//    version.
+//  - install() stays FAST: it precaches only the core pages ("/" and
+//    "/offline") and then takes control. The full sitemap precache is NOT done
+//    here — doing 170+ fetches during install delays the worker from
+//    controlling the page, and a user who goes offline right after install
+//    would get the browser's native error page instead of /offline.
+//  - activate() takes control immediately (clients.claim) and THEN, in the
+//    background (the worker is kept alive by waitUntil, but control is already
+//    granted), precaches every page URL from /sitemap.xml so the whole site is
+//    available offline even for pages never opened. Images/media are left to
+//    runtime caching only, to keep the on-device footprint light.
+//  - Runtime is network-first: try the network, cache a fresh copy on success,
+//    fall back to the cached copy when offline. A navigation to a page that was
+//    never cached falls back to /offline.
+//  - The cache name is versioned; activate() deletes every older cache.
 //  - Messages: SKIP_WAITING activates a freshly installed worker on demand;
-//    CHECK_CONTENT re-reads the sitemap, precaches any newly published pages in
-//    the background, and tells open tabs how many new pages appeared so the app
-//    can show a "new content" banner.
+//    CHECK_CONTENT re-reads the sitemap, precaches any newly published pages,
+//    and tells open tabs how many new pages appeared so the app can show a
+//    "new content" banner.
 //
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
-// handles that live.)
-const VERSION = "v2";
+// and the activate-time sync handle that live.)
+const VERSION = "v3";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages we always want available offline regardless of the sitemap.
 const CORE_URLS = ["/", "/offline"];
 
 // A synthetic cache key that stores the list of page paths we have precached,
-// so CHECK_CONTENT can diff a fresh sitemap against it without scanning every
+// so content syncs can diff a fresh sitemap against it without scanning every
 // asset in the cache.
 const MANIFEST_URL = "/__sw_precache_manifest";
 
@@ -54,11 +57,19 @@ async function fetchSitemapPaths() {
   return [...paths];
 }
 
+async function postToClients(message) {
+  const clients = await self.clients.matchAll({ includeUncontrolled: true });
+  for (const client of clients) client.postMessage(message);
+}
+
 // Fetch and cache a batch of paths with bounded concurrency so install/refresh
 // does not fire hundreds of requests at once. Failures are ignored per-URL so
-// one bad page never aborts the whole precache.
-async function precachePaths(cache, paths, concurrency = 6) {
+// one bad page never aborts the whole precache. onEach(done, total) reports
+// progress so the app can show a "saving for offline" indicator.
+async function precachePaths(cache, paths, { concurrency = 6, onEach } = {}) {
   const queue = paths.slice();
+  const total = paths.length;
+  let done = 0;
   const worker = async () => {
     while (queue.length) {
       const path = queue.shift();
@@ -68,6 +79,8 @@ async function precachePaths(cache, paths, concurrency = 6) {
       } catch {
         /* offline / 404 — skip this one */
       }
+      done += 1;
+      if (onEach) await onEach(done, total);
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
@@ -91,20 +104,44 @@ async function writeManifest(cache, paths) {
   );
 }
 
-// Build the full precache set from the sitemap (plus the core pages), cache it
-// all, and persist the manifest. On sitemap failure we still guarantee the core
-// pages so the app is at least usable offline from the home page.
-async function precacheEverything(cache) {
-  let paths;
+// Read the sitemap, precache any pages not already in the manifest, and update
+// the manifest. When notify is true and new pages appeared, tell open tabs so
+// the app can show a "new content" banner. On the first run (manifest = core
+// only) notify is false, so filling the whole site does NOT spam the banner.
+async function syncContent(cache, { notify, reportProgress }) {
+  let sitemapPaths;
   try {
-    const sitemapPaths = await fetchSitemapPaths();
-    paths = [...new Set([...CORE_URLS, ...sitemapPaths])];
+    sitemapPaths = await fetchSitemapPaths();
   } catch {
-    paths = [...CORE_URLS];
+    return; // offline / sitemap down — nothing to do
   }
-  await precachePaths(cache, paths);
-  await writeManifest(cache, paths);
-  return paths;
+  const all = [...new Set([...CORE_URLS, ...sitemapPaths])];
+  const known = new Set(await readManifest(cache));
+  const newPaths = all.filter((p) => !known.has(p));
+  if (newPaths.length === 0) return;
+
+  // Report progress only for a batch big enough to be worth a UI indicator
+  // (the first-run full precache), not a one-off new article.
+  const showProgress = reportProgress && newPaths.length >= 4;
+  const onEach = showProgress
+    ? async (doneCount, total) => {
+        // Throttle: every few pages and on the final one.
+        if (doneCount % 3 === 0 || doneCount === total) {
+          await postToClients({ type: "PRECACHE_PROGRESS", done: doneCount, total });
+        }
+      }
+    : undefined;
+
+  if (showProgress) {
+    await postToClients({ type: "PRECACHE_PROGRESS", done: 0, total: newPaths.length });
+  }
+  await precachePaths(cache, newPaths, { onEach });
+  await writeManifest(cache, all);
+  if (showProgress) await postToClients({ type: "PRECACHE_DONE", total: newPaths.length });
+
+  if (notify) {
+    await postToClients({ type: "NEW_CONTENT", count: newPaths.length });
+  }
 }
 
 // ---- lifecycle ------------------------------------------------------------
@@ -113,9 +150,16 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await precacheEverything(cache);
-      // Do NOT skipWaiting automatically — the page shows an update banner and
-      // only skips waiting when the user clicks "Update now".
+      // Fast path only: core pages + a baseline manifest, so the worker can
+      // activate and control navigations almost immediately.
+      await precachePaths(cache, CORE_URLS);
+      await writeManifest(cache, CORE_URLS);
+      // On the very FIRST install (no existing controller) take over right
+      // away. For an update we do NOT skip waiting — the page shows an update
+      // banner and only skips waiting when the user clicks "Update now".
+      if (!self.registration.active) {
+        await self.skipWaiting();
+      }
     })(),
   );
 });
@@ -123,18 +167,23 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
+      // Drop caches from older versions.
       const keys = await caches.keys();
       await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+      const cache = await caches.open(CACHE);
+      // Take control of open pages NOW so /offline works on the very next
+      // navigation, even if the user goes offline immediately.
       await self.clients.claim();
+      // Only then precache the whole sitemap in the background. Control is
+      // already granted above; this keeps the worker alive until it finishes
+      // without ever blocking navigation. notify:false ⇒ no first-run banner,
+      // but reportProgress ⇒ the app shows a "saving for offline" indicator.
+      await syncContent(cache, { notify: false, reportProgress: true });
     })(),
   );
 });
 
 // ---- fetch ----------------------------------------------------------------
-
-function isSameOrigin(url) {
-  return url.startsWith(self.location.origin);
-}
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -201,25 +250,7 @@ self.addEventListener("message", (event) => {
     event.waitUntil(
       (async () => {
         const cache = await caches.open(CACHE);
-        let sitemapPaths;
-        try {
-          sitemapPaths = await fetchSitemapPaths();
-        } catch {
-          return; // still offline / sitemap down — nothing to do
-        }
-        const known = new Set(await readManifest(cache));
-        const newPaths = sitemapPaths.filter((p) => !known.has(p));
-        if (newPaths.length === 0) return;
-
-        // Precache the new pages in the background, then update the manifest.
-        await precachePaths(cache, newPaths);
-        await writeManifest(cache, [...new Set([...known, ...sitemapPaths])]);
-
-        // Tell every open tab so it can surface the "new content" banner.
-        const clients = await self.clients.matchAll({ includeUncontrolled: true });
-        for (const client of clients) {
-          client.postMessage({ type: "NEW_CONTENT", count: newPaths.length });
-        }
+        await syncContent(cache, { notify: true, reportProgress: true });
       })(),
     );
   }
