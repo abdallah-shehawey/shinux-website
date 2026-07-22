@@ -68,9 +68,7 @@ This document provides a basic overview of computer networking concepts and the 
 
     Here's a visual representation of the encapsulation process:
 
-    > **Diagram (Mermaid source):**
-
-```text
+    ```mermaid
    graph TD
     subgraph Source["Source PC"]
         A["Application Layer: Message (M)"] --> B["Transport Layer: Segment/Datagram (Ht + M)"]
@@ -547,7 +545,7 @@ This scenario shows how all the components work together to send a message.
 6. Bob invokes his user agent (at his convenience) to read the message (which retrieves it from his mail server).
 
 
-```text
+```mermaid
 sequenceDiagram
     participant AliceUA as Alice's User Agent
     participant AliceMS as Alice's Mail Server
@@ -699,7 +697,7 @@ The process described in the examples above is called an **Iterated Query**. Thi
 
 Here is a diagram of this iterated query flow:
 
-```text
+```mermaid
 sequenceDiagram
     participant Host as Requesting Host<br>(engineering.nyu.edu)
     participant LocalDNS as Local DNS Server<br>(dns.nyu.edu)
@@ -1300,9 +1298,7 @@ To figure out the "best" path, routing algorithms don't see the complex physical
 
 Here is a visual representation of the graph from the lecture slide. This shows the routers (nodes) and the costs of the links (edges) between them.
 
-> **Diagram (Mermaid source):**
-
-```text
+```mermaid
 graph TD
     subgraph "Network Graph G=(N,E)"
         u((u)) --- |1| x((x))

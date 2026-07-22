@@ -27,7 +27,7 @@ author: abdallah-shehawey
 
 This diagram shows how the **Controller** connects to the **Agents** using SSH.
 
-```text
+```mermaid
 flowchart LR
     subgraph AWS["AWS Cloud"]
 

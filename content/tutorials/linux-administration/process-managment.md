@@ -27,7 +27,7 @@ Key characteristics of a process:
 
 A process moves through different states during its life cycle. The operating system's scheduler manages these transitions.
 
-```text
+```mermaid
 graph TD
     Dormant(Dormant / Created) --> Ready;
     Ready <--> Running;

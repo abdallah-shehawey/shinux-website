@@ -202,12 +202,7 @@ function deriveDescription(body) {
   return (lastSpace > 120 ? cut.slice(0, lastSpace) : cut).trimEnd() + "…";
 }
 
-// The Markdown pipeline has no mermaid renderer, so a ```mermaid block would
-// hand an unknown language to Shiki. Relabel it as a plain code block with a
-// heading so the diagram source still reads as intentional content.
-function flattenMermaid(body) {
-  return body.replace(/```mermaid[ \t]*\r?\n/g, "> **Diagram (Mermaid source):**\n\n```text\n");
-}
+
 
 function importTrack(track) {
   if (!fs.existsSync(track.src)) {
@@ -239,7 +234,7 @@ function importTrack(track) {
     const { content } = matter(rawSource);
     const title = deriveTitle(content, name);
     const description = deriveDescription(content);
-    const body = flattenMermaid(stripFirstH1(content)).trim() + "\n";
+    const body = stripFirstH1(content).trim() + "\n";
     const slug = slugify(name);
 
     // Pass a file object (not a raw string): matter.stringify re-parses a string

@@ -234,9 +234,7 @@ The VFS provides a common interface for all filesystems. When a user application
 
 This abstraction makes the system incredibly flexible, allowing you to mount and use various storage devices with different formats seamlessly.
 
-> **Diagram (Mermaid source):**
-
-```text
+```mermaid
 graph TD
     A[User Apps] -->|"fd = fopen('filepath')"| B(glibc);
     A --> C(Syscall Interface);

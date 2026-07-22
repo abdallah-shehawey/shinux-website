@@ -36,9 +36,7 @@ git config --list
 
 Understanding these three areas is the key to mastering Git.
 
-> **Diagram (Mermaid source):**
-
-```text
+```mermaid
 graph LR
     A[Working Directory] -- git add --> B[Staging Area]
     B[Staging Area] -- git commit --> C[Local Repository]
