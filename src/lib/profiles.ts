@@ -1,5 +1,7 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAnonClient } from "@/lib/supabase/anon";
 
 export interface PublicProfile {
   id: string;
@@ -31,3 +33,20 @@ export async function getPublicProfile(username: string): Promise<PublicProfile 
     createdAt: data.created_at,
   };
 }
+
+/**
+ * All public profile usernames, for the sitemap. Cookie-free anon read wrapped
+ * in the Next data cache (like getCachedPublicQuestions) so crawlers never
+ * trigger a live Supabase query. Usernames match [a-z0-9_-]+ so no percent
+ * encoding is needed downstream.
+ */
+export const getCachedPublicProfileUsernames = unstable_cache(
+  async (): Promise<string[]> => {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase.from("profiles_public").select("username");
+    if (error) throw error;
+    return (data ?? []).map((row) => row.username as string);
+  },
+  ["public-profile-usernames"],
+  { revalidate: 300, tags: ["profiles"] },
+);

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getArticles } from "@/lib/articles";
 import { getCachedPublicQuestions } from "@/lib/questions";
+import { getCachedPublicProfileUsernames } from "@/lib/profiles";
 import { getTracks, getAllLessonParams } from "@/lib/tutorials";
 import { site } from "@/lib/site";
 
@@ -13,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
   const articles = getArticles();
   const questions = await getCachedPublicQuestions().catch(() => []);
+  const profileUsernames = await getCachedPublicProfileUsernames().catch(() => []);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: siteUrl, changeFrequency: "weekly", priority: 1 },
@@ -52,5 +54,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...trackRoutes, ...lessonRoutes, ...articleRoutes, ...questionRoutes];
+  const profileRoutes: MetadataRoute.Sitemap = profileUsernames.map((username) => ({
+    // usernames match [a-z0-9_-]+, so no percent-encoding needed here.
+    url: `${siteUrl}/u/${username}`,
+    changeFrequency: "weekly",
+    priority: 0.4,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...trackRoutes,
+    ...lessonRoutes,
+    ...articleRoutes,
+    ...questionRoutes,
+    ...profileRoutes,
+  ];
 }
