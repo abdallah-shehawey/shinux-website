@@ -71,7 +71,7 @@ export default function NotificationsBell({
         onClick={() => setOpen((v) => !v)}
         aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
         aria-expanded={open}
-        className="btn-ghost relative px-2.5"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted transition hover:border-accent hover:text-fg active:scale-90 sm:h-9 sm:w-9 relative"
       >
         <svg
           viewBox="0 0 24 24"
