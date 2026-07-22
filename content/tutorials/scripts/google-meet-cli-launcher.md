@@ -1,0 +1,112 @@
+---
+title: Google Meet CLI Launcher (meet)
+description: >-
+  A lightweight CLI utility to store, launch, and manage Google Meet links using fzf and xdg-open.
+order: 3
+tags:
+  - bash
+  - scripts
+  - cli
+  - tools
+draft: false
+author: abdallah-shehawey
+---
+
+`meet` is a command-line utility to manage and instantly open Google Meet links or video call URLs directly from your terminal using `fzf` fuzzy searching.
+
+## Script Source (`meet`)
+
+```bash
+#!/bin/bash
+
+file="$HOME/.meet/links"
+
+mkdir -p "$HOME/.meet"
+touch "$file"
+
+# help menu
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "meet - Simple Google Meet launcher"
+    echo
+    echo "Usage:"
+    echo "  meet                     Open interactive selector"
+    echo "  meet <name>              Open saved meeting directly"
+    echo "  meet --add <name> <url> Add a new meeting"
+    echo "  meet --delete <name>     Delete a saved meeting"
+    echo "  meet --help              Show this help message"
+    exit 0
+fi
+
+# add new meeting
+if [ "$1" = "--add" ]; then
+    name="$2"
+    url="$3"
+
+    if [ -z "$name" ] || [ -z "$url" ]; then
+        echo "Usage: meet --add <name> <url>"
+        exit 1
+    fi
+
+    if grep -q "^$name " "$file"; then
+        echo "Meeting name already exists: $name"
+        exit 1
+    fi
+
+    echo "$name $url" >> "$file"
+    echo "Added: $name"
+    exit 0
+fi
+
+# delete meeting
+if [ "$1" = "--delete" ]; then
+    name="$2"
+
+    if [ -z "$name" ]; then
+        echo "Usage: meet --delete <name>"
+        exit 1
+    fi
+
+    if ! grep -q "^$name " "$file"; then
+        echo "No meeting found: $name"
+        exit 1
+    fi
+
+    grep -v "^$name " "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+
+    echo "Deleted: $name"
+    exit 0
+fi
+
+# open directly by name
+if [ -n "$1" ]; then
+    url=$(grep "^$1 " "$file" | awk '{print $2}')
+
+    if [ -z "$url" ]; then
+        echo "No meeting found: $1"
+        exit 1
+    fi
+else
+    # interactive mode via fzf
+    choice=$(cat "$file" | fzf)
+    [ -z "$choice" ] && exit 0
+    url=$(echo "$choice" | awk '{print $2}')
+fi
+
+xdg-open "$url" >/dev/null 2>&1 &
+```
+
+## Quick Commands
+
+```bash
+# Add a meeting link
+meet --add standup "https://meet.google.com/abc-defg-hij"
+
+# Launch meeting directly
+meet standup
+
+# Open interactive fuzzy finder menu
+meet
+
+# Remove a saved meeting
+meet --delete standup
+```
