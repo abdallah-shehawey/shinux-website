@@ -57,6 +57,12 @@ export default function NotificationsList({ initial }: { initial: NotificationRe
                     {n.payload.question_title}
                   </p>
                 )}
+                {n.payload.rejection_reason && (
+                  <p className="mt-1 text-sm text-muted" dir="auto">
+                    <span className="font-medium text-fg">Reason: </span>
+                    {n.payload.rejection_reason}
+                  </p>
+                )}
                 <p className="mt-1 font-mono text-xs text-muted">{formatDate(n.created_at)}</p>
               </div>
               {!n.is_read && <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />}

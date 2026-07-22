@@ -71,12 +71,21 @@ export default function AdminQuestionsQueue({ initial }: { initial: PendingQuest
   }
 
   async function reject(question: PendingQuestion) {
+    // Optional feedback for the asker. Cancel aborts the rejection entirely;
+    // an empty OK rejects without a reason (both paths supported downstream).
+    const input = window.prompt(
+      "Optional feedback for the author (leave empty to reject without a reason):",
+      "",
+    );
+    if (input === null) return;
+    const reason = input.trim();
+
     setBusyId(question.id);
     setErrorMessage("");
     const supabase = createClient();
     const { error } = await supabase
       .from("questions")
-      .update({ status: "rejected" })
+      .update({ status: "rejected", rejection_reason: reason || null })
       .eq("id", question.id);
     setBusyId(null);
     if (error) {

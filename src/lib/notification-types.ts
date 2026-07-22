@@ -10,6 +10,7 @@ export interface NotificationRecord {
     question_title?: string;
     answer_id?: string;
     reply_id?: string;
+    rejection_reason?: string | null;
   };
   is_read: boolean;
   created_at: string;
