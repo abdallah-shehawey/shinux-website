@@ -20,13 +20,13 @@
    class from the server, so this is what renders unless the visitor opts out. */
 .dark {
   color-scheme: dark;
-  --bg: #0d1117;
-  --fg: #f0f6fc;
-  --muted: #a3b3c6;
-  --accent: #3fb950;
-  --accent-fg: #041409;
-  --border: #30363d;
-  --card: #161b22;
+  --bg: #090d16;
+  --fg: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #22c55e;
+  --accent-fg: #022c22;
+  --border: #1e293b;
+  --card: #0f172a;
 }
 
 /* Expose the tokens as Tailwind utilities: bg-bg, text-fg, text-accent, etc. */
@@ -40,6 +40,11 @@
   --color-card: var(--card);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--fg);
 }
 
 body {
