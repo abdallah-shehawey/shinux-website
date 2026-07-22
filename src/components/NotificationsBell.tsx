@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { notificationLabel, notificationHref, type NotificationRecord } from "@/lib/notification-types";
+import { useDismissOnOutsideOrBack } from "@/hooks/useDismissOnOutsideOrBack";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -43,15 +44,11 @@ export default function NotificationsBell({
   }, []);
 
   useEffect(() => {
-    if (!open) return;
-    refetch();
-    function onClickOutside(e: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    if (open) refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  const dismiss = useDismissOnOutsideOrBack(open, () => setOpen(false), rootRef);
 
   async function markRead(id: string) {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
@@ -119,7 +116,7 @@ export default function NotificationsBell({
               {notifications.map((n) => {
                 const href = notificationHref(n);
                 const onOpen = () => {
-                  setOpen(false);
+                  dismiss();
                   if (!n.is_read) markRead(n.id);
                 };
                 const inner = (
