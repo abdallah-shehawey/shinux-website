@@ -107,6 +107,14 @@ export default function ServiceWorkerRegister() {
       } else if (data.type === "PRECACHE_PROGRESS") {
         clearTimeout(precacheHideTimer.current);
         setPrecache({ done: data.done, total: data.total, complete: false });
+      } else if (data.type === "PRECACHE_MORE") {
+        // The worker filled one chunk and stopped on purpose: a single pass
+        // over the whole sitemap runs long enough that the browser kills the
+        // worker part-way, which used to leave the site half available
+        // offline. Ask for the next chunk so the fill runs to completion.
+        setPrecache({ done: data.done, total: data.total, complete: false });
+        clearTimeout(precacheHideTimer.current);
+        setTimeout(checkContent, 300);
       } else if (data.type === "PRECACHE_DONE") {
         setPrecache({ done: data.total, total: data.total, complete: true });
         // Keep the "saved for offline ✓" state visible briefly, then hide.

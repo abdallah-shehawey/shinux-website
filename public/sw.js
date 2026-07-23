@@ -23,7 +23,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v9";
+const VERSION = "v10";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -48,6 +48,14 @@ const MANIFEST_URL = "/__sw_precache_manifest";
 // lost all its progress, so the next run started over and never finished,
 // leaving an arbitrary subset of the site available offline.
 const MANIFEST_FLUSH_EVERY = 8;
+
+// How many pages one sync pass may fetch. The browser terminates a service
+// worker whose event runs too long, and the whole sitemap (170+ pages, two
+// requests each) never survives a single pass on a real connection — it died
+// partway, so only a random slice of the site was ever available offline. Each
+// pass is short and durable, and the page asks for the next one (PRECACHE_MORE)
+// until the sitemap is fully cached.
+const PRECACHE_CHUNK = 24;
 
 // Give up on a single request rather than letting one hung connection block a
 // precache worker (and with it the rest of the queue) indefinitely.
@@ -129,12 +137,10 @@ async function cacheRsc(cache, path) {
 
 // Fetch and cache a batch of paths with bounded concurrency so install/refresh
 // does not fire hundreds of requests at once. Failures are ignored per-URL so
-// one bad page never aborts the whole precache. onEach(done, total) reports
-// progress so the app can show a "saving for offline" indicator.
-async function precachePaths(cache, paths, { concurrency = 6, onEach, withRsc = false, onCached } = {}) {
+// one bad page never aborts the whole precache. onCached(path) fires for each
+// path that actually landed, so the caller can persist progress as it goes.
+async function precachePaths(cache, paths, { concurrency = 6, withRsc = false, onCached } = {}) {
   const queue = paths.slice();
-  const total = paths.length;
-  let done = 0;
   const worker = async () => {
     while (queue.length) {
       const path = queue.shift();
@@ -149,25 +155,29 @@ async function precachePaths(cache, paths, { concurrency = 6, onEach, withRsc = 
       } catch {
         /* offline / 404 — skip this one */
       }
-      done += 1;
-      if (onEach) await onEach(done, total);
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
 }
 
+// The manifest records which paths are cached AND whether the fill ever
+// finished. `complete` is what tells a genuine content update apart from a
+// first fill still in progress, so a half-filled cache never announces the
+// whole site as "new content".
 async function readManifest(cache) {
   try {
     const res = await cache.match(MANIFEST_URL);
-    if (!res) return [];
-    return await res.json();
+    if (!res) return { paths: [], complete: false };
+    const data = await res.json();
+    if (Array.isArray(data)) return { paths: data, complete: false }; // older format
+    return { paths: data.paths || [], complete: !!data.complete };
   } catch {
-    return [];
+    return { paths: [], complete: false };
   }
 }
 
-async function writeManifest(cache, paths) {
-  const body = JSON.stringify(paths);
+async function writeManifest(cache, paths, complete = false) {
+  const body = JSON.stringify({ paths, complete });
   await cache.put(
     MANIFEST_URL,
     new Response(body, { headers: { "Content-Type": "application/json" } }),
@@ -225,10 +235,11 @@ async function cacheFirst(request) {
   }
 }
 
-// Read the sitemap, precache any pages not already in the manifest, and update
-// the manifest. When notify is true and new pages appeared, tell open tabs so
-// the app can show a "new content" banner. On the first run (manifest = core
-// only) notify is false, so filling the whole site does NOT spam the banner.
+// Read the sitemap and precache ONE bounded chunk of the pages still missing,
+// reporting progress against the whole site. If pages remain, PRECACHE_MORE
+// asks the page to call straight back so the next chunk runs in a fresh event —
+// that is what lets a 170-page fill finish without the browser killing the
+// worker mid-run. NEW_CONTENT is only raised once the site was already complete.
 async function syncContent(cache, { notify, reportProgress }) {
   let sitemapPaths;
   try {
@@ -237,50 +248,51 @@ async function syncContent(cache, { notify, reportProgress }) {
     return; // offline / sitemap down — nothing to do
   }
   const all = [...new Set([...CORE_URLS, ...sitemapPaths])];
-  const known = new Set(await readManifest(cache));
-  const newPaths = all.filter((p) => !known.has(p));
-  if (newPaths.length === 0) return;
+  const prev = await readManifest(cache);
+  const cached = new Set(prev.paths);
+  const remaining = all.filter((p) => !cached.has(p));
 
-  // Only a run that starts from a COMPLETE cache is looking at genuinely new
-  // content. A first fill — or the resumption of one the browser cut short —
-  // must never raise the "new content" banner for the whole site.
-  const wasComplete = all.every((p) => known.has(p));
-
-  // Report progress only for a batch big enough to be worth a UI indicator
-  // (the first-run full precache), not a one-off new article.
-  const showProgress = reportProgress && newPaths.length >= 4;
-  const onEach = showProgress
-    ? async (doneCount, total) => {
-        // Throttle: every few pages and on the final one.
-        if (doneCount % 3 === 0 || doneCount === total) {
-          await postToClients({ type: "PRECACHE_PROGRESS", done: doneCount, total });
-        }
-      }
-    : undefined;
-
-  if (showProgress) {
-    await postToClients({ type: "PRECACHE_PROGRESS", done: 0, total: newPaths.length });
+  if (remaining.length === 0) {
+    if (!prev.complete) await writeManifest(cache, [...cached], true);
+    return;
   }
+
+  const showProgress = reportProgress && (!prev.complete || remaining.length >= 4);
+  // Progress is measured against the whole sitemap, not this chunk, so the
+  // indicator reads as one continuous fill instead of restarting each pass.
+  const post = (type, extra) =>
+    postToClients({ type, done: cached.size, total: all.length, ...extra });
+
+  if (showProgress) await post("PRECACHE_PROGRESS");
+
   // Record every page as it lands and flush periodically, so a worker the
-  // browser kills mid-run leaves durable progress the next run resumes from
-  // instead of restarting. Only pages that actually cached are recorded, so
-  // failures are naturally retried later.
-  const cached = new Set(known);
+  // browser kills mid-chunk leaves durable progress to resume from. Only pages
+  // that actually cached are recorded, so failures are retried on a later pass.
   let sinceFlush = 0;
   const onCached = async (path) => {
     cached.add(path);
     if (++sinceFlush >= MANIFEST_FLUSH_EVERY) {
       sinceFlush = 0;
-      await writeManifest(cache, [...cached]);
+      await writeManifest(cache, [...cached], false);
     }
+    if (showProgress && cached.size % 3 === 0) await post("PRECACHE_PROGRESS");
   };
 
-  await precachePaths(cache, newPaths, { onEach, withRsc: true, onCached });
-  await writeManifest(cache, [...cached]);
-  if (showProgress) await postToClients({ type: "PRECACHE_DONE", total: newPaths.length });
+  await precachePaths(cache, remaining.slice(0, PRECACHE_CHUNK), { withRsc: true, onCached });
 
-  if (notify && wasComplete) {
-    await postToClients({ type: "NEW_CONTENT", count: cached.size - known.size });
+  const complete = all.every((p) => cached.has(p));
+  await writeManifest(cache, [...cached], complete);
+
+  if (!complete) {
+    // Still pages to go: ask for another pass rather than pushing on in this
+    // event, which is what used to get the worker killed.
+    if (showProgress) await post("PRECACHE_MORE");
+    return;
+  }
+
+  if (showProgress) await post("PRECACHE_DONE");
+  if (notify && prev.complete) {
+    await post("NEW_CONTENT", { count: cached.size - prev.paths.length });
   }
 }
 
