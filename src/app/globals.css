@@ -20,13 +20,13 @@
    class from the server, so this is what renders unless the visitor opts out. */
 .dark {
   color-scheme: dark;
-  --bg: #0d1117;
-  --fg: #e6edf3;
-  --muted: #9198a1;
+  --bg: #010409;
+  --fg: #f0f6fc;
+  --muted: #8b949e;
   --accent: #3fb950;
   --accent-fg: #051b0d;
-  --border: #30363d;
-  --card: #161b22;
+  --border: #21262d;
+  --card: #0d1117;
 }
 
 /* Expose the tokens as Tailwind utilities: bg-bg, text-fg, text-accent, etc. */
