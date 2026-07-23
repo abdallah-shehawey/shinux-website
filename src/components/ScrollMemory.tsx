@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 // Module-level maps survive across component re-renders and re-mounts.
 // They persist for the lifetime of the browser tab (SPA session).
@@ -12,22 +12,49 @@ const visitedPaths = new Set<string>();
  * Invisible component that saves and restores scroll positions per pathname.
  *
  * How it works:
- * 1. Navigation links that should preserve scroll (header nav tabs, back links)
- *    use `scroll={false}` so Next.js does NOT scroll to top.
- * 2. When the pathname changes, this component saves `window.scrollY` for the
- *    old pathname (still accurate because `scroll={false}` didn't reset it).
- * 3. If the new pathname was previously visited, it restores the saved position.
- *    If it's a first visit, it scrolls to top (needed because `scroll={false}`
- *    would otherwise leave the page at the old page's scroll position).
+ * 1. A document-level click handler (capture phase) saves window.scrollY for
+ *    the current pathname the INSTANT any <a> is clicked — before Next.js
+ *    starts its navigation and potentially scrolls to top.
+ * 2. When the pathname changes, if the new page was previously visited its
+ *    saved scroll position is restored. If it's a first visit, scroll goes
+ *    to the top.
  *
- * Regular content links (cards, lesson links, etc.) keep the default
- * `scroll={true}` and are unaffected — they scroll to top as usual.
+ * This covers every navigation pattern:
+ * - Header tab links (scroll={false})  → save on click, restore on arrival
+ * - Back links like ← All tutorials    → save on click, restore on arrival
+ * - Content cards (default scroll=true) → save on click, new page starts at 0
+ * - Browser back/forward               → Next.js handles natively with staleTimes
  */
 export default function ScrollMemory() {
   const pathname = usePathname();
   const prevPath = useRef(pathname);
   const mounted = useRef(false);
 
+  // Save scroll position the moment ANY internal link is clicked.
+  // Using capture phase guarantees this fires BEFORE the navigation starts
+  // and before Next.js's scroll={true} resets window.scrollY to 0.
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (!anchor) return;
+
+      // Only save for internal navigation links (same-origin, no target)
+      if (
+        anchor.href &&
+        !anchor.target &&
+        !e.defaultPrevented &&
+        anchor.origin === window.location.origin
+      ) {
+        scrollPositions.set(pathname, window.scrollY);
+      }
+    };
+
+    document.addEventListener("click", handleClick, { capture: true });
+    return () =>
+      document.removeEventListener("click", handleClick, { capture: true });
+  }, [pathname]);
+
+  // Restore scroll position when the pathname changes.
   useLayoutEffect(() => {
     // On very first mount, just mark the initial path as visited.
     if (!mounted.current) {
@@ -38,11 +65,6 @@ export default function ScrollMemory() {
 
     const oldPath = prevPath.current;
     if (oldPath === pathname) return;
-
-    // Save scroll position for the page we're leaving.
-    // Because nav/back links use scroll={false}, window.scrollY still holds
-    // the genuine scroll position of the old page at this point.
-    scrollPositions.set(oldPath, window.scrollY);
     prevPath.current = pathname;
 
     // Restore scroll for the page we're entering.
