@@ -6,6 +6,7 @@ import TutorialSidebar from "@/components/TutorialSidebar";
 import CopyCodeButtons from "@/components/CopyCodeButtons";
 import CodeTabs from "@/components/CodeTabs";
 import MermaidRenderer from "@/components/MermaidRenderer";
+import ArticleImageZoom from "@/components/ArticleImageZoom";
 import type { TocItem } from "@/lib/markdown";
 import type { LessonMeta } from "@/lib/tutorials";
 
@@ -92,6 +93,7 @@ export default function TutorialReader({
         <CopyCodeButtons containerId={CONTENT_ID} />
         <CodeTabs containerId={CONTENT_ID} />
         <MermaidRenderer containerId={CONTENT_ID} />
+        <ArticleImageZoom containerId={CONTENT_ID} />
 
         {children}
       </div>
