@@ -86,9 +86,9 @@ export default async function TrackPage({
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="flex h-full flex-1 flex-col gap-1">
-                <span className="line-clamp-2 font-medium text-fg group-hover:text-accent transition-colors flex items-center justify-between gap-2">
-                  <span>{lesson.title}</span>
-                  <span className="text-muted group-hover:text-accent transition-transform group-hover:translate-x-1" aria-hidden="true">&rarr;</span>
+                <span className="flex items-center justify-between gap-2 font-medium text-fg group-hover:text-accent transition-colors">
+                  <span className="line-clamp-2">{lesson.title}</span>
+                  <span className="shrink-0 text-muted group-hover:text-accent transition-transform group-hover:translate-x-1" aria-hidden="true">&rarr;</span>
                 </span>
                 {lesson.description ? (
                   <span className="flex-grow flex-1 min-h-0">
