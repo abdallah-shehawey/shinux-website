@@ -66,6 +66,7 @@ export default function MobileNav({
             <Link
               key={l.href}
               href={l.href}
+              prefetch={true}
               role="menuitem"
               onClick={dismiss}
               className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors active:scale-[0.98] ${

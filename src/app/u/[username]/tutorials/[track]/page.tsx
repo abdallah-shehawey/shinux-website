@@ -33,7 +33,7 @@ export default async function ProfileTutorialsTrackPage({
 
   return (
     <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
-      <Link href={`/u/${profile.username}/tutorials`} className="text-sm text-muted hover:text-accent">
+      <Link href={`/u/${profile.username}/tutorials`} prefetch={true} className="text-sm text-muted hover:text-accent">
         &larr; Back to tutorials by {profile.displayName}
       </Link>
 

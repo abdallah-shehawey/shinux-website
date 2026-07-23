@@ -83,6 +83,7 @@ export default async function LessonPage({
         <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
           <Link
             href={`/tutorials/${track}`}
+            prefetch={true}
             className="text-sm text-muted hover:text-accent transition-colors"
           >
             &larr; {trackData?.meta.title ?? "Back to track"}
