@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { warmMermaidCache } from "@/lib/warm-mermaid";
 
 // Registers the service worker (production only — `next dev` is skipped to avoid
 // caching surprises) and drives two in-app banners:
@@ -51,11 +52,30 @@ export default function ServiceWorkerRegister() {
       navigator.serviceWorker.controller?.postMessage({ type: "CHECK_CONTENT" });
     };
 
+    // Once the SW is in control and we're online, pull Mermaid's lazily-loaded
+    // diagram chunks into the cache (idle-deferred so it never competes with
+    // the page). Those chunks aren't referenced by any page HTML, so the
+    // sitemap precache misses them — without this, diagrams render online but
+    // fall back to a raw code block offline. See lib/warm-mermaid.ts.
+    const warmMermaid = () => {
+      if (!navigator.onLine || !navigator.serviceWorker.controller) return;
+      const run = () => warmMermaidCache();
+      if ("requestIdleCallback" in window) {
+        (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void })
+          .requestIdleCallback(run, { timeout: 5000 });
+      } else {
+        setTimeout(run, 3000);
+      }
+    };
+
     navigator.serviceWorker
       .register("/sw.js")
       .then((reg) => {
         // A worker may already be waiting from a previous visit.
         promoteIfWaiting(reg);
+
+        // If a controller is already active (returning visitor), warm now.
+        warmMermaid();
 
         reg.addEventListener("updatefound", () => {
           const installing = reg.installing;
@@ -100,7 +120,11 @@ export default function ServiceWorkerRegister() {
       if (userTriggeredUpdate.current) {
         userTriggeredUpdate.current = false;
         window.location.reload();
+        return;
       }
+      // First-ever install just took control of this page — warm Mermaid now
+      // that our SW can cache the chunks it fetches.
+      warmMermaid();
     };
     navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
 
