@@ -128,7 +128,7 @@ export default async function ArticlePage({
     <>
       <div className="sticky top-14 z-10 bg-bg">
         <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
-          <Link href="/articles" prefetch={true} className="text-sm text-muted hover:text-accent transition-colors">
+          <Link href="/articles" prefetch={true} scroll={false} className="text-sm text-muted hover:text-accent transition-colors">
             &larr; Back to articles
           </Link>
         </div>

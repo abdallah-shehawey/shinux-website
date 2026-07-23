@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeScript } from "@/components/ThemeScript";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import ScrollMemory from "@/components/ScrollMemory";
 import "./globals.css";
 
 const inter = Inter({
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ScrollMemory />
         <ServiceWorkerRegister />
         <Analytics />
       </body>

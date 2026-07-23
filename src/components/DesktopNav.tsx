@@ -32,6 +32,7 @@ export default function DesktopNav({
             key={l.href}
             href={l.href}
             prefetch={true}
+            scroll={false}
             className={`flex h-full items-center px-3 font-medium transition-colors ${
               active ? "text-accent" : "text-muted hover:text-accent"
             }`}
