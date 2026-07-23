@@ -23,7 +23,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v8";
+const VERSION = "v9";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -41,6 +41,17 @@ const CORE_URLS = [
 // so content syncs can diff a fresh sitemap against it without scanning every
 // asset in the cache.
 const MANIFEST_URL = "/__sw_precache_manifest";
+
+// Persist precache progress every N pages. The browser can terminate a service
+// worker at any moment, and the sitemap precache is far too long to assume it
+// runs to completion — writing the manifest only at the end meant a killed run
+// lost all its progress, so the next run started over and never finished,
+// leaving an arbitrary subset of the site available offline.
+const MANIFEST_FLUSH_EVERY = 8;
+
+// Give up on a single request rather than letting one hung connection block a
+// precache worker (and with it the rest of the queue) indefinitely.
+const FETCH_TIMEOUT_MS = 15000;
 
 // ---- helpers --------------------------------------------------------------
 
@@ -72,6 +83,16 @@ async function postToClients(message) {
   for (const client of clients) client.postMessage(message);
 }
 
+async function fetchWithTimeout(input, init = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // A client-side (soft) navigation fetches the route's RSC *flight* payload, not
 // its HTML — and that request carries a per-navigation `?_rsc=<hash>` cache
 // buster we can never precache by exact URL. So we store and look up the flight
@@ -96,7 +117,7 @@ function looksLikePage(path) {
 // text/x-component — the same payload a prefetch would fetch.
 async function cacheRsc(cache, path) {
   try {
-    const res = await fetch(path, { cache: "no-cache", headers: { RSC: "1" } });
+    const res = await fetchWithTimeout(path, { cache: "no-cache", headers: { RSC: "1" } });
     const ct = res.headers.get("content-type") || "";
     if (res.ok && ct.includes("text/x-component")) {
       await cache.put(rscKey(path.split("?")[0]), res.clone());
@@ -110,7 +131,7 @@ async function cacheRsc(cache, path) {
 // does not fire hundreds of requests at once. Failures are ignored per-URL so
 // one bad page never aborts the whole precache. onEach(done, total) reports
 // progress so the app can show a "saving for offline" indicator.
-async function precachePaths(cache, paths, { concurrency = 6, onEach, withRsc = false } = {}) {
+async function precachePaths(cache, paths, { concurrency = 6, onEach, withRsc = false, onCached } = {}) {
   const queue = paths.slice();
   const total = paths.length;
   let done = 0;
@@ -118,11 +139,12 @@ async function precachePaths(cache, paths, { concurrency = 6, onEach, withRsc = 
     while (queue.length) {
       const path = queue.shift();
       try {
-        const res = await fetch(path, { cache: "no-cache" });
+        const res = await fetchWithTimeout(path, { cache: "no-cache" });
         if (res && res.ok) {
           await cache.put(path, res.clone());
           // Also precache the RSC flight so offline soft navigations work.
           if (withRsc && looksLikePage(path)) await cacheRsc(cache, path);
+          if (onCached) await onCached(path);
         }
       } catch {
         /* offline / 404 — skip this one */
@@ -219,6 +241,11 @@ async function syncContent(cache, { notify, reportProgress }) {
   const newPaths = all.filter((p) => !known.has(p));
   if (newPaths.length === 0) return;
 
+  // Only a run that starts from a COMPLETE cache is looking at genuinely new
+  // content. A first fill — or the resumption of one the browser cut short —
+  // must never raise the "new content" banner for the whole site.
+  const wasComplete = all.every((p) => known.has(p));
+
   // Report progress only for a batch big enough to be worth a UI indicator
   // (the first-run full precache), not a one-off new article.
   const showProgress = reportProgress && newPaths.length >= 4;
@@ -234,12 +261,26 @@ async function syncContent(cache, { notify, reportProgress }) {
   if (showProgress) {
     await postToClients({ type: "PRECACHE_PROGRESS", done: 0, total: newPaths.length });
   }
-  await precachePaths(cache, newPaths, { onEach, withRsc: true });
-  await writeManifest(cache, all);
+  // Record every page as it lands and flush periodically, so a worker the
+  // browser kills mid-run leaves durable progress the next run resumes from
+  // instead of restarting. Only pages that actually cached are recorded, so
+  // failures are naturally retried later.
+  const cached = new Set(known);
+  let sinceFlush = 0;
+  const onCached = async (path) => {
+    cached.add(path);
+    if (++sinceFlush >= MANIFEST_FLUSH_EVERY) {
+      sinceFlush = 0;
+      await writeManifest(cache, [...cached]);
+    }
+  };
+
+  await precachePaths(cache, newPaths, { onEach, withRsc: true, onCached });
+  await writeManifest(cache, [...cached]);
   if (showProgress) await postToClients({ type: "PRECACHE_DONE", total: newPaths.length });
 
-  if (notify) {
-    await postToClients({ type: "NEW_CONTENT", count: newPaths.length });
+  if (notify && wasComplete) {
+    await postToClients({ type: "NEW_CONTENT", count: cached.size - known.size });
   }
 }
 
