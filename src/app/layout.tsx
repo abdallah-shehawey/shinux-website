@@ -29,12 +29,14 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+// A single, non-media theme-color: the browser/PWA chrome must follow the theme
+// the user picked in the app (the `theme` cookie), not the OS preference — with
+// media-keyed values a light page on a dark phone kept a black status bar.
+// ThemeScript rewrites this before first paint and ThemeToggle keeps it in sync;
+// the value here is the dark default that <html className="dark"> ships with.
 export const viewport: Viewport = {
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#010409" },
-  ],
+  themeColor: "#010409",
 };
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;

@@ -9,6 +9,10 @@ export default function ThemeToggle() {
     const next = !d.classList.contains("dark");
     d.classList.toggle("dark", next);
     d.style.colorScheme = next ? "dark" : "light";
+    // Keep the browser/PWA chrome on the chosen theme, matching ThemeScript.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", next ? "#010409" : "#ffffff");
     document.cookie = `theme=${next ? "dark" : "light"}; path=/; max-age=31536000; SameSite=Lax`;
   }
 
