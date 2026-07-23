@@ -11,9 +11,15 @@ const RTL_CHAR = /[֐-ࣿיִ-﷽ﹰ-ﻼ]/;
 const LTR_CHAR = /[A-Za-zÀ-ɏͰ-ӿ]/;
 
 export function detectDirection(text: string): "rtl" | "ltr" {
+  let rtlCount = 0;
+  let ltrCount = 0;
+
   for (const ch of text) {
-    if (RTL_CHAR.test(ch)) return "rtl";
-    if (LTR_CHAR.test(ch)) return "ltr";
+    if (RTL_CHAR.test(ch)) rtlCount++;
+    else if (LTR_CHAR.test(ch)) ltrCount++;
   }
-  return "ltr";
+
+  if (rtlCount === 0 && ltrCount === 0) return "ltr";
+  return rtlCount >= ltrCount ? "rtl" : "ltr";
 }
+

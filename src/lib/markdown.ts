@@ -67,18 +67,11 @@ const sanitizeSchema: Schema = {
   },
 };
 
-// Every text block decides its own direction from its own first strong
-// character (dir="auto"), so Arabic and English paragraphs coexist in one body
-// — an English line inside an Arabic question renders LTR and vice versa.
-//
-// Only LEAF text blocks get the attribute. Containers (ul/ol/blockquote/table)
-// inherit from the page: HTML's dir="auto" resolution SKIPS descendants that
-// carry their own dir attribute, so stamping a container whose children are
-// all dir="auto" would wrongly resolve it to LTR. For the same reason a <p>
-// directly inside an <li> (loose lists) is skipped — the <li> already carries
-// the attribute and must keep seeing its text. <pre> is deliberately absent:
-// code blocks are forced LTR in globals.css (spec §5). Runs AFTER
-// rehype-sanitize so the attribute isn't stripped.
+import { detectDirection } from "./bidi";
+
+// Every text block decides its own direction based on character counts (dir="rtl" or "ltr"),
+// so Arabic and English paragraphs coexist cleanly in one body, and Arabic paragraphs starting
+// with English names or emojis (e.g. "🎮 Nobara") aren't misclassified as LTR.
 const BIDI_BLOCKS = new Set(["p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "td", "th"]);
 
 function rehypeBidiAuto() {
@@ -87,7 +80,9 @@ function rehypeBidiAuto() {
       if (!BIDI_BLOCKS.has(node.tagName)) return;
       const parentTag = parent && parent.type === "element" ? parent.tagName : null;
       if (parentTag === "li") return;
-      node.properties = { ...node.properties, dir: "auto" };
+      const text = hastToString(node);
+      const dir = detectDirection(text);
+      node.properties = { ...node.properties, dir };
     });
   };
 }

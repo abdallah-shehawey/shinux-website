@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
+import { detectDirection } from "@/lib/bidi";
 import AuthorInline from "@/components/AuthorInline";
 
 function formatDate(iso: string): string {
@@ -174,7 +175,7 @@ export default function QuestionContent({
         </form>
       ) : (
         <>
-          <h1 className="mb-4 text-3xl font-bold tracking-tight" dir="auto" lang={locale}>
+          <h1 className="mb-4 text-3xl font-bold tracking-tight" dir={detectDirection(title)} lang={locale}>
             {title}
           </h1>
 

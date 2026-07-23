@@ -63,10 +63,10 @@ author: abdallah-shehawey
 
 **أيوه ينفع جداً.**
 لأن اللي بيحدد شكل النظام وتجربة المستخدم هو **Desktop Environment (DE)** مش التوزيعة نفسها. ومن أشهر الواجهات:
-- 🔹 **GNOME**
-- 🔹 **KDE Plasma**
-- 🔹 **XFCE**
-- 🔹 **Cinnamon**
+- **GNOME**
+- **KDE Plasma**
+- **XFCE**
+- **Cinnamon**
 
 وممكن تثبت أكتر من واجهة على نفس التوزيعة، وتختار بينهم من شاشة التسجيل (Login Screen).
 
