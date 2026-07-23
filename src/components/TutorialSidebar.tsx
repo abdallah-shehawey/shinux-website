@@ -44,13 +44,21 @@ export default function TutorialSidebar({
             <Link
               href={`/tutorials/${track}/${l.slug}`}
               aria-current={active ? "page" : undefined}
-              className={`block rounded-md px-2 py-1.5 transition-colors hover:bg-card ${
+              className={`flex items-center justify-between rounded-md px-2.5 py-2 transition-all active:scale-[0.98] ${
                 active
-                  ? "border-s-2 border-accent bg-card font-medium text-accent"
-                  : "text-muted"
+                  ? "border-s-2 border-accent bg-accent/10 font-semibold text-fg shadow-xs"
+                  : "text-muted hover:bg-card hover:text-fg"
               }`}
             >
-              <span className="font-mono text-xs text-muted">{i + 1}.</span> {l.title}
+              <span className="flex items-center gap-2 min-w-0">
+                <span className={`font-mono text-xs ${active ? "text-accent font-bold" : "text-muted"}`}>
+                  {i + 1}.
+                </span>
+                <span className="truncate">{l.title}</span>
+              </span>
+              {active && (
+                <span className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]" aria-hidden="true" />
+              )}
             </Link>
           </li>
         );

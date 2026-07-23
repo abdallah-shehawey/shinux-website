@@ -2,7 +2,7 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
 import HeaderAuth from "./HeaderAuth";
-import AdminNavLink from "./AdminNavLink";
+import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 
 // Deliberately a sync, cookie-free server component: it renders in the root
@@ -19,9 +19,6 @@ const links = [
   { href: "/about", label: "About" },
 ] as const;
 
-const navLinkClass =
-  "text-muted transition hover:text-fg active:scale-95 active:text-fg";
-
 export default function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
@@ -34,14 +31,7 @@ export default function Header() {
           <span>{site.name}</span>
         </Link>
 
-        <nav className="ms-2 hidden items-center gap-4 text-sm sm:flex">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className={navLinkClass}>
-              {l.label}
-            </Link>
-          ))}
-          <AdminNavLink className={navLinkClass} />
-        </nav>
+        <DesktopNav links={links} />
 
         <div className="ms-auto flex items-center gap-2.5 sm:gap-3">
           <MobileNav links={links} />
