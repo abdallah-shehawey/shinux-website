@@ -17,6 +17,7 @@ import { warmMermaidCache } from "@/lib/warm-mermaid";
 //     whole site and streams PRECACHE_PROGRESS / PRECACHE_DONE; we show a small
 //     progress indicator so the user can see the site being saved for offline.
 const UPDATE_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+const AUTO_DISMISS_BANNER_MS = 10 * 1000; // 10 seconds (auto hide if ignored)
 
 type Precache = { done: number; total: number; complete: boolean };
 
@@ -146,6 +147,24 @@ export default function ServiceWorkerRegister() {
     };
   }, []);
 
+  // Automatically dismiss the "New version available" banner after 10 seconds if ignored
+  useEffect(() => {
+    if (!waitingWorker) return;
+    const timer = setTimeout(() => {
+      setWaitingWorker(null);
+    }, AUTO_DISMISS_BANNER_MS);
+    return () => clearTimeout(timer);
+  }, [waitingWorker]);
+
+  // Automatically dismiss the "New content added" banner after 10 seconds if ignored
+  useEffect(() => {
+    if (newContentCount <= 0) return;
+    const timer = setTimeout(() => {
+      setNewContentCount(0);
+    }, AUTO_DISMISS_BANNER_MS);
+    return () => clearTimeout(timer);
+  }, [newContentCount]);
+
   const applyUpdate = () => {
     if (!waitingWorker) return;
     userTriggeredUpdate.current = true;
@@ -197,12 +216,24 @@ export default function ServiceWorkerRegister() {
       {waitingWorker && (
         <div className="flex w-full max-w-md items-center justify-between gap-3 rounded-xl border border-fg/10 bg-bg/95 px-4 py-3 shadow-lg backdrop-blur">
           <span className="text-sm text-fg">A new version is available 🎉</span>
-          <button
-            onClick={applyUpdate}
-            className="shrink-0 rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
-          >
-            Update now
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={applyUpdate}
+              className="rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
+            >
+              Update now
+            </button>
+            <button
+              onClick={() => setWaitingWorker(null)}
+              className="rounded-lg p-1.5 text-fg/60 hover:bg-fg/10 hover:text-fg transition-colors"
+              title="Dismiss"
+              aria-label="Dismiss notification"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
@@ -211,12 +242,24 @@ export default function ServiceWorkerRegister() {
           <span className="text-sm text-fg">
             New content was added 🎉 Refresh to load it — it&apos;ll be saved for offline too.
           </span>
-          <button
-            onClick={refreshContent}
-            className="shrink-0 rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
-          >
-            Refresh
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={refreshContent}
+              className="rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
+            >
+              Refresh
+            </button>
+            <button
+              onClick={() => setNewContentCount(0)}
+              className="rounded-lg p-1.5 text-fg/60 hover:bg-fg/10 hover:text-fg transition-colors"
+              title="Dismiss"
+              aria-label="Dismiss notification"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </div>
