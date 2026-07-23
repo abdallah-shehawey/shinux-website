@@ -14,7 +14,8 @@ export default function MermaidRenderer({ containerId }: { containerId: string }
 
     const cleanups: Array<() => void> = [];
 
-    const isDark = document.documentElement.classList.contains("dark");
+    // Dark is the default and carries no attribute; only `light` opts out.
+    const isDark = document.documentElement.getAttribute("data-theme") !== "light";
     mermaid.initialize({
       startOnLoad: false,
       theme: isDark ? "dark" : "default",

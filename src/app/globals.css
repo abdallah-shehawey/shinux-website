@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
-/* Class-based dark mode: the `dark` class on <html> controls the theme. */
-@custom-variant dark (&:where(.dark, .dark *));
+/* The theme is driven by a `data-theme` attribute on <html>, set by
+   ThemeScript before first paint. It is deliberately NOT a class: <html>'s
+   className is a React prop, so React re-applies the server value on the first
+   client render and would wipe the visitor's choice (it did exactly that on the
+   home page, whose client hero re-renders immediately). React never touches an
+   attribute that does not appear in JSX, so `data-theme` is safe.
+   Dark is the default — it needs no attribute, which also keeps the site dark
+   with JavaScript disabled — and only `light` opts out. */
+@custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
 
 /* Light theme (GitHub-light inspired, terminal-green accent). Applied only
-   when the `dark` class is removed (via the `light` theme cookie). */
+   when ThemeScript sets data-theme="light" from the `theme` cookie. */
 :root {
   color-scheme: light;
   --bg: #ffffff;
@@ -16,9 +23,10 @@
   --card: #f6f8fa;
 }
 
-/* Dark theme is the default look of the site — <html> ships with the `dark`
-   class from the server, so this is what renders unless the visitor opts out. */
-.dark {
+/* Dark theme is the default look of the site: it applies whenever <html> is
+   not marked data-theme="light", so it is what renders unless the visitor
+   opts out. */
+:root:not([data-theme="light"]) {
   color-scheme: dark;
   --bg: #010409;
   --fg: #f0f6fc;
@@ -300,10 +308,10 @@ input:not([type]) {
 .prose .admonition-note .admonition-title {
   color: #0969da;
 }
-.dark .prose .admonition-note {
+:root:not([data-theme="light"]) .prose .admonition-note {
   border-inline-start-color: #58a6ff;
 }
-.dark .prose .admonition-note .admonition-title {
+:root:not([data-theme="light"]) .prose .admonition-note .admonition-title {
   color: #58a6ff;
 }
 .prose .admonition-tip {
@@ -318,10 +326,10 @@ input:not([type]) {
 .prose .admonition-important .admonition-title {
   color: #8250df;
 }
-.dark .prose .admonition-important {
+:root:not([data-theme="light"]) .prose .admonition-important {
   border-inline-start-color: #a371f7;
 }
-.dark .prose .admonition-important .admonition-title {
+:root:not([data-theme="light"]) .prose .admonition-important .admonition-title {
   color: #a371f7;
 }
 .prose .admonition-warning {
@@ -330,10 +338,10 @@ input:not([type]) {
 .prose .admonition-warning .admonition-title {
   color: #9a6700;
 }
-.dark .prose .admonition-warning {
+:root:not([data-theme="light"]) .prose .admonition-warning {
   border-inline-start-color: #d29922;
 }
-.dark .prose .admonition-warning .admonition-title {
+:root:not([data-theme="light"]) .prose .admonition-warning .admonition-title {
   color: #d29922;
 }
 .prose .admonition-danger {
@@ -342,10 +350,10 @@ input:not([type]) {
 .prose .admonition-danger .admonition-title {
   color: #cf222e;
 }
-.dark .prose .admonition-danger {
+:root:not([data-theme="light"]) .prose .admonition-danger {
   border-inline-start-color: #f85149;
 }
-.dark .prose .admonition-danger .admonition-title {
+:root:not([data-theme="light"]) .prose .admonition-danger .admonition-title {
   color: #f85149;
 }
 .prose table {
@@ -446,7 +454,7 @@ input:not([type]) {
 /* Shiki dual-theme (defaultColor:false): every color is ONLY a CSS custom
    property (--shiki-light[-bg] / --shiki-dark[-bg]) on the <pre>/token spans —
    nothing is painted until we read one pair or the other here, switched by
-   the site's .dark class. */
+   the site's data-theme attribute. */
 .prose pre.shiki,
 .prose pre .shiki {
   color: var(--shiki-light);
@@ -458,13 +466,13 @@ input:not([type]) {
   font-style: var(--shiki-light-font-style, normal);
   font-weight: var(--shiki-light-font-weight, inherit);
 }
-.dark .prose pre.shiki,
-.dark .prose pre .shiki {
+:root:not([data-theme="light"]) .prose pre.shiki,
+:root:not([data-theme="light"]) .prose pre .shiki {
   color: var(--shiki-dark);
   background-color: var(--shiki-dark-bg) !important;
 }
-.dark .prose pre.shiki span,
-.dark .prose pre .shiki span {
+:root:not([data-theme="light"]) .prose pre.shiki span,
+:root:not([data-theme="light"]) .prose pre .shiki span {
   color: var(--shiki-dark);
   font-style: var(--shiki-dark-font-style, normal);
   font-weight: var(--shiki-dark-font-weight, inherit);

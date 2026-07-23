@@ -1,13 +1,16 @@
 "use client";
 
-// The visible icon is driven purely by the `dark` class via CSS (no React
-// state), so there is never a hydration mismatch. Clicking flips the class and
-// persists the choice in a long-lived cookie so ThemeScript can restore it.
+// The visible icon is driven purely by CSS off the `data-theme` attribute (no
+// React state), so there is never a hydration mismatch. Clicking flips the
+// attribute and persists the choice in a long-lived cookie so ThemeScript can
+// restore it. Dark is the default and carries no attribute — see ThemeScript
+// for why this must not be a class.
 export default function ThemeToggle() {
   function toggle() {
     const d = document.documentElement;
-    const next = !d.classList.contains("dark");
-    d.classList.toggle("dark", next);
+    const next = d.getAttribute("data-theme") === "light"; // currently light ⇒ go dark
+    if (next) d.removeAttribute("data-theme");
+    else d.setAttribute("data-theme", "light");
     d.style.colorScheme = next ? "dark" : "light";
     // Keep the browser/PWA chrome on the chosen theme, matching ThemeScript.
     document

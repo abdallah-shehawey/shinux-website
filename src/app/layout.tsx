@@ -80,12 +80,17 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // No theme class on <html>: React rewrites this className on the first client
+  // render, which silently reverted the visitor's choice (the home page went
+  // back to dark ~13ms after DOMContentLoaded). The theme is a `data-theme`
+  // attribute owned by ThemeScript instead — dark is the default and needs no
+  // attribute. See ThemeScript for the full story.
   return (
     <html
       lang="en"
       dir="ltr"
       suppressHydrationWarning
-      className={`dark ${inter.variable} ${ibmPlexArabic.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${ibmPlexArabic.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>
         <ThemeScript />
