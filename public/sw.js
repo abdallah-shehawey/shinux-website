@@ -23,7 +23,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v6";
+const VERSION = "v7";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -114,6 +114,54 @@ async function writeManifest(cache, paths) {
   );
 }
 
+// Extract the same-origin build assets (global CSS, self-hosted fonts, JS
+// chunks) referenced by a rendered HTML document. next/font self-hosts the
+// fonts under /_next/static/media with hashed names, so parsing the shell HTML
+// is how the SW discovers the exact font/CSS URLs it must cache to render the
+// site faithfully offline.
+function staticAssetsFromHtml(html) {
+  const urls = new Set();
+  const re = /(?:href|src)="(\/_next\/static\/[^"]+)"/g;
+  let m;
+  while ((m = re.exec(html))) urls.add(m[1]);
+  return [...urls];
+}
+
+// Precache the shell's critical build assets — the global CSS plus the three
+// self-hosted fonts (Inter / IBM Plex Arabic / JetBrains Mono) and the shell
+// JS. Without this the first OFFLINE paint has no fonts and falls back to
+// system fonts, which reads as a thin, "faded" render. Every page loads the
+// same root-layout fonts and global stylesheet, so parsing "/" alone covers
+// the whole site's typography.
+async function precacheShellAssets(cache) {
+  try {
+    const res = await fetch("/", { cache: "no-cache" });
+    if (!res || !res.ok) return;
+    const html = await res.clone().text();
+    await cache.put("/", res);
+    await precachePaths(cache, staticAssetsFromHtml(html));
+  } catch {
+    /* offline — these get cached at runtime on the next online load instead */
+  }
+}
+
+// Cache-first for immutable, content-hashed build assets (/_next/static/*).
+// Because a new build changes the hash (and therefore the URL), a cached asset
+// can never be stale — so this is both the fastest online path and a reliable
+// offline one, and it is what guarantees the fonts/CSS survive offline.
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  try {
+    const res = await fetch(request);
+    if (res && res.ok && res.type === "basic") cache.put(request, res.clone());
+    return res;
+  } catch {
+    return new Response("", { status: 504, statusText: "Offline asset unavailable" });
+  }
+}
+
 // Read the sitemap, precache any pages not already in the manifest, and update
 // the manifest. When notify is true and new pages appeared, tell open tabs so
 // the app can show a "new content" banner. On the first run (manifest = core
@@ -184,6 +232,10 @@ self.addEventListener("activate", (event) => {
       // Take control of open pages NOW so /offline works on the very next
       // navigation, even if the user goes offline immediately.
       await self.clients.claim();
+      // Cache the shell's fonts + global CSS FIRST so an immediate offline load
+      // paints with the real typography (missing fonts fall back to system
+      // fonts, which reads as a "faded" render), then fill the rest of the site.
+      await precacheShellAssets(cache);
       // Only then precache the whole sitemap in the background. Control is
       // already granted above; this keeps the worker alive until it finishes
       // without ever blocking navigation. notify:false ⇒ no first-run banner,
@@ -207,6 +259,15 @@ self.addEventListener("fetch", (event) => {
 
   // API responses are dynamic and user-specific: pass through, never cache.
   if (url.pathname.startsWith("/api/")) return;
+
+  // Immutable, content-hashed build assets (JS/CSS/self-hosted fonts) live under
+  // /_next/static: serve them cache-first. A new build changes the hash (and the
+  // URL), so a cached copy can never be stale — this is the fastest online path
+  // and, crucially, keeps the real fonts + styles available offline.
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
 
   const isNavigation =
     request.mode === "navigate" ||
