@@ -14,6 +14,86 @@ author: abdallah-shehawey
 
 `antigravity-update.sh` is an automated updater script that checks the official download portal for new releases of the Antigravity IDE, downloads the tarball with resume capabilities, verifies archive integrity, and safely installs it into system directories with root ownership.
 
+## Summary of Paths & Locations
+
+| Component | Path Location | Description |
+|---|---|---|
+| **Updater Script** | `~/.local/bin/antigravity-update.sh` | Main automated updater script |
+| **Installation Directory** | `/usr/share/antigravity-ide/` | App target directory (`INSTALL_DIR`) |
+| **Executable Binary** | `/usr/share/antigravity-ide/antigravity-ide` | Binary launcher invoked by `.desktop` |
+| **Desktop Entry File** | `/usr/share/applications/antigravity-ide.desktop` | System application menu shortcut |
+| **CLI Symlink** | `/usr/local/bin/antigravity` | Global command shortcut |
+
+## Key Features
+
+1. **Automatic Architecture Detection**: Supports `x86_64` and `aarch64`/`arm64`.
+2. **Version Comparison**: Reads local `product.json` and compares with remote releases via `sort -V`.
+3. **Resumable Downloads**: Uses `curl -C -` to resume interrupted downloads.
+4. **Integrity Check**: Verifies HTTP `Content-Length` and tests archive validity with `tar -tzf`.
+5. **Clean Installation**: Uses `rsync --delete` with proper `chrome-sandbox` SUID permissions.
+6. **Desktop Integration**: Standard `.desktop` entry configuration pointing directly to the installed application binary and icon.
+
+## Step-by-Step Manual Setup
+
+Follow these manual setup steps to prepare your system, install dependencies, and configure the desktop shortcut:
+
+### 1. Install Required Dependencies
+Make sure `jq`, `curl`, `rsync`, and `tar` are installed on your system:
+```bash
+# Ubuntu / Debian
+sudo apt update && sudo apt install -y jq curl rsync tar
+
+# Fedora / RHEL
+sudo dnf install -y jq curl rsync tar
+
+# Arch Linux
+sudo pacman -S --needed jq curl rsync tar
+```
+
+### 2. Prepare System Installation Directory
+Create the target installation directory defined in the script (`INSTALL_DIR="/usr/share/antigravity-ide"`):
+```bash
+sudo mkdir -p /usr/share/antigravity-ide
+```
+
+### 3. Save Script and Set Executable Permissions
+Save `antigravity-update.sh` inside your local bin directory (`~/.local/bin`) and grant execution permissions:
+```bash
+mkdir -p ~/.local/bin
+chmod +x ~/.local/bin/antigravity-update.sh
+```
+
+Ensure `~/.local/bin` is included in your `$PATH` (e.g., in `~/.bashrc` or `~/.zshrc`):
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+### 4. Create Desktop Entry & Register Launcher
+Save the `.desktop` content provided below to `/usr/share/applications/antigravity-ide.desktop` (requires `sudo`) or `~/.local/share/applications/antigravity-ide.desktop`:
+
+```bash
+sudo nano /usr/share/applications/antigravity-ide.desktop
+```
+
+After saving, update your desktop database to register the new launcher icon in your app menu:
+```bash
+sudo update-desktop-database
+```
+
+### 5. Create Global CLI Command (Optional)
+To launch the IDE from any terminal prompt by typing `antigravity`, create a symlink in `/usr/local/bin`:
+```bash
+sudo ln -sfn /usr/share/antigravity-ide/antigravity-ide /usr/local/bin/antigravity
+```
+
+### 6. Run Initial Update
+Run the script to download, verify, and install the latest release for the first time:
+```bash
+antigravity-update.sh
+```
+
+---
+
 ## Script Source (`antigravity-update.sh`)
 
 ```bash
@@ -80,10 +160,11 @@ SRC="$TMP/Antigravity IDE"
 
 # ---- 3c) install into the system dir (needs sudo) -----------------------------
 echo "Installing into $INSTALL_DIR (sudo password may be requested)..."
+# Replace files, drop stale ones, force root ownership, but keep local extras.
 sudo rsync -a --delete --chown=root:root \
   --exclude '.claude' --exclude 'antigravity' \
   "$SRC"/ "$INSTALL_DIR"/
-
+# Keep the convenience symlink and the setuid sandbox that the app needs.
 sudo ln -sfn antigravity-ide "$INSTALL_DIR/antigravity"
 sudo chown root:root "$INSTALL_DIR/chrome-sandbox"
 sudo chmod 4755 "$INSTALL_DIR/chrome-sandbox"
@@ -91,19 +172,44 @@ sudo chmod 4755 "$INSTALL_DIR/chrome-sandbox"
 NEW="$(jq -r '.ideVersion // empty' "$PRODUCT_JSON" 2>/dev/null || true)"
 echo "Done. Antigravity IDE is now: ${NEW:-unknown}"
 
+# Clean up the downloaded archive after successful installation
 rm -f "$TARBALL"
 echo "Cleaned up downloaded archive."
 ```
 
-## Features & Usage
+## Desktop Entry Configuration (`antigravity-ide.desktop`)
 
-1. **Automatic Architecture Detection**: Supports `x86_64` and `aarch64`/`arm64`.
-2. **Version Comparison**: Reads local `product.json` and compares with remote releases via `sort -V`.
-3. **Resumable Downloads**: Uses `curl -C -` to resume interrupted downloads.
-4. **Integrity Check**: Verifies HTTP `Content-Length` and tests archive validity with `tar -tzf`.
-5. **Clean Installation**: Uses `rsync --delete` with proper `chrome-sandbox` SUID permissions.
+To launch Antigravity IDE from your application launcher, create a `.desktop` file at `/usr/share/applications/antigravity-ide.desktop` (or `~/.local/share/applications/antigravity-ide.desktop` for user-level installation):
 
-Make executable and add to PATH:
-```bash
-chmod +x ~/.local/bin/antigravity-update.sh
+```ini
+[Desktop Entry]
+Name=Antigravity
+Comment=Experience liftoff
+GenericName=Text Editor
+Exec=/usr/share/antigravity-ide/antigravity-ide %F
+Icon=/usr/share/antigravity-ide/resources/app/resources/linux/code.png
+Type=Application
+StartupNotify=false
+StartupWMClass=antigravity-ide
+Categories=TextEditor;Development;IDE;
+MimeType=application/x-antigravity-workspace;
+Actions=new-empty-window;
+Keywords=vscode;
+
+[Desktop Action new-empty-window]
+Name=New Empty Window
+Name[cs]=Nové prázdné okno
+Name[de]=Neues leeres Fenster
+Name[es]=Nueva ventana vacía
+Name[fr]=Nouvelle fenêtre vide
+Name[it]=Nuova finestra vuota
+Name[ja]=新しい空のウィンドウ
+Name[ko]=새 빈 창
+Name[ru]=Новое пустое окно
+Name[zh_CN]=新建空窗口
+Name[zh_TW]=開新空視窗
+Exec=/usr/share/antigravity-ide/antigravity-ide --new-window %F
+Icon=/usr/share/antigravity-ide/resources/app/resources/linux/code.png
 ```
+
+> **Important**: The executable binary path specified in the `Exec=` directives (`/usr/share/antigravity-ide/antigravity-ide`) must correspond directly to the installation directory (`INSTALL_DIR="/usr/share/antigravity-ide"`) defined in the `antigravity-update.sh` script. If you customize `INSTALL_DIR` in the updater script, ensure you update the `Exec=` path in your `.desktop` file accordingly.
