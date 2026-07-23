@@ -8,15 +8,11 @@
 export default function ThemeToggle() {
   function toggle() {
     const d = document.documentElement;
-    const next = d.getAttribute("data-theme") === "light"; // currently light ⇒ go dark
-    if (next) d.removeAttribute("data-theme");
-    else d.setAttribute("data-theme", "light");
-    d.style.colorScheme = next ? "dark" : "light";
-    // Keep the browser/PWA chrome on the chosen theme, matching ThemeScript.
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", next ? "#010409" : "#ffffff");
-    document.cookie = `theme=${next ? "dark" : "light"}; path=/; max-age=31536000; SameSite=Lax`;
+    const next = d.getAttribute("data-theme") === "light" ? "dark" : "light";
+    // Write the cookie FIRST: ThemeScript's observer re-reads it as the source
+    // of truth, so flipping the DOM first would just get reverted.
+    document.cookie = `theme=${next}; path=/; max-age=31536000; SameSite=Lax`;
+    (window as unknown as { __applyTheme?: () => void }).__applyTheme?.();
   }
 
   return (
