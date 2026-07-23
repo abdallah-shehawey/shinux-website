@@ -18,7 +18,7 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
     // Relative + a full-cover link underneath so the whole card still opens
     // the question, while AuthorInline's own link (above it, z-10) stays
     // independently clickable to the asker's profile.
-    <div className="card active:scale-[0.98] active:opacity-90 relative flex h-full flex-col gap-2 transition-colors hover:border-accent">
+    <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full flex-col gap-2 transition-all duration-150 hover:border-accent">
       <Link
         href={`/questions/${question.slug}`}
         className="absolute inset-0 z-0"
@@ -40,7 +40,7 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
         )}
       </p>
       <div className="flex-grow flex-1 min-h-0">
-        <h3 className="line-clamp-2 text-lg font-semibold text-fg" dir="auto" lang={question.locale}>
+        <h3 className="line-clamp-2 text-lg font-semibold text-fg group-hover:text-accent transition-colors" dir="auto" lang={question.locale}>
           {question.title}
         </h3>
       </div>

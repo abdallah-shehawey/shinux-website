@@ -68,10 +68,10 @@ export default function MobileNav({
               href={l.href}
               role="menuitem"
               onClick={dismiss}
-              className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm active:scale-[0.98] ${
+              className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors active:scale-[0.98] ${
                 l.href === current?.href
-                  ? "bg-bg font-semibold text-fg"
-                  : "text-muted hover:bg-bg hover:text-fg"
+                  ? "bg-accent/10 font-semibold text-accent"
+                  : "text-muted hover:bg-accent/10 hover:text-accent"
               }`}
             >
               <span>{l.label}</span>

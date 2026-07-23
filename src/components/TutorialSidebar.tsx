@@ -46,8 +46,8 @@ export default function TutorialSidebar({
               aria-current={active ? "page" : undefined}
               className={`flex items-center justify-between rounded-md px-2.5 py-2 transition-all active:scale-[0.98] ${
                 active
-                  ? "border-s-2 border-accent bg-accent/10 font-semibold text-fg shadow-xs"
-                  : "text-muted hover:bg-card hover:text-fg"
+                  ? "border-s-2 border-accent bg-accent/10 font-semibold text-accent shadow-xs"
+                  : "text-muted hover:bg-accent/10 hover:text-accent"
               }`}
             >
               <span className="flex items-center gap-2 min-w-0">

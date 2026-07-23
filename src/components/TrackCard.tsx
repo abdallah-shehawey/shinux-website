@@ -14,14 +14,14 @@ export default function TrackCard({
   authors: Record<string, Author>;
 }) {
   return (
-    <div className="card active:scale-[0.98] active:opacity-90 relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-colors hover:border-accent">
+    <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-all duration-150 hover:border-accent">
       <Link
         href={`/tutorials/${track.slug}`}
         className="absolute inset-0 z-0"
         aria-label={track.title}
       />
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-fg">{track.title}</h2>
+        <h2 className="text-lg font-semibold text-fg group-hover:text-accent transition-colors">{track.title}</h2>
         {track.tag && <span className="tag-chip">{track.tag}</span>}
       </div>
       {track.description ? (

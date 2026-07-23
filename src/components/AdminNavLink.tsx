@@ -25,17 +25,11 @@ export default function AdminNavLink({ className }: { className?: string } = {})
   return (
     <Link
       href="/admin/questions"
-      className={`relative flex h-full items-center px-3 font-medium transition-colors ${
-        active ? "text-fg font-semibold" : "text-muted hover:text-fg"
+      className={`flex h-full items-center px-3 font-medium transition-colors ${
+        active ? "text-accent font-semibold" : "text-muted hover:text-accent"
       }`}
     >
-      <span>Admin</span>
-      {active && (
-        <span
-          className="absolute bottom-0 inset-x-1.5 h-[2.5px] rounded-full bg-accent shadow-[0_0_8px_var(--accent)]"
-          aria-hidden="true"
-        />
-      )}
+      Admin
     </Link>
   );
 }
