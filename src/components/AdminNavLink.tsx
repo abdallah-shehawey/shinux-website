@@ -26,7 +26,7 @@ export default function AdminNavLink({ className }: { className?: string } = {})
     <Link
       href="/admin/questions"
       className={`flex h-full items-center px-3 font-medium transition-colors ${
-        active ? "text-accent font-semibold" : "text-muted hover:text-accent"
+        active ? "text-accent" : "text-muted hover:text-accent"
       }`}
     >
       Admin
