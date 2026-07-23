@@ -23,7 +23,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v7";
+const VERSION = "v8";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -72,11 +72,45 @@ async function postToClients(message) {
   for (const client of clients) client.postMessage(message);
 }
 
+// A client-side (soft) navigation fetches the route's RSC *flight* payload, not
+// its HTML — and that request carries a per-navigation `?_rsc=<hash>` cache
+// buster we can never precache by exact URL. So we store and look up the flight
+// under the bare pathname plus a private marker, ignoring the query entirely.
+function rscKey(pathname) {
+  return `${pathname}?__sw_rsc=1`;
+}
+
+// Does this path point at a navigable page (so it also has an RSC flight worth
+// precaching), as opposed to a static asset like /icon.svg, /favicon.ico or
+// /manifest.webmanifest? A trailing dot in the last segment ⇒ a file asset.
+function looksLikePage(path) {
+  if (path.startsWith("/_next/")) return false;
+  const last = (path.split("?")[0].split("/").pop()) || "";
+  return !last.includes(".");
+}
+
+// Precache a page's RSC flight payload alongside its HTML. Without this, an
+// OFFLINE soft navigation (which fetches RSC, not HTML) has nothing to serve,
+// and the Next.js router shows its "This page couldn't load" error. Requesting
+// the page URL with the `RSC: 1` header returns the full flight as
+// text/x-component — the same payload a prefetch would fetch.
+async function cacheRsc(cache, path) {
+  try {
+    const res = await fetch(path, { cache: "no-cache", headers: { RSC: "1" } });
+    const ct = res.headers.get("content-type") || "";
+    if (res.ok && ct.includes("text/x-component")) {
+      await cache.put(rscKey(path.split("?")[0]), res.clone());
+    }
+  } catch {
+    /* offline / error — the HTML + 503 hard-nav fallback still applies */
+  }
+}
+
 // Fetch and cache a batch of paths with bounded concurrency so install/refresh
 // does not fire hundreds of requests at once. Failures are ignored per-URL so
 // one bad page never aborts the whole precache. onEach(done, total) reports
 // progress so the app can show a "saving for offline" indicator.
-async function precachePaths(cache, paths, { concurrency = 6, onEach } = {}) {
+async function precachePaths(cache, paths, { concurrency = 6, onEach, withRsc = false } = {}) {
   const queue = paths.slice();
   const total = paths.length;
   let done = 0;
@@ -85,7 +119,11 @@ async function precachePaths(cache, paths, { concurrency = 6, onEach } = {}) {
       const path = queue.shift();
       try {
         const res = await fetch(path, { cache: "no-cache" });
-        if (res && res.ok) await cache.put(path, res.clone());
+        if (res && res.ok) {
+          await cache.put(path, res.clone());
+          // Also precache the RSC flight so offline soft navigations work.
+          if (withRsc && looksLikePage(path)) await cacheRsc(cache, path);
+        }
       } catch {
         /* offline / 404 — skip this one */
       }
@@ -139,6 +177,9 @@ async function precacheShellAssets(cache) {
     if (!res || !res.ok) return;
     const html = await res.clone().text();
     await cache.put("/", res);
+    // The home page is reachable via a soft navigation too (e.g. the logo), so
+    // give it an RSC flight as well.
+    await cacheRsc(cache, "/");
     await precachePaths(cache, staticAssetsFromHtml(html));
   } catch {
     /* offline — these get cached at runtime on the next online load instead */
@@ -193,7 +234,7 @@ async function syncContent(cache, { notify, reportProgress }) {
   if (showProgress) {
     await postToClients({ type: "PRECACHE_PROGRESS", done: 0, total: newPaths.length });
   }
-  await precachePaths(cache, newPaths, { onEach });
+  await precachePaths(cache, newPaths, { onEach, withRsc: true });
   await writeManifest(cache, all);
   if (showProgress) await postToClients({ type: "PRECACHE_DONE", total: newPaths.length });
 
@@ -287,12 +328,30 @@ self.addEventListener("fetch", (event) => {
         // they are there when the network drops.
         if (response && response.ok && response.type === "basic") {
           cache.put(request, response.clone());
+          // RSC responses are keyed above by their exact URL, whose `_rsc`
+          // cache buster changes every navigation — useless offline. Store a
+          // second copy under the query-independent key so an offline soft
+          // navigation to a page visited while online can still find it.
+          if (isRsc && (response.headers.get("content-type") || "").includes("text/x-component")) {
+            cache.put(rscKey(url.pathname), response.clone());
+          }
         }
         return response;
       } catch {
         // 1. Try exact match (matches exact URL including query strings or RSC cache if available)
         let cached = await cache.match(request);
         if (cached) return cached;
+
+        // 1b. Offline soft navigation: serve the precached RSC flight for this
+        // pathname (its `_rsc` query varies every time, so match the normalized
+        // key). This is what lets a never-visited page open offline without the
+        // router's "This page couldn't load" error.
+        if (isRsc) {
+          const rsc =
+            (await cache.match(rscKey(url.pathname))) ||
+            (await cache.match(rscKey(decodeURIComponent(url.pathname))));
+          if (rsc) return rsc;
+        }
 
         // 2. Try pathname variations (decoded and encoded)
         const decPath = decodeURIComponent(url.pathname);
