@@ -9,7 +9,7 @@ tags:
   - cli
   - tools
 draft: false
-author: abdallah-shehawey
+author: abdelrahmanadwe
 ---
 
 This lesson covers two smart file renaming scripts: `padnum` (a multi-feature numeric formatter with undo history) and `rename.sh` (a lightweight pattern renaming helper).
