@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useDismissOnOutsideOrBack } from "@/hooks/useDismissOnOutsideOrBack";
-import NavLinkLabel from "./NavLinkLabel";
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -40,14 +39,14 @@ export default function MobileNav({
     l.href === "/" ? pathname === "/" : pathname.startsWith(l.href),
   );
 
-  // The menu deliberately stays open while a tapped route is still loading, so
-  // that row can keep showing its own pending state — closing on tap (as it
-  // used to) tore the only feedback off the screen and left the old page
-  // sitting there with nothing to show the tap had registered.
+  // Tapping a row closes the menu straight away — with every tab prefetched
+  // the new page (or its skeleton) is already on screen by then, so the menu
+  // snapping shut IS the acknowledgement.
   //
-  // "Closed on arrival" is derived, not an effect: the menu is open only while
-  // we are still on the page it was opened from, so the navigation completing
-  // closes it in the same render that swaps the page in.
+  // Open state is derived rather than set from an effect: the menu is open
+  // only while we are still on the page it was opened from, so arriving
+  // anywhere else closes it in the same render that swaps the page in — which
+  // also covers back/forward navigation.
   const [openedFrom, setOpenedFrom] = useState<string | null>(null);
   const open = openedFrom === pathname;
 
@@ -80,16 +79,14 @@ export default function MobileNav({
               prefetch={true}
               scroll={false}
               role="menuitem"
-              // Tapping the row you are already on navigates nowhere, so the
-              // pathname effect above will never fire — close it by hand.
-              onClick={l.href === current?.href ? dismiss : undefined}
+              onClick={dismiss}
               className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors active:scale-[0.98] ${
                 l.href === current?.href
                   ? "bg-accent/10 font-semibold text-accent"
                   : "text-muted hover:bg-accent/10 hover:text-accent"
               }`}
             >
-              <NavLinkLabel label={l.label} />
+              {l.label}
             </Link>
           ))}
         </nav>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AdminNavLink from "./AdminNavLink";
-import NavLinkLabel from "./NavLinkLabel";
 
 export type NavLinkItem = {
   href: string;
@@ -38,7 +37,7 @@ export default function DesktopNav({
               active ? "text-accent" : "text-muted hover:text-accent"
             }`}
           >
-            <NavLinkLabel label={l.label} />
+            {l.label}
           </Link>
         );
       })}

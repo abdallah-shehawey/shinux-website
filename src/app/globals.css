@@ -187,53 +187,6 @@ input:not([type]) {
   }
 }
 
-/* ---- Navigation pending indicator ----
-   Painted under the label of the tab that was actually clicked (see
-   NavLinkLabel). A tab click keeps the OLD page on screen until the new
-   route's payload lands — including its loading.tsx skeleton — so without
-   this a click on a slow connection produces no visible change whatsoever.
-
-   Absolutely positioned so a pending tab never changes the nav row's width,
-   and indeterminate on purpose: we have no idea how long the payload will
-   take, and a bar that pretends to know reads as fake. */
-.nav-pending-bar {
-  position: absolute;
-  inset-inline: 0;
-  bottom: -0.35rem;
-  height: 2px;
-  overflow: hidden;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.nav-pending-bar::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  inline-size: 45%;
-  border-radius: inherit;
-  background: var(--accent);
-  animation: nav-pending-slide 0.9s ease-in-out infinite;
-}
-
-@keyframes nav-pending-slide {
-  0% {
-    inset-inline-start: -45%;
-  }
-  100% {
-    inset-inline-start: 100%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nav-pending-bar::after {
-    animation: none;
-    inline-size: 100%;
-    inset-inline-start: 0;
-    opacity: 0.7;
-  }
-}
-
 /* ---- Loading skeletons ----
    The fill for a skeleton bar that sits directly on the page background.
    `bg-card` (#0d1117) against `bg-bg` (#010409) is a ~1.1:1 contrast ratio —

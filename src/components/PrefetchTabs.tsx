@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { NavLinkItem } from "./DesktopNav";
 
 /**
@@ -26,12 +26,15 @@ import type { NavLinkItem } from "./DesktopNav";
  * is cached the router knows where the loading boundary is, so it can show the
  * skeleton instantly and stream the content in behind it.
  *
- * Deliberately fired on every mount, not once per session — the router cache is
- * bounded by staleTimes (see next.config.ts) and these are cheap repeat calls
- * that no-op while an entry is still fresh.
+ * Re-warmed after every navigation, not just on mount: the header lives in the
+ * root layout, so it mounts once per full page load and would otherwise never
+ * re-run — leaving a long session browsing on entries that have aged past
+ * staleTimes (see next.config.ts). Repeat calls are cheap and no-op while an
+ * entry is still fresh.
  */
 export default function PrefetchTabs({ links }: { links: readonly NavLinkItem[] }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Yield first: the page the visitor actually asked for should finish
@@ -47,7 +50,8 @@ export default function PrefetchTabs({ links }: { links: readonly NavLinkItem[] 
         : (cb: () => void) => window.setTimeout(cb, 300);
 
     const handle = schedule(() => {
-      for (const l of links) router.prefetch(l.href);
+      // Skip the page we are already on — nothing to navigate to there.
+      for (const l of links) if (l.href !== pathname) router.prefetch(l.href);
     });
 
     return () => {
@@ -59,7 +63,7 @@ export default function PrefetchTabs({ links }: { links: readonly NavLinkItem[] 
         clearTimeout(handle as number);
       }
     };
-  }, [router, links]);
+  }, [router, links, pathname]);
 
   return null;
 }
