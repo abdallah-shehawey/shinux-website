@@ -104,7 +104,7 @@ export default function ArticleReader({
                 {tags.map((tag) => (
                   <Link
                     key={tag}
-                    href={`/articles?tag=${encodeURIComponent(tag)}`}
+                    href={`/articles?tags=${encodeURIComponent(tag)}`}
                     className="tag-chip"
                   >
                     {tag}
