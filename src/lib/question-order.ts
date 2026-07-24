@@ -20,17 +20,3 @@ export const getQuestionOrder = unstable_cache(
   ["questions-order"],
   { revalidate: 300, tags: ["questions"] },
 );
-
-/** Same merge rule as applyCustomOrder in custom-order.ts: items with no
- * explicit position come first, keeping the order they arrived in, then the
- * explicitly-ordered ones by position. New-questions-first is deliberate
- * (379f09d) — see the rationale there before flipping these. */
-export function applyQuestionOrder<T extends { id: string }>(
-  questions: T[],
-  order: Record<string, number>,
-): T[] {
-  const ordered = questions.filter((q) => order[q.id] !== undefined);
-  const rest = questions.filter((q) => order[q.id] === undefined);
-  ordered.sort((a, b) => order[a.id] - order[b.id]);
-  return [...rest, ...ordered];
-}

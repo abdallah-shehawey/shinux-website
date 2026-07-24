@@ -11,8 +11,7 @@
  * bury every new article until it was manually positioned.
  *
  * Lives on its own rather than inside article-order.ts because more than one
- * content type now shares it. question-order.ts keeps its own copy: questions
- * are keyed by id, not slug, and carry an extra unanswered-first rule.
+ * content type now shares it.
  */
 export function applyCustomOrder<T extends { slug: string }>(
   items: T[],
@@ -21,5 +20,19 @@ export function applyCustomOrder<T extends { slug: string }>(
   const ordered = items.filter((a) => order[a.slug] !== undefined);
   const rest = items.filter((a) => order[a.slug] === undefined);
   ordered.sort((a, b) => order[a.slug] - order[b.slug]);
+  return [...rest, ...ordered];
+}
+
+/** The same merge rule for questions, which are keyed by id rather than slug.
+ *  Kept here, next to applyCustomOrder and clear of question-order.ts's
+ *  `server-only` guard, because /questions now applies the order in the
+ *  browser — that page is prerendered, so tag filtering happens client-side. */
+export function applyQuestionOrder<T extends { id: string }>(
+  questions: T[],
+  order: Record<string, number>,
+): T[] {
+  const ordered = questions.filter((q) => order[q.id] !== undefined);
+  const rest = questions.filter((q) => order[q.id] === undefined);
+  ordered.sort((a, b) => order[a.id] - order[b.id]);
   return [...rest, ...ordered];
 }
