@@ -25,24 +25,83 @@ let cached: Promise<SessionInfo> | null = null;
 // the client's first render still matches the prerendered HTML.
 let snapshot: SessionInfo | null = null;
 
+// The admin role costs a Supabase round trip, and everything gated on it (the
+// Admin tab, the "Reorder" toolbars) stays hidden until it lands — on a slow
+// link that is a second or more of the admin's own UI missing on every page.
+// Remember the answer for the tab's lifetime so it comes back in a frame, and
+// revalidate underneath. This is a rendering hint ONLY: every privileged read
+// and write is enforced by RLS on the server, so a tampered value buys nothing
+// but a broken-looking page for whoever tampered with it.
+const ROLE_HINT_KEY = "sb-role-hint";
+
+function readRoleHint(userId: string): boolean | null {
+  try {
+    const raw = sessionStorage.getItem(ROLE_HINT_KEY);
+    if (!raw) return null;
+    const hint = JSON.parse(raw) as { id?: string; isAdmin?: boolean };
+    return hint.id === userId ? !!hint.isAdmin : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeRoleHint(userId: string, isAdmin: boolean) {
+  try {
+    sessionStorage.setItem(ROLE_HINT_KEY, JSON.stringify({ id: userId, isAdmin }));
+  } catch {
+    /* private mode / storage full — the round trip below still resolves it */
+  }
+}
+
 function loadSession(): Promise<SessionInfo> {
   cached ??= (async () => {
     const supabase = createClient();
+    // Reads the persisted session locally; no network.
     const {
       data: { session },
     } = await supabase.auth.getSession();
     const user = session?.user ?? null;
-    const info: SessionInfo = user
-      ? {
-          user,
-          isAdmin:
-            (
-              await supabase.from("profiles").select("role").eq("id", user.id).single()
-            ).data?.role === "admin",
-        }
-      : { user: null, isAdmin: false };
-    snapshot = info;
-    return info;
+    if (!user) {
+      try {
+        sessionStorage.removeItem(ROLE_HINT_KEY);
+      } catch {
+        /* nothing to clear */
+      }
+      snapshot = { user: null, isAdmin: false };
+      return snapshot;
+    }
+
+    const hint = readRoleHint(user.id);
+    if (hint !== null) {
+      // Publish the remembered answer now, then confirm it against the server.
+      snapshot = { user, isAdmin: hint };
+      void supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+        .then(({ data }) => {
+          const isAdmin = data?.role === "admin";
+          writeRoleHint(user.id, isAdmin);
+          if (isAdmin !== hint) {
+            // The hint was wrong (role changed, or it was tampered with):
+            // drop the memoised promise so the next read re-resolves.
+            cached = null;
+            snapshot = { user, isAdmin };
+          }
+        });
+      return snapshot;
+    }
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const isAdmin = data?.role === "admin";
+    writeRoleHint(user.id, isAdmin);
+    snapshot = { user, isAdmin };
+    return snapshot;
   })();
   return cached;
 }
@@ -64,6 +123,13 @@ export function useSession(): SessionInfo | null {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         cached = null;
         snapshot = null;
+        if (event === "SIGNED_OUT") {
+          try {
+            sessionStorage.removeItem(ROLE_HINT_KEY);
+          } catch {
+            /* nothing to clear */
+          }
+        }
         loadSession().then((s) => {
           if (alive) setInfo(s);
         });

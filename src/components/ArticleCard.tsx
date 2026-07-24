@@ -28,8 +28,16 @@ export default function ArticleCard({
     // the article, while the author footer's own link (above it, z-10) stays
     // independently clickable to their profile.
     <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full flex-col gap-2 transition-all duration-150 hover:border-accent">
+      {/* prefetch={false} = no viewport prefetch, hover/touch still prefetches.
+          /articles renders every article at once, and each card left on the
+          default fires four RSC segment requests the moment it scrolls into
+          view — measured at 24 requests for six visible cards. On a slow link
+          that speculative traffic is what the header tabs' own prefetch has to
+          queue behind, so the tab is still unprefetched when it gets clicked
+          and the click costs a full round trip with nothing on screen. */}
       <Link
         href={`/articles/${article.slug}`}
+        prefetch={false}
         className="absolute inset-0 z-0"
         aria-label={article.title}
       />

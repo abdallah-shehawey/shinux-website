@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/use-session";
+import NavLinkLabel from "./NavLinkLabel";
 
 /** Shows the Admin nav item only to admins, resolved client-side (see
  *  use-session.ts — keeps the header, and with it every page, static). */
@@ -23,7 +24,7 @@ export default function AdminNavLink() {
         active ? "text-accent" : "text-muted hover:text-accent"
       }`}
     >
-      Admin
+      <NavLinkLabel label="Admin" />
     </Link>
   );
 }

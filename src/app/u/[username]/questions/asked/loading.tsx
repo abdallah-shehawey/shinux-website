@@ -2,8 +2,8 @@
 export default function Loading() {
   return (
     <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
-      <div className="h-4 w-28 rounded bg-card" />
-      <div className="mb-8 mt-4 h-9 w-72 rounded bg-card" />
+      <div className="h-4 w-28 rounded skeleton-bar" />
+      <div className="mb-8 mt-4 h-9 w-72 rounded skeleton-bar" />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (

@@ -19,8 +19,11 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
     // the question, while AuthorInline's own link (above it, z-10) stays
     // independently clickable to the asker's profile.
     <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full flex-col gap-2 transition-all duration-150 hover:border-accent">
+      {/* Viewport prefetch off — see ArticleCard for why the card grids must
+          not compete with the header tabs for a slow connection. */}
       <Link
         href={`/questions/${question.slug}`}
+        prefetch={false}
         className="absolute inset-0 z-0"
         aria-label={question.title}
       />

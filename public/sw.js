@@ -13,7 +13,7 @@
 //    runtime caching only, to keep the on-device footprint light.
 //  - Runtime races the network against the cache: the network still wins on
 //    any healthy connection (so content is live), but once the cache holds a
-//    copy nothing waits longer than NAV_NETWORK_TIMEOUT_MS for it. The slow
+//    copy nothing waits longer than NETWORK_TIMEOUT_MS for it. The slow
 //    request is left running to refresh the cache for next time. A navigation
 //    to a page that was never cached falls back to /offline.
 //  - The cache name is versioned; activate() deletes every older cache.
@@ -25,7 +25,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v16";
+const VERSION = "v17";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -63,14 +63,26 @@ const PRECACHE_CHUNK = 24;
 // precache worker (and with it the rest of the queue) indefinitely.
 const FETCH_TIMEOUT_MS = 15000;
 
-// How long a navigation may wait on the network before we fall back to the
-// cached copy. The whole sitemap is precached, so on a bad connection there is
-// almost always a good page sitting one lookup away — waiting out a 10-second
-// response to render the very same thing is the worst of both worlds. The
-// network request is NOT cancelled when this fires; it keeps running and
-// refreshes the cache for next time. Comfortably above a healthy response, so
-// a normal connection still always renders live content.
-const NAV_NETWORK_TIMEOUT_MS = 1500;
+// How long a request may wait on the network before we fall back to the cached
+// copy. The whole sitemap is precached, so on a bad connection there is almost
+// always a good page sitting one lookup away — waiting out a 10-second response
+// to render the very same thing is the worst of both worlds. The network
+// request is NOT cancelled when this fires; it keeps running and refreshes the
+// cache for next time.
+//
+// A cached HTML document (or image) is COMPLETE and self-contained, so serving
+// it early is only ever a freshness trade — measured off the live site, first
+// byte from the CDN ran 2–12s on a weak link while the identical page sat in
+// the cache, so this is short.
+const NETWORK_TIMEOUT_MS = 600;
+
+// RSC flights get a longer leash on purpose. The stored flight is the whole
+// route (cacheRsc fetches it with no Next-Router-State-Tree), while a live soft
+// navigation asks for a delta against the tree it is coming from, so handing
+// the stored copy back is a heavier substitution than swapping one HTML
+// document for another. Prefer the real answer, and only fall back when the
+// network is genuinely not delivering.
+const RSC_NETWORK_TIMEOUT_MS = 2500;
 
 // Routes whose HTML is specific to the signed-in user or to moderation state.
 // These are never written to the cache and never served from it: a stale (or
@@ -309,7 +321,7 @@ async function findCachedPage(cache, request, url, isRsc) {
 // The one strategy every managed request uses: whichever of network-or-timeout
 // comes first, with the cache as the safety net. On a healthy connection the
 // network always wins and the visitor sees live content. On a weak one they
-// get the cached copy in NAV_NETWORK_TIMEOUT_MS instead of waiting out the
+// get the cached copy within the budget below instead of waiting out the
 // request, and the response that eventually lands still refreshes the cache.
 //
 // Assets go through this too, not just pages. A single image on an unbounded
@@ -341,7 +353,8 @@ async function respondRacingCache(event, request, url, { isRsc = false, isNaviga
   if (cached) {
     // `null` here means "the timer won", not "the network failed" — a rejected
     // fetch resolves to null too, so tell them apart with a sentinel.
-    const timeout = new Promise((resolve) => setTimeout(() => resolve(TIMED_OUT), NAV_NETWORK_TIMEOUT_MS));
+    const budget = isRsc ? RSC_NETWORK_TIMEOUT_MS : NETWORK_TIMEOUT_MS;
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(TIMED_OUT), budget));
     const winner = await Promise.race([network, timeout]);
     if (winner && winner !== TIMED_OUT) return winner;
     // Serve the cached copy now; let the slow request finish and update the

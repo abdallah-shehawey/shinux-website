@@ -2,9 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
+    // How long the CLIENT router may reuse an already-fetched route before a
+    // click has to go back to the network. The tabs are statically prerendered
+    // and their content changes a few times a week, so 30 minutes of reuse
+    // makes every revisit within a session instant at zero network cost —
+    // which matters far more here than shaving minutes off how quickly an edit
+    // shows up mid-session (a reload, or the service worker's update banner,
+    // still picks it up immediately).
+    //
+    // `dynamic` stays short: /me and /admin are per-user and must not be served
+    // from a stale client cache just because they were visited recently.
     staleTimes: {
-      dynamic: 300,
-      static: 300,
+      dynamic: 30,
+      static: 1800,
     },
   },
   async redirects() {

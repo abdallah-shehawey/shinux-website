@@ -6,7 +6,7 @@ export default function Loading() {
       {/* Sticky subheader skeleton */}
       <div className="sticky top-14 z-10 bg-bg">
         <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
-          <div className="h-4 w-28 animate-pulse rounded bg-card" />
+          <div className="h-4 w-28 animate-pulse rounded skeleton-bar" />
         </div>
       </div>
 
@@ -17,11 +17,11 @@ export default function Loading() {
             <div className="min-w-0">
               {/* Date · reading time */}
               <div className="mb-4 flex items-center gap-3">
-                <div className="h-3 w-28 rounded bg-card" />
-                <div className="h-6 w-24 rounded-lg bg-card/60" />
+                <div className="h-3 w-28 rounded skeleton-bar" />
+                <div className="h-6 w-24 rounded-lg skeleton-bar" />
               </div>
               {/* Title */}
-              <div className="h-9 w-3/4 rounded bg-card" />
+              <div className="h-9 w-3/4 rounded skeleton-bar" />
               {/* Tags */}
               <div className="mt-3 flex gap-2">
                 <div className="h-6 w-16 rounded-full border border-border bg-card" />
@@ -30,25 +30,25 @@ export default function Loading() {
               </div>
               {/* Intro paragraph */}
               <div className="mt-8 flex flex-col gap-2.5">
-                <div className="h-4 w-full rounded bg-card" />
-                <div className="h-4 w-11/12 rounded bg-card" />
-                <div className="h-4 w-full rounded bg-card" />
-                <div className="h-4 w-4/5 rounded bg-card" />
+                <div className="h-4 w-full rounded skeleton-bar" />
+                <div className="h-4 w-11/12 rounded skeleton-bar" />
+                <div className="h-4 w-full rounded skeleton-bar" />
+                <div className="h-4 w-4/5 rounded skeleton-bar" />
               </div>
               {/* Heading */}
-              <div className="mt-10 h-7 w-64 rounded bg-card" />
+              <div className="mt-10 h-7 w-64 rounded skeleton-bar" />
               {/* More text */}
               <div className="mt-5 flex flex-col gap-2.5">
-                <div className="h-4 w-full rounded bg-card" />
-                <div className="h-4 w-5/6 rounded bg-card" />
-                <div className="h-4 w-full rounded bg-card" />
+                <div className="h-4 w-full rounded skeleton-bar" />
+                <div className="h-4 w-5/6 rounded skeleton-bar" />
+                <div className="h-4 w-full rounded skeleton-bar" />
               </div>
               {/* Code block */}
               <div className="mt-5 h-28 rounded-xl border border-border bg-card" />
               {/* More text */}
               <div className="mt-5 flex flex-col gap-2.5">
-                <div className="h-4 w-full rounded bg-card" />
-                <div className="h-4 w-3/4 rounded bg-card" />
+                <div className="h-4 w-full rounded skeleton-bar" />
+                <div className="h-4 w-3/4 rounded skeleton-bar" />
               </div>
               {/* Author card */}
               <div className="mt-10 flex items-center gap-3 rounded-xl border border-border bg-card p-4">

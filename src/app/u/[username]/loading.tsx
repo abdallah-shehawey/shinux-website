@@ -9,7 +9,7 @@ export default function Loading() {
           <div className="mt-2 h-4 w-28 rounded bg-border" />
         </div>
       </div>
-      <div className="mt-10 h-5 w-40 rounded bg-card" />
+      <div className="mt-10 h-5 w-40 rounded skeleton-bar" />
       <div className="mt-4 flex flex-col gap-2">
         <div className="h-16 rounded-xl border border-border bg-card" />
         <div className="h-16 rounded-xl border border-border bg-card" />

@@ -15,8 +15,11 @@ export default function TrackCard({
 }) {
   return (
     <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-all duration-150 hover:border-accent">
+      {/* Viewport prefetch off — see ArticleCard for why the card grids must
+          not compete with the header tabs for a slow connection. */}
       <Link
         href={`/tutorials/${track.slug}`}
+        prefetch={false}
         className="absolute inset-0 z-0"
         aria-label={track.title}
       />

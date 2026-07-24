@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useDismissOnOutsideOrBack } from "@/hooks/useDismissOnOutsideOrBack";
+import NavLinkLabel from "./NavLinkLabel";
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -32,7 +33,6 @@ export default function MobileNav({
 }: {
   links: readonly { href: string; label: string }[];
 }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +40,18 @@ export default function MobileNav({
     l.href === "/" ? pathname === "/" : pathname.startsWith(l.href),
   );
 
-  const dismiss = useDismissOnOutsideOrBack(open, () => setOpen(false), rootRef);
+  // The menu deliberately stays open while a tapped route is still loading, so
+  // that row can keep showing its own pending state — closing on tap (as it
+  // used to) tore the only feedback off the screen and left the old page
+  // sitting there with nothing to show the tap had registered.
+  //
+  // "Closed on arrival" is derived, not an effect: the menu is open only while
+  // we are still on the page it was opened from, so the navigation completing
+  // closes it in the same render that swaps the page in.
+  const [openedFrom, setOpenedFrom] = useState<string | null>(null);
+  const open = openedFrom === pathname;
+
+  const dismiss = useDismissOnOutsideOrBack(open, () => setOpenedFrom(null), rootRef);
 
   return (
     <div ref={rootRef} className="relative sm:hidden">
@@ -48,7 +59,7 @@ export default function MobileNav({
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpenedFrom((v) => (v === pathname ? null : pathname))}
         className="inline-flex h-10 min-w-[7.5rem] items-center justify-between gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-fg active:scale-95"
       >
         {current?.label ?? "Menu"}
@@ -69,14 +80,16 @@ export default function MobileNav({
               prefetch={true}
               scroll={false}
               role="menuitem"
-              onClick={dismiss}
+              // Tapping the row you are already on navigates nowhere, so the
+              // pathname effect above will never fire — close it by hand.
+              onClick={l.href === current?.href ? dismiss : undefined}
               className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm transition-colors active:scale-[0.98] ${
                 l.href === current?.href
                   ? "bg-accent/10 font-semibold text-accent"
                   : "text-muted hover:bg-accent/10 hover:text-accent"
               }`}
             >
-              <span>{l.label}</span>
+              <NavLinkLabel label={l.label} />
             </Link>
           ))}
         </nav>

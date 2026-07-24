@@ -2,11 +2,11 @@
 export default function Loading() {
   return (
     <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
-      <div className="h-4 w-40 rounded bg-card" />
+      <div className="h-4 w-40 rounded skeleton-bar" />
 
       <div className="mb-8 mt-4">
-        <div className="h-9 w-72 rounded bg-card" />
-        <div className="mt-2 h-4 w-56 rounded bg-card" />
+        <div className="h-9 w-72 rounded skeleton-bar" />
+        <div className="mt-2 h-4 w-56 rounded skeleton-bar" />
       </div>
 
       <div className="flex flex-col gap-2">

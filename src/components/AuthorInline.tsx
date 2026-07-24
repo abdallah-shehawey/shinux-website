@@ -29,7 +29,11 @@ export default function AuthorInline({
   );
 
   return username ? (
-    <Link href={`/u/${username}`} className="relative z-10 transition hover:text-accent active:opacity-60">
+    <Link
+      href={`/u/${username}`}
+      prefetch={false}
+      className="relative z-10 transition hover:text-accent active:opacity-60"
+    >
       {content}
     </Link>
   ) : (

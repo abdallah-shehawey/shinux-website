@@ -4,6 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 import HeaderAuth from "./HeaderAuth";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
+import PrefetchTabs from "./PrefetchTabs";
 
 // Deliberately a sync, cookie-free server component: it renders in the root
 // layout, so any cookies()/auth lookup here would force EVERY page in the
@@ -31,6 +32,9 @@ export default function Header() {
           <span>{site.name}</span>
         </Link>
 
+        {/* Warms every tab, including on phones where the nav below is
+            display:none and Link's viewport prefetch therefore never fires. */}
+        <PrefetchTabs links={links} />
         <DesktopNav links={links} />
 
         <div className="ms-auto flex items-center gap-2.5 sm:gap-3">

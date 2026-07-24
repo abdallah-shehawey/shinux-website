@@ -21,12 +21,20 @@ export default async function MePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/me");
 
+  // All three reads only need user.id, so they go out together. Chaining them
+  // (profile, then questions + notifications) cost three sequential Supabase
+  // round trips before this page could render its first byte, which on a slow
+  // link is most of the wait after clicking the account icon.
   const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, display_name, avatar_url, social_links, role, created_at")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, questions, notifications] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username, display_name, avatar_url, social_links, role, created_at")
+      .eq("id", user.id)
+      .single(),
+    getOwnQuestions(user.id),
+    getUserNotifications(user.id),
+  ]);
 
   const displayName = profile?.display_name || profile?.username || "there";
   const initial = displayName.trim().charAt(0).toUpperCase();
@@ -39,10 +47,6 @@ export default async function MePage() {
       })
     : null;
 
-  const [questions, notifications] = await Promise.all([
-    getOwnQuestions(user.id),
-    getUserNotifications(user.id),
-  ]);
 
   return (
     <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
