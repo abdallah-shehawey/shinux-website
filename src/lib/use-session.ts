@@ -12,6 +12,19 @@ export type SessionInfo = { user: User | null; isAdmin: boolean };
 // touches cookies() — that single call was forcing every route dynamic.
 let cached: Promise<SessionInfo> | null = null;
 
+// The last resolved value, readable SYNCHRONOUSLY. Without this, every mount
+// started at null and only learned the answer a microtask later — so on each
+// client-side navigation an admin's page painted once without the "Reorder"
+// toolbar and again with it, shifting the grid down ~60px. ScrollMemory
+// restores the saved scroll in a layout effect, i.e. in between those two
+// paints, so a restored position landed on the pre-shift layout and the page
+// ended up in the wrong place. It also made the header's auth corner flicker
+// on every navigation.
+//
+// Left null during hydration on the first load (nothing has resolved yet), so
+// the client's first render still matches the prerendered HTML.
+let snapshot: SessionInfo | null = null;
+
 function loadSession(): Promise<SessionInfo> {
   cached ??= (async () => {
     const supabase = createClient();
@@ -19,21 +32,24 @@ function loadSession(): Promise<SessionInfo> {
       data: { session },
     } = await supabase.auth.getSession();
     const user = session?.user ?? null;
-    if (!user) return { user: null, isAdmin: false };
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    return { user, isAdmin: profile?.role === "admin" };
+    const info: SessionInfo = user
+      ? {
+          user,
+          isAdmin:
+            (
+              await supabase.from("profiles").select("role").eq("id", user.id).single()
+            ).data?.role === "admin",
+        }
+      : { user: null, isAdmin: false };
+    snapshot = info;
+    return info;
   })();
   return cached;
 }
 
 /** null while resolving, then the session info; live-updates on sign-in/out. */
 export function useSession(): SessionInfo | null {
-  const [info, setInfo] = useState<SessionInfo | null>(null);
+  const [info, setInfo] = useState<SessionInfo | null>(snapshot);
 
   useEffect(() => {
     let alive = true;
@@ -47,6 +63,7 @@ export function useSession(): SessionInfo | null {
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         cached = null;
+        snapshot = null;
         loadSession().then((s) => {
           if (alive) setInfo(s);
         });

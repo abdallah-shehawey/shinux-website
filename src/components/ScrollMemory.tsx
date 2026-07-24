@@ -8,6 +8,57 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 const scrollPositions = new Map<string, number>();
 const visitedPaths = new Set<string>();
 
+// How long to keep insisting on a restored position while the page is still
+// growing under us. Long enough to cover an auth round trip (the admin's
+// "Reorder" toolbar appears with the session and pushes the grid down), short
+// enough never to fight a visitor who has started scrolling.
+const RESTORE_WINDOW_MS = 1200;
+
+/**
+ * Scroll to `target`, and keep re-applying it while the document is still too
+ * short to reach it.
+ *
+ * A single scrollTo is not enough: the browser clamps to the current document
+ * height, so anything that arrives after this frame — a late client-only
+ * section, images, a font swap — leaves the page parked above where it should
+ * be. Returns a cancel function; it stops on its own as soon as the position
+ * sticks, the window expires, or the visitor scrolls for themselves.
+ */
+function restoreScroll(target: number): () => void {
+  window.scrollTo(0, target);
+  if (window.scrollY >= target) return () => {};
+
+  let cancelled = false;
+  let frame = 0;
+  const deadline = performance.now() + RESTORE_WINDOW_MS;
+
+  const stop = () => {
+    cancelled = true;
+    if (frame) cancelAnimationFrame(frame);
+    window.removeEventListener("wheel", stop);
+    window.removeEventListener("touchstart", stop);
+    window.removeEventListener("keydown", stop);
+  };
+
+  // The visitor always wins.
+  window.addEventListener("wheel", stop, { passive: true });
+  window.addEventListener("touchstart", stop, { passive: true });
+  window.addEventListener("keydown", stop);
+
+  const tick = () => {
+    if (cancelled) return;
+    if (window.scrollY < target) window.scrollTo(0, target);
+    if (window.scrollY < target && performance.now() < deadline) {
+      frame = requestAnimationFrame(tick);
+    } else {
+      stop();
+    }
+  };
+  frame = requestAnimationFrame(tick);
+
+  return stop;
+}
+
 /**
  * Invisible component that saves and restores scroll positions per pathname.
  *
@@ -71,7 +122,10 @@ export default function ScrollMemory() {
     if (visitedPaths.has(pathname)) {
       const saved = scrollPositions.get(pathname);
       if (saved != null) {
-        window.scrollTo(0, saved);
+        visitedPaths.add(pathname);
+        // Cancelled if we navigate away again before the position settles —
+        // otherwise the retry loop would scroll whatever page came next.
+        return restoreScroll(saved);
       }
     } else {
       // First visit — scroll to top (scroll={false} links would otherwise
