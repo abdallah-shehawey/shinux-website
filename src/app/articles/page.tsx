@@ -6,15 +6,17 @@ import { getArticleOrder } from "@/lib/article-order";
 import { applyCustomOrder } from "@/lib/custom-order";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import ArticleReorderGrid from "@/components/ArticleReorderGrid";
+import TagFilterDropdown from "@/components/TagFilterDropdown";
 
 export const metadata: Metadata = { title: "Articles" };
 
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string; q?: string }>;
+  searchParams: Promise<{ tags?: string; q?: string }>;
 }) {
-  const { tag, q } = await searchParams;
+  const { tags: tagsParam, q } = await searchParams;
+  const selectedTags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
 
   const user = await getCurrentUser();
   let isAdmin = false;
@@ -29,20 +31,13 @@ export default async function ArticlesPage({
   // by category — an active search should rank by match relevance, not by
   // unrelated curation. Drag-to-reorder is also only offered on that default,
   // unfiltered view (reordering a filtered subset would be ambiguous).
-  const isDefaultView = !q && !tag;
+  const isDefaultView = !q && selectedTags.length === 0;
   const base = q ? searchArticles(q) : applyCustomOrder(getArticles(), await getArticleOrder());
-  const articles = tag ? base.filter((a) => a.tags.includes(tag)) : base;
+  const articles =
+    selectedTags.length > 0 ? base.filter((a) => a.tags.some((t) => selectedTags.includes(t))) : base;
   const authors = await getAuthorProfiles(
     articles.map((a) => a.author).filter((a): a is string => Boolean(a)),
   );
-
-  const tagHref = (t?: string) => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (t) params.set("tag", t);
-    const qs = params.toString();
-    return qs ? `/articles?${qs}` : "/articles";
-  };
 
   return (
     <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
@@ -53,8 +48,8 @@ export default async function ArticlesPage({
         </p>
       </header>
 
-      <form method="get" action="/articles" className="mb-6 flex gap-2">
-        {tag && <input type="hidden" name="tag" value={tag} />}
+      <form method="get" action="/articles" className="mb-8 flex flex-wrap gap-2">
+        {selectedTags.length > 0 && <input type="hidden" name="tags" value={selectedTags.join(",")} />}
         <input
           type="search"
           name="q"
@@ -65,29 +60,17 @@ export default async function ArticlesPage({
         <button type="submit" className="btn-ghost">
           Search
         </button>
-        {(q || tag) && (
+        {tags.length > 0 && <TagFilterDropdown tags={tags} selectedTags={selectedTags} q={q} basePath="/articles" />}
+        {(q || selectedTags.length > 0) && (
           <Link href="/articles" className="btn-ghost">
             Clear
           </Link>
         )}
       </form>
 
-      {tags.length > 0 && (
-        <div className="mb-8 flex flex-wrap gap-2">
-          <Link href={tagHref()} className="tag-chip" data-active={!tag}>
-            All
-          </Link>
-          {tags.map((tg) => (
-            <Link key={tg} href={tagHref(tg)} className="tag-chip" data-active={tag === tg}>
-              {tg}
-            </Link>
-          ))}
-        </div>
-      )}
-
       {articles.length === 0 ? (
         <p className="text-muted">
-          {q || tag ? "No articles match your search." : "No articles yet."}
+          {q || selectedTags.length > 0 ? "No articles match your search." : "No articles yet."}
         </p>
       ) : (
         <ArticleReorderGrid
