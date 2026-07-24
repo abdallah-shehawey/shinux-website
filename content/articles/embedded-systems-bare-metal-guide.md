@@ -1,15 +1,12 @@
 ---
 title: 'Embedded Systems (Bare Metal) - Roadmap & Resources'
-description: 'دليل خريطة طريق ودبلومات الـ Embedded Systems (Bare Metal) المجانية والمدفوعة بإعداد الباشمهندس عبد الله عبد المؤمن.'
+description: 'دليل خريطة طريق ودبلومات الـ Embedded Systems (Bare Metal) المجانية والمدفوعة'
 date: 2026-07-24T00:00:00.000Z
 tags:
   - embedded-systems
   - bare-metal
   - c-programming
-  - avr
-  - arm
-  - stm32
-  - rtos
+  - avr & arm
   - roadmap
 locale: ar
 draft: false
@@ -17,8 +14,6 @@ author: abdallah-shehawey
 ---
 
 # Embedded Systems (Bare Metal)
-
-> **Made By:** Abdallah AbdelMoemen ⚡
 
 ايوه هو دا المجال بتاع الاوردوينوا اللي بيطلب منكم مشروع في اولي كهربا .
 
