@@ -21,8 +21,10 @@ export const getQuestionOrder = unstable_cache(
   { revalidate: 300, tags: ["questions"] },
 );
 
-/** Same merge rule as applyCustomOrder in article-order.ts: explicitly-ordered
- * items first (by position), then everything else in its existing order. */
+/** Same merge rule as applyCustomOrder in custom-order.ts: items with no
+ * explicit position come first, keeping the order they arrived in, then the
+ * explicitly-ordered ones by position. New-questions-first is deliberate
+ * (379f09d) — see the rationale there before flipping these. */
 export function applyQuestionOrder<T extends { id: string }>(
   questions: T[],
   order: Record<string, number>,

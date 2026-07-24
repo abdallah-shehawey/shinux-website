@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { notificationLabel, notificationHref, type NotificationRecord } from "@/lib/notification-types";
@@ -27,7 +27,13 @@ export default function NotificationsBell({
   // showing 0 notifications on every page after the first, even once real
   // ones exist). Refetch on mount to self-correct, and again whenever the
   // dropdown opens so a long-lived tab stays current.
-  async function refetch() {
+  //
+  // Returns the rows instead of setting state itself: each caller applies the
+  // result behind its own cancellation guard, so a slow response that lands
+  // after unmount — or after a newer one — is dropped rather than clobbering
+  // fresher data (e.g. open, close, reopen quickly and the first, staler
+  // response would otherwise win).
+  const fetchNotifications = useCallback(async () => {
     const supabase = createClient();
     const { data } = await supabase
       .from("notifications")
@@ -35,18 +41,29 @@ export default function NotificationsBell({
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(8);
-    if (data) setNotifications(data as NotificationRecord[]);
-  }
+    return (data as NotificationRecord[] | null) ?? null;
+  }, [userId]);
 
   useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    let cancelled = false;
+    void fetchNotifications().then((rows) => {
+      if (!cancelled && rows) setNotifications(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchNotifications]);
 
   useEffect(() => {
-    if (open) refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+    if (!open) return;
+    let cancelled = false;
+    void fetchNotifications().then((rows) => {
+      if (!cancelled && rows) setNotifications(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, fetchNotifications]);
 
   const dismiss = useDismissOnOutsideOrBack(open, () => setOpen(false), rootRef);
 

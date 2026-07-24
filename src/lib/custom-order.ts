@@ -1,9 +1,14 @@
 /**
  * Shared merge rule for the admin's drag-to-reorder tables (article_order,
- * tutorial_track_order): explicitly-ordered items first, by position ascending,
- * then anything without a row — new content that hasn't been placed yet —
- * appended after, keeping the order it already had (date-desc for articles,
- * frontmatter order for tracks).
+ * tutorial_track_order): anything WITHOUT a row goes first — new content that
+ * hasn't been placed yet, keeping the order it already had (date-desc for
+ * articles, frontmatter order for tracks) — then the explicitly-ordered items
+ * by position ascending.
+ *
+ * New-content-first is deliberate (379f09d): freshly published work surfaces on
+ * the home page without the admin having to re-drag the whole list, and the
+ * curated block stays put underneath. Flipping these two back would silently
+ * bury every new article until it was manually positioned.
  *
  * Lives on its own rather than inside article-order.ts because more than one
  * content type now shares it. question-order.ts keeps its own copy: questions

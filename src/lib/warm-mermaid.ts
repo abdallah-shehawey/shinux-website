@@ -49,10 +49,16 @@ export async function warmMermaidCache(): Promise<void> {
 
   // Render off-screen so nothing flashes on the page. Mermaid needs the host in
   // the DOM to measure text, so it is positioned far off-viewport, then removed.
+  //
+  // The host must have a REAL width: Mermaid sizes diagrams against its
+  // container, and a 0-width one makes it emit negative geometry
+  // (`<rect width="-37.5">`), which the browser rejects and logs as a console
+  // error on every page load. Height stays auto for the same reason. Kept fully
+  // off-screen to the left, so it never flashes and never adds scrollable area.
   const host = document.createElement("div");
   host.setAttribute("aria-hidden", "true");
   host.style.cssText =
-    "position:absolute;left:-99999px;top:0;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none;";
+    "position:absolute;left:-99999px;top:0;width:1200px;overflow:hidden;visibility:hidden;pointer-events:none;";
   document.body.appendChild(host);
 
   try {

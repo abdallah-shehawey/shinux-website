@@ -66,6 +66,15 @@ export default function ArticleImageZoom({ containerId }: { containerId: string 
         >
           ✕
         </button>
+        {/*
+          Deliberately a plain <img>, not next/image. The src is copied from an
+          arbitrary <img> inside rendered markdown, so its host is unknown at
+          build time and next/image would throw for any host missing from
+          images.remotePatterns (none are configured). The browser has already
+          downloaded and decoded this exact image for the in-article copy, so
+          the optimizer would add a round trip rather than save one.
+        */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={activeImg.src}
           alt={activeImg.alt}
