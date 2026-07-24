@@ -25,6 +25,7 @@ export default function HeaderAuth() {
       {/* A compact profile icon so it doesn't crowd the header. */}
       <Link
         href="/me"
+        prefetch={true}
         aria-label="My account"
         title="My account"
         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-muted transition hover:border-accent hover:text-fg active:scale-90 sm:h-9 sm:w-9"

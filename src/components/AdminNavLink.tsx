@@ -17,6 +17,8 @@ export default function AdminNavLink() {
   return (
     <Link
       href="/admin/questions"
+      prefetch={true}
+      scroll={false}
       className={`flex h-full items-center px-3 font-medium transition-colors ${
         active ? "text-accent" : "text-muted hover:text-accent"
       }`}

@@ -10,15 +10,16 @@ export default async function AdminQuestionsPage() {
   const user = await getCurrentUser();
   if (!user) notFound();
 
+  // Role check and the pending-questions read fire together instead of one
+  // after the other — the queue is RLS-gated to admins anyway, so a non-admin
+  // just gets an empty list before the notFound() below. One fewer round trip
+  // on the site's only always-dynamic tab.
   const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, pending] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", user.id).single(),
+    getPendingQuestions(),
+  ]);
   if (profile?.role !== "admin") notFound();
-
-  const pending = await getPendingQuestions();
 
   return (
     <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
