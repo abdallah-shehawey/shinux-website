@@ -11,9 +11,11 @@
 //    granted), precaches every page URL from /sitemap.xml so the whole site is
 //    available offline even for pages never opened. Images/media are left to
 //    runtime caching only, to keep the on-device footprint light.
-//  - Runtime is network-first: try the network, cache a fresh copy on success,
-//    fall back to the cached copy when offline. A navigation to a page that was
-//    never cached falls back to /offline.
+//  - Runtime races the network against the cache: the network still wins on
+//    any healthy connection (so content is live), but once the cache holds a
+//    copy nothing waits longer than NAV_NETWORK_TIMEOUT_MS for it. The slow
+//    request is left running to refresh the cache for next time. A navigation
+//    to a page that was never cached falls back to /offline.
 //  - The cache name is versioned; activate() deletes every older cache.
 //  - Messages: SKIP_WAITING activates a freshly installed worker on demand;
 //    CHECK_CONTENT re-reads the sitemap, precaches any newly published pages,
@@ -23,7 +25,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v15";
+const VERSION = "v16";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -304,21 +306,31 @@ async function findCachedPage(cache, request, url, isRsc) {
   return cached;
 }
 
-// Navigation strategy: whichever of network-or-timeout comes first, with the
-// cache as the safety net. On a healthy connection the network always wins and
-// the visitor sees live content, exactly as before. On a weak one they get the
-// precached page in NAV_NETWORK_TIMEOUT_MS instead of waiting out the request,
-// and the response that eventually lands still refreshes the cache.
-async function navigateWithTimeout(event, request, url, isRsc, isNavigation) {
+// The one strategy every managed request uses: whichever of network-or-timeout
+// comes first, with the cache as the safety net. On a healthy connection the
+// network always wins and the visitor sees live content. On a weak one they
+// get the cached copy in NAV_NETWORK_TIMEOUT_MS instead of waiting out the
+// request, and the response that eventually lands still refreshes the cache.
+//
+// Assets go through this too, not just pages. A single image on an unbounded
+// network-first fetch held a fully-rendered page's `load` event for fifteen
+// seconds with an identical copy sitting in the cache — the page was readable
+// but never finished, which is its own kind of "stuck".
+async function respondRacingCache(event, request, url, { isRsc = false, isNavigation = false } = {}) {
   const cache = await caches.open(CACHE);
 
   const network = fetch(request)
     .then((response) => {
-      if (response && response.ok && response.type === "basic") {
+      // RSC replies are deliberately NOT cached here. Next 16's segment cache
+      // makes every one of them partial: a live navigation's payload is scoped
+      // to the `Next-Router-State-Tree` it was requested from, and a segment
+      // prefetch asks for one slice (`/_tree`, `/_head`, `/x/__PAGE__`).
+      // Filing any of those under the bare pathname would hand a later, unrelated
+      // navigation a fragment of a page it never asked for. The flights this
+      // worker serves come from cacheRsc(), which fetches with `RSC: 1` and no
+      // state tree and therefore gets the whole thing.
+      if (response && response.ok && response.type === "basic" && !isRsc) {
         cache.put(request, response.clone());
-        if (isRsc && (response.headers.get("content-type") || "").includes("text/x-component")) {
-          cache.put(rscKey(url.pathname), response.clone());
-        }
       }
       return response;
     })
@@ -345,7 +357,7 @@ async function navigateWithTimeout(event, request, url, isRsc, isNavigation) {
     const offline = await cache.match("/offline");
     if (offline) return offline;
   }
-  return new Response("You are offline and this page is not cached.", {
+  return new Response("You are offline and this is not cached.", {
     status: 503,
     statusText: "Offline",
     headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -499,39 +511,22 @@ self.addEventListener("fetch", (event) => {
   // is no such thing as an offline copy of "your" page.
   if (PRIVATE_ROUTE.test(url.pathname)) return;
 
-  // Pages and RSC flights: race the network against the cache instead of
-  // waiting the network out. Previously this awaited `fetch` with no timeout
-  // and only consulted the cache once the request REJECTED — so a connection
-  // that was slow rather than dead never used the precached site at all, and
-  // every navigation cost a full round trip no matter how bad the link was.
-  if (isNavigation || isRsc) {
-    event.respondWith(navigateWithTimeout(event, request, url, isRsc, isNavigation));
-    return;
-  }
+  // Link prefetches are speculative, and under Next 16's segment cache they
+  // are partial by design — one slice of a route (`/_tree`, `/_head`,
+  // `/x/__PAGE__`) rather than the page. Serving a stored slice to a later
+  // navigation leaves the router holding a fragment it cannot finish
+  // rendering: a click that hangs. Reading from the cache is no use to them
+  // either — a prefetch that fails costs nothing, and the navigation it was
+  // warming still gets the full treatment below.
+  if (request.headers.get("Next-Router-Prefetch") === "1") return;
 
-  // Everything else same-origin: images, icons, the manifest, the sitemap.
-  // Network-first (these are small and rarely the thing holding a page up),
-  // with the cache as the offline fallback.
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      try {
-        const response = await fetch(request);
-        if (response && response.ok && response.type === "basic") {
-          cache.put(request, response.clone());
-        }
-        return response;
-      } catch {
-        const cached = await findCachedPage(cache, request, url, false);
-        if (cached) return cached;
-        return new Response("You are offline and this asset is not cached.", {
-          status: 503,
-          statusText: "Offline",
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        });
-      }
-    })(),
-  );
+  // Pages, RSC flights, images, icons, the manifest, the sitemap: all race the
+  // network against the cache instead of waiting the network out. This used to
+  // await `fetch` with no timeout and only consult the cache once the request
+  // REJECTED — so a connection that was slow rather than dead never used the
+  // precached site at all, and every request cost a full round trip no matter
+  // how bad the link was.
+  event.respondWith(respondRacingCache(event, request, url, { isRsc, isNavigation }));
 });
 
 // ---- messages -------------------------------------------------------------
