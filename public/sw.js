@@ -25,7 +25,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v17";
+const VERSION = "v18";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
