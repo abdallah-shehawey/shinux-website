@@ -1,9 +1,10 @@
-// Mirrors what HTML dir="auto" does — the first strong directional character
-// decides — for places where we set a CONTAINER's direction server-side
-// (answer bodies have no locale field, unlike questions/articles). The
-// container's dir drives the side of list bullets, blockquote borders and
-// padding; the per-block dir="auto" stamped by src/lib/markdown.ts then
-// handles any opposite-direction paragraph inside it.
+// Picks a text direction server-side, for two callers:
+//   - CONTAINER direction where there's no locale field to go on (answer
+//     bodies, unlike questions/articles). This drives the side of list
+//     bullets, blockquote borders and padding.
+//   - every markdown leaf block, stamped by src/lib/markdown.ts.
+//
+// Close to HTML's dir="auto" but not identical — see the rule below.
 
 // Hebrew, Arabic, Syriac, Thaana + Arabic presentation forms.
 const RTL_CHAR = /[֐-ࣿיִ-﷽ﹰ-ﻼ]/;

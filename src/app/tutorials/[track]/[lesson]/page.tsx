@@ -9,7 +9,7 @@ import {
   type LessonMeta,
 } from "@/lib/tutorials";
 import { renderMarkdown } from "@/lib/markdown";
-import { getAuthorProfile } from "@/lib/authors";
+import { getAuthorProfile, unresolvedAuthor } from "@/lib/authors";
 import { siteAuthor } from "@/lib/site";
 import TutorialReader from "@/components/TutorialReader";
 import AuthorCard from "@/components/AuthorCard";
@@ -75,7 +75,11 @@ export default async function LessonPage({
   const trackData = getTrack(track);
   const { html, toc } = await renderMarkdown(found.body);
   const { prev, next } = getAdjacentLessons(track, lesson);
-  const author = (found.author && (await getAuthorProfile(found.author))) || siteAuthor;
+  // A lesson with an `author` keeps that byline even if they have no profile
+  // row yet; only an author-less lesson falls back to the site owner.
+  const author = found.author
+    ? ((await getAuthorProfile(found.author)) ?? unresolvedAuthor(found.author))
+    : siteAuthor;
 
   return (
     <>

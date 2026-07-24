@@ -13,6 +13,7 @@ import { visit } from "unist-util-visit";
 import { toString as hastToString } from "hast-util-to-string";
 import type { Root, Element } from "hast";
 import type { Root as MdastRoot, Parent as MdastParent, Code as MdastCode } from "mdast";
+import { detectDirection } from "./bidi";
 
 // ------------------------------------------------------------------------------
 // Reusable Markdown → sanitized HTML pipeline.
@@ -67,14 +68,23 @@ const sanitizeSchema: Schema = {
   },
 };
 
-import { detectDirection } from "./bidi";
-
-// Every text block decides its own direction based on character counts (dir="rtl" or "ltr"),
-// so Arabic and English paragraphs coexist cleanly in one body, and Arabic paragraphs starting
-// with English names or emojis (e.g. "🎮 Nobara") aren't misclassified as LTR.
+// Every text block decides its own direction from its own text (detectDirection,
+// see bidi.ts), so Arabic and English paragraphs coexist in one body — an English
+// line inside an Arabic article renders LTR and vice versa. Resolved here rather
+// than left to dir="auto" because "auto" only looks at the first strong character
+// and mis-reads Arabic paragraphs opening with a Latin name or emoji.
+//
+// Only LEAF text blocks are stamped. Containers (ul/ol/blockquote/table) are
+// deliberately left alone so bullet side, blockquote border side and padding keep
+// following the PAGE direction rather than flipping per item. A <p> directly
+// inside an <li> (loose lists) is skipped for the same reason: the <li> already
+// carries the direction for that whole item, and a nested <p> disagreeing with it
+// would put the text on the opposite side from its own bullet. <pre> is absent on
+// purpose — code blocks are forced LTR in globals.css (spec §5). Runs AFTER
+// rehype-sanitize so the attribute isn't stripped.
 const BIDI_BLOCKS = new Set(["p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "td", "th"]);
 
-function rehypeBidiAuto() {
+function rehypeBidiDirection() {
   return (tree: Root) => {
     visit(tree, "element", (node: Element, _index, parent) => {
       if (!BIDI_BLOCKS.has(node.tagName)) return;
@@ -357,7 +367,7 @@ async function renderMarkdownUncached(
       properties: { className: ["heading-anchor"] },
     })
     .use(rehypeCollectToc, toc)
-    .use(rehypeBidiAuto)
+    .use(rehypeBidiDirection)
     // Dual theme: emits --shiki-light / --shiki-dark CSS variables so the code
     // block follows the site's light/dark toggle. See globals.css.
     .use(rehypeShiki, {

@@ -107,8 +107,9 @@ export default async function ArticlePage({
   const authors = await getAuthorProfiles(
     [article.author, ...related.map((a) => a.author)].filter((a): a is string => Boolean(a)),
   );
-  // Falls back to the hardcoded siteAuthor when the article has no `author`
-  // frontmatter, or the username doesn't resolve to a live admin profile.
+  // getAuthorProfiles always yields an entry for a known username (falling back
+  // to the raw handle), so siteAuthor is only for articles with no `author`
+  // frontmatter at all.
   const author = (article.author && authors[article.author]) || siteAuthor;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;

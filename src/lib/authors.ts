@@ -3,10 +3,13 @@ import { unstable_cache } from "next/cache";
 import { createAnonClient } from "@/lib/supabase/anon";
 import type { Author } from "@/lib/site";
 
-// Resolves an article frontmatter `author: <username>` into a real, live
-// profile (display name + avatar) via the public.author_profiles view — see
-// supabase/migrations/0006_author_profiles.sql. Scoped to admins, since
-// articles are still admin-authored (Linux-site-spec.md §1).
+// Resolves an article/lesson frontmatter `author: <username>` into a real,
+// live profile (display name + avatar) via the public.profiles_public view —
+// see supabase/migrations/0008_public_profiles.sql.
+//
+// Deliberately NOT the older author_profiles view (0006): that one is scoped
+// to `role = 'admin'`, so lessons contributed by non-admins resolved to
+// nothing and lost their byline. Tutorials are no longer admin-only.
 //
 // Cookie-free + cached on purpose: this runs inside statically generated
 // article/tutorial pages, so it must never touch cookies() (that would force
@@ -39,7 +42,20 @@ const getAllAuthorProfiles = unstable_cache(
   { revalidate: 3600, tags: ["authors"] },
 );
 
-/** Batch lookup — one query for every distinct username on a listing page. */
+/**
+ * Byline for a username with no profile row yet (contributor who hasn't
+ * signed in). Shows the raw handle — mis-attributing their work to the site
+ * owner would be worse than an un-prettified name.
+ */
+export function unresolvedAuthor(username: string): Author {
+  return { name: username, username };
+}
+
+/**
+ * Batch lookup — one query for every distinct username on a listing page.
+ * Every requested username gets an entry: unknown ones fall back to
+ * unresolvedAuthor(), so a card never silently drops its byline.
+ */
 export async function getAuthorProfiles(usernames: string[]): Promise<Record<string, Author>> {
   const unique = [...new Set(usernames)].filter(Boolean);
   if (unique.length === 0) return {};
@@ -47,16 +63,17 @@ export async function getAuthorProfiles(usernames: string[]): Promise<Record<str
   const all = await getAllAuthorProfiles();
   const map: Record<string, Author> = {};
   for (const username of unique) {
-    map[username] = all[username] ?? {
-      name: username,
-      username: username,
-    };
+    map[username] = all[username] ?? unresolvedAuthor(username);
   }
   return map;
 }
 
-/** Single lookup, for an article's own detail page. */
+/**
+ * Single lookup. Returns null when the username has no profile row, so each
+ * caller picks its own fallback — the site's own pages want the hardcoded
+ * siteAuthor (full display name), a lesson byline wants unresolvedAuthor().
+ */
 export async function getAuthorProfile(username: string): Promise<Author | null> {
-  const map = await getAuthorProfiles([username]);
-  return map[username] ?? { name: username, username };
+  const all = await getAllAuthorProfiles();
+  return all[username] ?? null;
 }
