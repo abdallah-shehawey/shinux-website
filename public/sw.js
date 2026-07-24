@@ -23,7 +23,7 @@
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v14";
+const VERSION = "v15";
 const CACHE = `linux-blog-${VERSION}`;
 
 // Pages and essential shell assets we always want available offline.
@@ -60,6 +60,41 @@ const PRECACHE_CHUNK = 24;
 // Give up on a single request rather than letting one hung connection block a
 // precache worker (and with it the rest of the queue) indefinitely.
 const FETCH_TIMEOUT_MS = 15000;
+
+// How long a navigation may wait on the network before we fall back to the
+// cached copy. The whole sitemap is precached, so on a bad connection there is
+// almost always a good page sitting one lookup away — waiting out a 10-second
+// response to render the very same thing is the worst of both worlds. The
+// network request is NOT cancelled when this fires; it keeps running and
+// refreshes the cache for next time. Comfortably above a healthy response, so
+// a normal connection still always renders live content.
+const NAV_NETWORK_TIMEOUT_MS = 1500;
+
+// Routes whose HTML is specific to the signed-in user or to moderation state.
+// These are never written to the cache and never served from it: a stale (or
+// worse, a previous session's) copy of these is not an acceptable fallback.
+const PRIVATE_ROUTE = /^\/(me|admin|auth|login|welcome)(\/|$)/;
+
+// Fetching ~170 pages while the visitor is still waiting for their FIRST page
+// is self-defeating on a weak link — the fill saturates the connection and the
+// page they actually asked for crawls in behind it. Hold off briefly so the
+// first paint gets the pipe to itself, and pull the concurrency right down when
+// the browser tells us the connection is poor.
+const PRECACHE_START_DELAY_MS = 3000;
+
+function connectionIsSlow() {
+  const c = self.navigator && self.navigator.connection;
+  if (!c) return false;
+  return c.saveData === true || /(^|-)(2g|slow-2g)$/.test(c.effectiveType || "");
+}
+
+function precacheConcurrency() {
+  return connectionIsSlow() ? 2 : 6;
+}
+
+// Distinguishes "the timeout won the race" from "the request failed" — a
+// rejected fetch resolves to null, so null alone cannot tell the two apart.
+const TIMED_OUT = Symbol("timed-out");
 
 // ---- helpers --------------------------------------------------------------
 
@@ -139,7 +174,8 @@ async function cacheRsc(cache, path) {
 // does not fire hundreds of requests at once. Failures are ignored per-URL so
 // one bad page never aborts the whole precache. onCached(path) fires for each
 // path that actually landed, so the caller can persist progress as it goes.
-async function precachePaths(cache, paths, { concurrency = 6, withRsc = false, onCached } = {}) {
+async function precachePaths(cache, paths, { concurrency, withRsc = false, onCached } = {}) {
+  concurrency = concurrency || precacheConcurrency();
   const queue = paths.slice();
   const worker = async () => {
     while (queue.length) {
@@ -233,6 +269,87 @@ async function cacheFirst(request) {
   } catch {
     return new Response("", { status: 504, statusText: "Offline asset unavailable" });
   }
+}
+
+// Find a usable cached copy of a page request. RSC flights carry a per-
+// navigation `?_rsc=` buster, so an exact match almost never hits for them —
+// fall back to the query-independent key, then to encoded/decoded spellings of
+// the pathname (non-ASCII slugs get written both ways).
+async function findCachedPage(cache, request, url, isRsc) {
+  const exact = await cache.match(request);
+  if (exact) return exact;
+
+  if (isRsc) {
+    const rsc =
+      (await cache.match(rscKey(url.pathname))) ||
+      (await cache.match(rscKey(decodeURIComponent(url.pathname))));
+    if (rsc) return rsc;
+  }
+
+  const cached =
+    (await cache.match(url.pathname)) ||
+    (await cache.match(decodeURIComponent(url.pathname))) ||
+    (await cache.match(encodeURI(url.pathname)));
+  if (!cached) return null;
+
+  // Handing HTML back for an RSC request crashes the Next router. A 503 makes
+  // it give up on the soft navigation and do a hard one, which comes back
+  // through here as a normal navigation and gets this very HTML.
+  if (isRsc && (cached.headers.get("content-type") || "").includes("text/html")) {
+    return new Response("RSC payload unavailable offline", {
+      status: 503,
+      statusText: "Offline RSC Fallback",
+    });
+  }
+  return cached;
+}
+
+// Navigation strategy: whichever of network-or-timeout comes first, with the
+// cache as the safety net. On a healthy connection the network always wins and
+// the visitor sees live content, exactly as before. On a weak one they get the
+// precached page in NAV_NETWORK_TIMEOUT_MS instead of waiting out the request,
+// and the response that eventually lands still refreshes the cache.
+async function navigateWithTimeout(event, request, url, isRsc, isNavigation) {
+  const cache = await caches.open(CACHE);
+
+  const network = fetch(request)
+    .then((response) => {
+      if (response && response.ok && response.type === "basic") {
+        cache.put(request, response.clone());
+        if (isRsc && (response.headers.get("content-type") || "").includes("text/x-component")) {
+          cache.put(rscKey(url.pathname), response.clone());
+        }
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  const cached = await findCachedPage(cache, request, url, isRsc);
+
+  if (cached) {
+    // `null` here means "the timer won", not "the network failed" — a rejected
+    // fetch resolves to null too, so tell them apart with a sentinel.
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(TIMED_OUT), NAV_NETWORK_TIMEOUT_MS));
+    const winner = await Promise.race([network, timeout]);
+    if (winner && winner !== TIMED_OUT) return winner;
+    // Serve the cached copy now; let the slow request finish and update the
+    // cache so the next visit is current.
+    event.waitUntil(network);
+    return cached;
+  }
+
+  const response = await network;
+  if (response) return response;
+
+  if (isNavigation) {
+    const offline = await cache.match("/offline");
+    if (offline) return offline;
+  }
+  return new Response("You are offline and this page is not cached.", {
+    status: 503,
+    statusText: "Offline",
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
 }
 
 // Read the sitemap and precache ONE bounded chunk of the pages still missing,
@@ -334,6 +451,11 @@ self.addEventListener("activate", (event) => {
       // already granted above; this keeps the worker alive until it finishes
       // without ever blocking navigation. notify:false ⇒ no first-run banner,
       // but reportProgress ⇒ the app shows a "saving for offline" indicator.
+      //
+      // The pause matters on a weak connection: this fires on the visitor's
+      // very first page load, and ~170 pages of fill competing with the page
+      // they are actually waiting for is why that first load dragged.
+      await new Promise((r) => setTimeout(r, PRECACHE_START_DELAY_MS));
       await syncContent(cache, { notify: false, reportProgress: true });
     })(),
   );
@@ -372,69 +494,37 @@ self.addEventListener("fetch", (event) => {
     request.headers.get("RSC") === "1" ||
     (request.headers.get("accept") || "").includes("text/x-component");
 
+  // Personalised routes: straight to the network, never cached, never served
+  // stale. If the network is down these simply fail, which is correct — there
+  // is no such thing as an offline copy of "your" page.
+  if (PRIVATE_ROUTE.test(url.pathname)) return;
+
+  // Pages and RSC flights: race the network against the cache instead of
+  // waiting the network out. Previously this awaited `fetch` with no timeout
+  // and only consulted the cache once the request REJECTED — so a connection
+  // that was slow rather than dead never used the precached site at all, and
+  // every navigation cost a full round trip no matter how bad the link was.
+  if (isNavigation || isRsc) {
+    event.respondWith(navigateWithTimeout(event, request, url, isRsc, isNavigation));
+    return;
+  }
+
+  // Everything else same-origin: images, icons, the manifest, the sitemap.
+  // Network-first (these are small and rarely the thing holding a page up),
+  // with the cache as the offline fallback.
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);
       try {
         const response = await fetch(request);
-        // Cache successful same-origin GETs (pages and static assets alike) so
-        // they are there when the network drops.
         if (response && response.ok && response.type === "basic") {
           cache.put(request, response.clone());
-          // RSC responses are keyed above by their exact URL, whose `_rsc`
-          // cache buster changes every navigation — useless offline. Store a
-          // second copy under the query-independent key so an offline soft
-          // navigation to a page visited while online can still find it.
-          if (isRsc && (response.headers.get("content-type") || "").includes("text/x-component")) {
-            cache.put(rscKey(url.pathname), response.clone());
-          }
         }
         return response;
       } catch {
-        // 1. Try exact match (matches exact URL including query strings or RSC cache if available)
-        let cached = await cache.match(request);
+        const cached = await findCachedPage(cache, request, url, false);
         if (cached) return cached;
-
-        // 1b. Offline soft navigation: serve the precached RSC flight for this
-        // pathname (its `_rsc` query varies every time, so match the normalized
-        // key). This is what lets a never-visited page open offline without the
-        // router's "This page couldn't load" error.
-        if (isRsc) {
-          const rsc =
-            (await cache.match(rscKey(url.pathname))) ||
-            (await cache.match(rscKey(decodeURIComponent(url.pathname))));
-          if (rsc) return rsc;
-        }
-
-        // 2. Try pathname variations (decoded and encoded)
-        const decPath = decodeURIComponent(url.pathname);
-        const encPath = encodeURI(url.pathname);
-        cached =
-          (await cache.match(url.pathname)) ||
-          (await cache.match(decPath)) ||
-          (await cache.match(encPath));
-
-        if (cached) {
-          // If Next.js made an RSC request for a soft navigation while offline and we only
-          // have the full HTML cached, returning HTML for RSC would crash Next.js client router.
-          // Returning a 503 error forces Next.js to perform a hard browser navigation to url.pathname,
-          // which then triggers a normal navigate fetch that successfully gets this cached HTML!
-          const isHtmlResponse = cached.headers.get("content-type")?.includes("text/html");
-          if (isRsc && isHtmlResponse) {
-            return new Response("RSC payload unavailable offline", {
-              status: 503,
-              statusText: "Offline RSC Fallback",
-            });
-          }
-          return cached;
-        }
-
-        if (isNavigation) {
-          const offline = await cache.match("/offline");
-          if (offline) return offline;
-        }
-
-        return new Response("You are offline and this page is not cached.", {
+        return new Response("You are offline and this asset is not cached.", {
           status: 503,
           statusText: "Offline",
           headers: { "Content-Type": "text/plain; charset=utf-8" },
