@@ -27,18 +27,10 @@ author: abdallah-shehawey
 في البدايه كده خلينا متفقين ان الامبيديد منه دبلومتين **Basic, Advanced**
 
 ### محتوي الـ Basic :
-- **لغات البرمجة والمفهوم:** `C & Embedded C`
-- **المتحكمات:** `AVR (ATMega, PIC)`
-- **الخوارزميات وبنى البيانات:** `Data Structure, Algorithms`
-- **أنظمة التشغيل المدمجة:** `RTOS`
-- **الاختبار:** `Testing`
+**C&Embedded C ,AVR(ATMega,PIC),Data Structure, Algorithms, RTOS, Testing**
 
-### ومحتوي الـ Advanced :
-- **المعماريات والربط:** `ARM Arch & STM interfacing`
-- **الأنظمة المتقدمة:** `Advanced RTOS on STM`
-- **إقلاع النظام:** `Bootloader`
-- **أدوات البناء:** `Building process and Toolchain`
-- **معايير البرمجة:** `AUTOSAR`
+### ومحتوي الـ Advanced : 
+**ARM Arch & STM interfacing, Advanced RTOS on STM, Bootloader, Building process and Toolchain, AUTOSAR**
 
 وان شاء الله هنقول كل واحد من اللي انت هتابع معاهم بيشرح ايه .
 
