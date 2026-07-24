@@ -77,9 +77,6 @@ export default function MobileNav({
               }`}
             >
               <span>{l.label}</span>
-              {l.href === current?.href && (
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              )}
             </Link>
           ))}
         </nav>

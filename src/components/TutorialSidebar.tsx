@@ -54,11 +54,8 @@ export default function TutorialSidebar({
                 <span className={`font-mono text-xs ${active ? "text-accent font-bold" : "text-muted"}`}>
                   {i + 1}.
                 </span>
-                <span className="truncate">{l.title}</span>
+                <span className="truncate" title={l.title}>{l.title}</span>
               </span>
-              {active && (
-                <span className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]" aria-hidden="true" />
-              )}
             </Link>
           </li>
         );
