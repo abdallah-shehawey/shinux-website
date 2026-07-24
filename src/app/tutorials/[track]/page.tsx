@@ -102,7 +102,7 @@ export default async function TrackPage({
                 <span className="font-mono text-xs text-muted">
                   {lesson.readingMinutes} min read
                 </span>
-                {lesson.author && authors[lesson.author] && (
+                {lesson.author && (
                   <span className="relative z-[2] mt-1 border-t border-border pt-2 text-xs text-muted">
                     <AuthorInline
                       name={authors[lesson.author]?.name ?? lesson.author}

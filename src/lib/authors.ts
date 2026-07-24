@@ -17,7 +17,7 @@ const getAllAuthorProfiles = unstable_cache(
   async (): Promise<Record<string, Author>> => {
     const supabase = createAnonClient();
     const { data, error } = await supabase
-      .from("author_profiles")
+      .from("profiles_public")
       .select("username, display_name, avatar_url");
     if (error || !data) return {};
 
@@ -47,7 +47,10 @@ export async function getAuthorProfiles(usernames: string[]): Promise<Record<str
   const all = await getAllAuthorProfiles();
   const map: Record<string, Author> = {};
   for (const username of unique) {
-    if (all[username]) map[username] = all[username];
+    map[username] = all[username] ?? {
+      name: username,
+      username: username,
+    };
   }
   return map;
 }
@@ -55,5 +58,5 @@ export async function getAuthorProfiles(usernames: string[]): Promise<Record<str
 /** Single lookup, for an article's own detail page. */
 export async function getAuthorProfile(username: string): Promise<Author | null> {
   const map = await getAuthorProfiles([username]);
-  return map[username] ?? null;
+  return map[username] ?? { name: username, username };
 }
