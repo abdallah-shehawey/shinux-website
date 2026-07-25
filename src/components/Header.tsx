@@ -22,7 +22,7 @@ const links = [
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur">
       <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-6 lg:px-6">
         <Link
           href="/"
