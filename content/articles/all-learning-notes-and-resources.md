@@ -65,7 +65,8 @@ author: abdallah-shehawey
 
 ### 🔹 Embedded Drivers
 لو شغال Embedded سواء AVR أو ARM، دول درايفرات كويسة تكون مرجع ليك أو تبني عليها:
-👉 [دليل Embedded Drivers](/tutorials/system-programming)
+👉 [درايفرات AVR/ATmega32](https://github.com/abdallah-shehawey/ATMega32-Drivers)
+👉 [درايفرات ARM/Nucleo-F446RE (Cortex-M4)](https://github.com/abdallah-shehawey/COTS-STM32F446xx)
 
 ### 🔹 GitHub Repos
 ودول كل الـ Repos اللي عملتها ممكن تلاقي حاجة فيهم تفيدك مش مذكورة فوق 😅:
