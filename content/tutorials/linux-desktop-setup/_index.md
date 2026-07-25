@@ -6,6 +6,6 @@ description: >-
   customization, and small CLI utilities.
 tag: Linux
 order: 8
-githubUrl: 'https://github.com/abdallah-shehawey/dotfiles-linux/tree/main/docs'
+githubUrl: 'https://github.com/abdallah-shehawey/dotfiles-linux'
 ---
 
