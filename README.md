@@ -1,6 +1,6 @@
 <div align="center">
 
-# Linux Blog & Q&A Platform
+# shehaweyblog — Linux Blog & Q&A Platform
 
 A modern Linux technical blog, structured tutorial platform, and community Q&A engine built with **Next.js 16**, **Supabase**, and **Tailwind CSS**.
 
