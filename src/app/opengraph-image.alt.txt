@@ -1,0 +1,1 @@
+A terminal window on a dark grid background running "$ whoami", answering with "Abdallah Shehawey — Building. Learning. Sharing." over a short blurb about the blog and pills for its Articles, Tutorials and Q&A sections.

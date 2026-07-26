@@ -1,11 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // The link-preview card (src/app/opengraph-image.tsx) reads its .ttf files
-  // from disk; nothing imports them, so tracing has to be told they are needed.
-  outputFileTracingIncludes: {
-    "/opengraph-image": ["./src/lib/og-fonts/**"],
-  },
   experimental: {
     // How long the CLIENT router may reuse an already-fetched route before a
     // click has to go back to the network. The tabs are statically prerendered
