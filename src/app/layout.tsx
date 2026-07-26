@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import { ThemeScript } from "@/components/ThemeScript";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import ScrollMemory from "@/components/ScrollMemory";
+import NavigationPendingProvider from "@/components/NavigationPending";
+import NavigationSkeleton from "@/components/NavigationSkeleton";
 import "./globals.css";
 
 const inter = Inter({
@@ -100,9 +102,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeScript />
       </head>
       <body className="flex min-h-full flex-col bg-bg text-fg">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {/* Wraps the header too, not just the page: while a navigation is in
+            flight the nav highlights the tab being opened at the same moment
+            its skeleton appears, so the two never disagree. `children` stays a
+            server-rendered slot throughout — NavigationSkeleton only chooses
+            between it and the destination's loading.tsx. */}
+        <NavigationPendingProvider>
+          <Header />
+          <main className="flex-1">
+            <NavigationSkeleton>{children}</NavigationSkeleton>
+          </main>
+          <Footer />
+        </NavigationPendingProvider>
         <ScrollMemory />
         <ServiceWorkerRegister />
         <Analytics />

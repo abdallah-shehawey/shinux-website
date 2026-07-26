@@ -18,13 +18,15 @@ import type { NavLinkItem } from "./DesktopNav";
  *
  * 2. Even on desktop, viewport prefetch is scheduled off idle callbacks and
  *    competes with everything else the page is fetching. A tab clicked before
- *    its turn came up costs a round trip during which React deliberately keeps
- *    the OLD page on screen — the route's loading.tsx skeleton arrives in the
- *    very payload being waited on, so not even a skeleton can paint.
+ *    its turn came up costs a round trip during which the router keeps the OLD
+ *    page on screen — the route's loading.tsx skeleton arrives in the very
+ *    payload being waited on, so it cannot paint from here.
  *
- * Prefetching here is what lets a click commit immediately: once the route tree
- * is cached the router knows where the loading boundary is, so it can show the
- * skeleton instantly and stream the content in behind it.
+ * A warm cache is what lets a click commit immediately, with the real content
+ * and no skeleton at all. NavigationSkeleton covers the miss: it paints the
+ * destination's skeleton straight away rather than letting the outgoing page
+ * sit there. Both are wanted — this one makes navigations fast, that one makes
+ * them honest when they aren't.
  *
  * Re-warmed after every navigation, not just on mount: the header lives in the
  * root layout, so it mounts once per full page load and would otherwise never

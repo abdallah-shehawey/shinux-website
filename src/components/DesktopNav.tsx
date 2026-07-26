@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import AdminNavLink from "./AdminNavLink";
+import { useNavigationTarget } from "./NavigationPending";
 
 export type NavLinkItem = {
   href: string;
@@ -14,7 +14,10 @@ export default function DesktopNav({
 }: {
   links: readonly NavLinkItem[];
 }) {
-  const pathname = usePathname();
+  // The tab being opened, not the one we're still technically on: a click has
+  // to light its tab up immediately, even while the page behind it is still a
+  // skeleton.
+  const pathname = useNavigationTarget();
 
   const isLinkActive = (href: string) => {
     if (href === "/") {

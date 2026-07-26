@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useDismissOnOutsideOrBack } from "@/hooks/useDismissOnOutsideOrBack";
+import { useNavigationTarget } from "./NavigationPending";
 
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -35,8 +36,11 @@ export default function MobileNav({
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // The trigger names the section being opened the moment its skeleton goes
+  // up, rather than lagging a round trip behind on the section just left.
+  const target = useNavigationTarget();
   const current = links.find((l) =>
-    l.href === "/" ? pathname === "/" : pathname.startsWith(l.href),
+    l.href === "/" ? target === "/" : target.startsWith(l.href),
   );
 
   // Tapping a row closes the menu straight away — with every tab prefetched
