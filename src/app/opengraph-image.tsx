@@ -201,7 +201,7 @@ export default async function Image() {
                 color: C.fg,
               }}
             >
-              {site.name}
+              {"Abdallah Shehawey"}
             </div>
 
             <div
