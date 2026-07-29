@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+
+import { resumeTracking, suppressTracking } from "@/lib/scroll-memory";
 import { skeletonForPath } from "./route-skeletons";
 
 /**
@@ -150,12 +152,18 @@ export default function NavigationPendingProvider({
     if (pending === null) return;
 
     // A skeleton picked up mid-scroll would show its own middle, which reads
-    // as the old page having jumped rather than a new one having opened. Safe
-    // here and not in the click handler: ScrollMemory banks the outgoing
-    // position from that same click, and would have recorded a 0 instead.
+    // as the old page having jumped rather than a new one having opened. The
+    // router still reports the outgoing pathname here, so this has to be hidden
+    // from ScrollMemory: recorded, it would overwrite the position the reader
+    // left that page at with 0, and Back would land them at the top of it.
+    suppressTracking();
     window.scrollTo(0, 0);
 
-    const bail = window.setTimeout(() => setPending(null), GIVE_UP_AFTER_MS);
+    const bail = window.setTimeout(() => {
+      setPending(null);
+      // Nothing is going to land, so nothing will lift the suppression above.
+      resumeTracking();
+    }, GIVE_UP_AFTER_MS);
     return () => clearTimeout(bail);
   }, [pending]);
 
