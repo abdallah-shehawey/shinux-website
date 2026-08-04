@@ -27,7 +27,7 @@ export default function ArticleCard({
     // Relative + a full-cover link underneath so the whole card still opens
     // the article, while the author footer's own link (above it, z-10) stays
     // independently clickable to their profile.
-    <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full flex-col gap-2 transition-all duration-150 hover:border-accent">
+    <div className="card group relative flex h-full flex-col gap-2 transition-all duration-150 hover:border-accent">
       {/* prefetch={false} = no viewport prefetch, hover/touch still prefetches.
           /articles renders every article at once, and each card left on the
           default fires four RSC segment requests the moment it scrolls into
@@ -38,7 +38,7 @@ export default function ArticleCard({
       <Link
         href={`/articles/${article.slug}`}
         prefetch={false}
-        className="absolute inset-0 z-0"
+        className="card-hit absolute inset-0 z-0"
         aria-label={article.title}
       />
       <p className="flex items-center gap-2 font-mono text-xs text-muted">

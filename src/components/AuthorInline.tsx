@@ -29,10 +29,15 @@ export default function AuthorInline({
   );
 
   return username ? (
+    // Its own press indicator: a pill that highlights and shrinks around the
+    // name alone. The card underneath no longer reacts (see .card-hit in
+    // globals.css), so a tap here reads as "opening this person", not the card.
+    // The negative margins cancel the pill's padding, keeping the avatar and
+    // the row it sits in exactly where they were.
     <Link
       href={`/u/${username}`}
       prefetch={false}
-      className="relative z-10 transition hover:text-accent active:opacity-60"
+      className="relative z-10 -mx-1 -my-0.5 inline-flex rounded-full px-1 py-0.5 transition duration-150 hover:bg-accent/10 hover:text-accent active:scale-95 active:bg-accent/20 active:text-accent"
     >
       {content}
     </Link>

@@ -163,6 +163,17 @@ input:not([type]) {
   padding: 1.5rem;
 }
 
+/* Press feedback for a card that is opened by a full-cover overlay link
+   (.card-hit). It hangs off the OVERLAY's :active, not the card's, because
+   :active matches every ancestor of whatever is pressed: with the effect on
+   the card itself, tapping a link that sits above the overlay — the author
+   footer, "View on GitHub" — shrank the whole card as if the card had been
+   tapped. Those links now indicate on themselves only. */
+.card:has(> .card-hit:active) {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
 /* ---- Reader layout ----
    Height of the sticky chrome stacked above a reader page — the site header
    (3.5rem + its 1px bottom border) plus the back-link bar (2.75rem). Anything

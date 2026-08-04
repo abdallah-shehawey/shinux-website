@@ -76,10 +76,10 @@ export default async function TrackPage({
       <ol className="grid auto-rows-fr gap-4 md:grid-cols-2">
         {lessons.map((lesson, i) => (
           <li key={lesson.slug}>
-            <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full items-start gap-4 transition-all duration-150 hover:border-accent">
+            <div className="card group relative flex h-full items-start gap-4 transition-all duration-150 hover:border-accent">
               <Link
                 href={`/tutorials/${track}/${lesson.slug}`}
-                className="absolute inset-0 z-[1]"
+                className="card-hit absolute inset-0 z-[1]"
                 aria-label={lesson.title}
               />
               <span className="mt-0.5 font-mono text-sm text-muted group-hover:text-accent transition-colors">

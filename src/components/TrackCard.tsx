@@ -14,13 +14,13 @@ export default function TrackCard({
   authors: Record<string, Author>;
 }) {
   return (
-    <div className="card active:scale-[0.98] active:opacity-90 group relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-all duration-150 hover:border-accent">
+    <div className="card group relative flex h-full min-w-0 flex-col gap-2 overflow-hidden transition-all duration-150 hover:border-accent">
       {/* Viewport prefetch off — see ArticleCard for why the card grids must
           not compete with the header tabs for a slow connection. */}
       <Link
         href={`/tutorials/${track.slug}`}
         prefetch={false}
-        className="absolute inset-0 z-0"
+        className="card-hit absolute inset-0 z-0"
         aria-label={track.title}
       />
       <div className="flex items-center justify-between gap-2">
@@ -54,7 +54,7 @@ export default function TrackCard({
               href={track.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative z-10 flex items-center gap-1.5 p-1 hover:text-accent transition-colors duration-200"
+              className="relative z-10 flex items-center gap-1.5 p-1 hover:text-accent active:scale-95 active:text-accent transition duration-150"
               title="View on GitHub"
             >
               <FaGithub className="h-4 w-4" />
