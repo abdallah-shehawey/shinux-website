@@ -48,6 +48,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: site.name, template: `%s · ${site.name}` },
   description: site.tagline,
+  // Installability only. The manifest is what lets someone add the site to
+  // their home screen and open it in its own window — it caches nothing and
+  // costs nothing to serve. Offline support is a separate thing entirely, and
+  // this site does not have it: there is no service worker (see
+  // ServiceWorkerCleanup.tsx), so an installed copy is the site in a window
+  // and needs the network exactly like the browser tab does.
+  manifest: "/manifest.webmanifest",
   // Link previews (WhatsApp / Telegram / Facebook / X …). The image itself is
   // the static card at src/app/opengraph-image.png (file convention — Next
   // fills in og:image and twitter:image, their size/type, and the alt text from
@@ -68,10 +75,13 @@ export const metadata: Metadata = {
     title: { default: site.name, template: `%s · ${site.name}` },
     description: site.tagline,
   },
-  // The icons stay — they are the favicon and the touch icon, which every site
-  // has. There is no web app manifest and no service worker any more, so the
-  // site is not installable as an app; it opens in the browser like any other
-  // page.
+  // iOS has no install prompt: Safari's "Add to Home Screen" reads these,
+  // which is what opens the installed copy without browser chrome.
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: site.name,
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

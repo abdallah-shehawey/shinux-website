@@ -25,6 +25,7 @@ A modern Linux technical blog, structured tutorial platform, and community Q&A e
 - **Community Q&A System** — Authenticated users can ask (admin-moderated) and answer questions with nested replies, upvoting, tagging, search, and real-time + email notifications.
 - **Authentication & User Profiles** — Supabase Auth (GitHub, Google, Email Magic Link) with public user profile pages (`/u/[username]`).
 - **Privacy by Architecture** — Anonymous question submission guaranteed at the PostgreSQL database level using Row Level Security (RLS) views.
+- **Installable** — A web app manifest, so the site can be added to a home screen and opens in its own window. No service worker and no offline mode: it needs the network like any other site.
 - **Bilingual Support (EN / AR)** — English UI chrome with native support for both English (LTR) and Arabic (RTL) articles with language-specific typography.
 - **SEO & Social Optimization** — Dynamic `sitemap.xml`, `robots.txt`, a static OpenGraph card, and `Article`/`QAPage` JSON-LD structured data.
 
@@ -154,9 +155,9 @@ flowchart LR
 
 Diagrams are rendered client-side, and the Mermaid library is loaded only on the article and lesson pages that actually contain one. See [`src/components/MermaidRenderer.tsx`](./src/components/MermaidRenderer.tsx).
 
-## 📴 No Service Worker, No Offline Mode
+## 📴 Installable, But No Offline Mode
 
-The site is a plain server-rendered site: every request goes to the network, nothing is cached in the browser by us, and there is no web app manifest, so it is not installable as an app.
+The site ships a web app manifest, so it can be installed to a home screen and opens in its own window. It has **no service worker**: an installed copy is the site in a window, it caches nothing, and it needs the network exactly like a browser tab does. Chrome reports no installability errors without one (verified via `Page.getInstallabilityErrors`).
 
 It used to be a PWA. The first version of the Service Worker walked the whole `sitemap.xml` on every visitor's first load and fetched each page twice (document + RSC flight) — roughly 348 server-side requests per reader, repeated on every worker version bump, which was by far the largest source of hosting cost on the site. That bulk precache was removed first, then the rest of the worker with it.
 
@@ -190,7 +191,7 @@ Optimized for deployment on **Vercel**:
 
 ```
 content/          # Markdown articles & tutorial tracks
-public/           # Icons and the tombstone sw.js (see "No Service Worker")
+public/           # Icons and the tombstone sw.js (see "Installable, But No Offline Mode")
 scripts/          # Maintenance, seeding, and import scripts
 supabase/         # PostgreSQL migrations (RLS, views, functions)
 tests/            # Vitest RLS security integration tests
