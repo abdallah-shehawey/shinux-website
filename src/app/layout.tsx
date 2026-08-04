@@ -5,7 +5,7 @@ import { site } from "@/lib/site";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeScript } from "@/components/ThemeScript";
-import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import ServiceWorkerCleanup from "@/components/ServiceWorkerCleanup";
 import ScrollMemory from "@/components/ScrollMemory";
 import NavigationPendingProvider from "@/components/NavigationPending";
 import NavigationSkeleton from "@/components/NavigationSkeleton";
@@ -48,7 +48,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: site.name, template: `%s · ${site.name}` },
   description: site.tagline,
-  manifest: "/manifest.webmanifest",
   // Link previews (WhatsApp / Telegram / Facebook / X …). The image itself is
   // the static card at src/app/opengraph-image.png (file convention — Next
   // fills in og:image and twitter:image, their size/type, and the alt text from
@@ -69,11 +68,10 @@ export const metadata: Metadata = {
     title: { default: site.name, template: `%s · ${site.name}` },
     description: site.tagline,
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: site.name,
-  },
+  // The icons stay — they are the favicon and the touch icon, which every site
+  // has. There is no web app manifest and no service worker any more, so the
+  // site is not installable as an app; it opens in the browser like any other
+  // page.
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -115,7 +113,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
         </NavigationPendingProvider>
         <ScrollMemory />
-        <ServiceWorkerRegister />
+        <ServiceWorkerCleanup />
         <Analytics />
       </body>
     </html>

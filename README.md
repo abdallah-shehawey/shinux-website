@@ -8,7 +8,6 @@ A modern Linux technical blog, structured tutorial platform, and community Q&A e
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![PWA](https://img.shields.io/badge/PWA-offline_ready-5A0FC8?logo=pwa&logoColor=white)](#-pwa--offline)
 
 **Live Demo:** [shehaweyblog.vercel.app](https://shehaweyblog.vercel.app)
 
@@ -22,11 +21,10 @@ A modern Linux technical blog, structured tutorial platform, and community Q&A e
 
 - **Articles** — Markdown-based articles with syntax-highlighted code blocks, automatic Table of Contents, estimated reading time, related content recommendations, and RSS feeds.
 - **Tutorial Tracks** — Multi-lesson tutorial series (Ansible, Docker, Git, Linux Administration, System Programming, Yocto, etc.) with lesson ordering and track navigation.
-- **Mermaid Diagrams** — Live client-side rendering for ````mermaid ```` fenced blocks with offline caching support (see [Mermaid Diagrams](#-mermaid-diagrams)).
+- **Mermaid Diagrams** — Live client-side rendering for ````mermaid ```` fenced blocks, loaded only on pages that contain one (see [Mermaid Diagrams](#-mermaid-diagrams)).
 - **Community Q&A System** — Authenticated users can ask (admin-moderated) and answer questions with nested replies, upvoting, tagging, search, and real-time + email notifications.
 - **Authentication & User Profiles** — Supabase Auth (GitHub, Google, Email Magic Link) with public user profile pages (`/u/[username]`).
 - **Privacy by Architecture** — Anonymous question submission guaranteed at the PostgreSQL database level using Row Level Security (RLS) views.
-- **Installable PWA** — Pages are cached by the Service Worker as you read them, so revisits are instant and the site stays usable on a flaky connection or offline.
 - **Bilingual Support (EN / AR)** — English UI chrome with native support for both English (LTR) and Arabic (RTL) articles with language-specific typography.
 - **SEO & Social Optimization** — Dynamic `sitemap.xml`, `robots.txt`, a static OpenGraph card, and `Article`/`QAPage` JSON-LD structured data.
 
@@ -37,7 +35,7 @@ A modern Linux technical blog, structured tutorial platform, and community Q&A e
 | **Framework** | Next.js 16 (App Router, TypeScript) |
 | **Styling** | Tailwind CSS v4, dark mode by default (cookie-based theme state) |
 | **Content Pipeline** | Markdown → `unified` / `remark` / `rehype` + [Shiki](https://shiki.style) (dual light/dark themes) |
-| **Diagrams** | [Mermaid](https://mermaid.js.org) v11 (client-side rendered & precached) |
+| **Diagrams** | [Mermaid](https://mermaid.js.org) v11 (client-side, lazily loaded per page) |
 | **Backend & Auth** | Supabase (PostgreSQL + RLS, Auth, Storage) |
 | **Typography** | Inter (UI/English), IBM Plex Sans Arabic (Arabic), JetBrains Mono (Code) |
 | **Deployment** | Vercel |
@@ -154,14 +152,20 @@ flowchart LR
 ```
 ```
 
-Diagrams are rendered client-side and pre-cached by the Service Worker to allow full offline rendering support. See [`src/lib/warm-mermaid.ts`](./src/lib/warm-mermaid.ts).
+Diagrams are rendered client-side, and the Mermaid library is loaded only on the article and lesson pages that actually contain one. See [`src/components/MermaidRenderer.tsx`](./src/components/MermaidRenderer.tsx).
 
-## 📴 PWA & Offline Support
+## 📴 No Service Worker, No Offline Mode
 
-- Service Worker ([`public/sw.js`](./public/sw.js)) precaches the application shell only — fonts, global CSS, `/offline` and the icons.
-- Content pages are cached **as they are read**, not ahead of time. An earlier version walked the whole `sitemap.xml` on every visitor's first load and fetched each page twice (document + RSC flight): ~348 server-side requests per reader, repeated on every Service Worker version bump. Do not reintroduce a bulk precache.
-- Network-first strategy for dynamic content; cache-first for static build assets.
-- A single in-app banner offers to activate a newly installed Service Worker version.
+The site is a plain server-rendered site: every request goes to the network, nothing is cached in the browser by us, and there is no web app manifest, so it is not installable as an app.
+
+It used to be a PWA. The first version of the Service Worker walked the whole `sitemap.xml` on every visitor's first load and fetched each page twice (document + RSC flight) — roughly 348 server-side requests per reader, repeated on every worker version bump, which was by far the largest source of hosting cost on the site. That bulk precache was removed first, then the rest of the worker with it.
+
+Two pieces of demolition remain and must keep shipping for now:
+
+- [`public/sw.js`](./public/sw.js) is a **tombstone worker**: it deletes every cache and unregisters itself. It cannot simply be deleted, because a 404 on a registered worker's script leaves the *old* worker installed and in control — visitors would stay pinned to a cached copy of the site indefinitely.
+- [`src/components/ServiceWorkerCleanup.tsx`](./src/components/ServiceWorkerCleanup.tsx) does the same from inside the page, for browsers that have not re-checked the script yet.
+
+Both can be deleted once no visitor can plausibly still have the old worker installed. **Do not reintroduce a Service Worker or a precache.**
 
 ## 🧪 Security & Integration Testing
 
@@ -186,7 +190,7 @@ Optimized for deployment on **Vercel**:
 
 ```
 content/          # Markdown articles & tutorial tracks
-public/           # Icons, web app manifest, Service Worker (sw.js)
+public/           # Icons and the tombstone sw.js (see "No Service Worker")
 scripts/          # Maintenance, seeding, and import scripts
 supabase/         # PostgreSQL migrations (RLS, views, functions)
 tests/            # Vitest RLS security integration tests
