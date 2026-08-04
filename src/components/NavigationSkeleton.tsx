@@ -1,6 +1,6 @@
 "use client";
 
-import { usePendingNavigation } from "./NavigationPending";
+import { usePendingTarget } from "./NavigationPending";
 import { skeletonForPath } from "./route-skeletons";
 
 /**
@@ -14,9 +14,9 @@ import { skeletonForPath } from "./route-skeletons";
  * URL is resolved to its skeleton.
  */
 export default function NavigationSkeleton({ children }: { children: React.ReactNode }) {
-  const pending = usePendingNavigation();
+  const pending = usePendingTarget();
 
-  const skeleton = pending === null ? null : skeletonForPath(pending);
+  const skeleton = pending === null ? null : skeletonForPath(pending.to, { dir: pending.dir });
 
   return <>{skeleton ?? children}</>;
 }

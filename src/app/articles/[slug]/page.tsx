@@ -62,6 +62,8 @@ function AdjacentCard({
     <Link
       href={`/articles/${article.slug}`}
       className={`card active:scale-[0.98] active:opacity-90 transition-colors hover:border-accent ${align === "end" ? "sm:text-end" : ""}`}
+      // See ArticleCard: an Arabic article needs a mirrored skeleton.
+      data-skeleton-dir={isRtl ? "rtl" : undefined}
     >
       <p className="text-xs text-muted">
         {align === "end" ? <>{label} &rarr;</> : <>&larr; {label}</>}

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { resumeTracking, suppressTracking } from "@/lib/scroll-memory";
-import { skeletonForPath } from "./route-skeletons";
+import { skeletonForPath, type SkeletonDir } from "./route-skeletons";
 
 /**
  * How long a navigation is allowed to take before the UI admits it is loading.
@@ -25,11 +25,23 @@ const SHOW_AFTER_MS = 90;
  */
 const GIVE_UP_AFTER_MS = 10_000;
 
-const PendingContext = createContext<string | null>(null);
+/**
+ * Where an in-flight navigation is heading, and what the link that started it
+ * knew about the destination — `dir` is how an Arabic article gets a mirrored
+ * skeleton (a URL alone can't say which way a page reads).
+ */
+export type PendingTarget = { to: string; dir: SkeletonDir };
+
+const PendingContext = createContext<PendingTarget | null>(null);
+
+/** The in-flight navigation, or null if none is. */
+export function usePendingTarget(): PendingTarget | null {
+  return useContext(PendingContext);
+}
 
 /** Where an in-flight navigation is heading, or null if none is in flight. */
 export function usePendingNavigation(): string | null {
-  return useContext(PendingContext);
+  return usePendingTarget()?.to ?? null;
 }
 
 /**
@@ -46,7 +58,9 @@ export function useNavigationTarget(): string {
   return usePendingNavigation() ?? pathname;
 }
 
-type Pending = { from: string; to: string };
+// `target` is handed to consumers as-is, so the object identity is stable for
+// as long as one navigation is in flight.
+type Pending = { from: string; target: PendingTarget };
 
 /**
  * Tracks the navigation a link click has started but the router hasn't
@@ -136,9 +150,17 @@ export default function NavigationPendingProvider({
 
       if (skeletonForPath(to) === null) return;
 
+      // The one thing the URL cannot tell us: an Arabic article's reader is
+      // mirrored, so its skeleton has to be too. The link carries the answer
+      // (data-skeleton-dir), because whoever rendered it knew the locale.
+      const dir: SkeletonDir = anchor.dataset.skeletonDir === "rtl" ? "rtl" : "ltr";
+
       cancel();
       const from = pathnameRef.current;
-      timer.current = window.setTimeout(() => setPending({ from, to }), SHOW_AFTER_MS);
+      timer.current = window.setTimeout(
+        () => setPending({ from, target: { to, dir } }),
+        SHOW_AFTER_MS,
+      );
     };
 
     document.addEventListener("click", onClick, { capture: true });
@@ -168,7 +190,7 @@ export default function NavigationPendingProvider({
   }, [pending]);
 
   return (
-    <PendingContext.Provider value={current === null ? null : current.to}>
+    <PendingContext.Provider value={current === null ? null : current.target}>
       {children}
     </PendingContext.Provider>
   );

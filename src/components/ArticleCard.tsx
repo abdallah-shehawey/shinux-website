@@ -35,11 +35,15 @@ export default function ArticleCard({
           that speculative traffic is what the header tabs' own prefetch has to
           queue behind, so the tab is still unprefetched when it gets clicked
           and the click costs a full round trip with nothing on screen. */}
+      {/* data-skeleton-dir: an Arabic article opens into a mirrored reader, so
+          its loading skeleton has to be mirrored from the first frame too —
+          the URL alone can't say that. See NavigationPending. */}
       <Link
         href={`/articles/${article.slug}`}
         prefetch={false}
         className="card-hit absolute inset-0 z-0"
         aria-label={article.title}
+        data-skeleton-dir={isRtl ? "rtl" : undefined}
       />
       <p className="flex items-center gap-2 font-mono text-xs text-muted">
         <span>
