@@ -1,5 +1,4 @@
 import { site } from "@/lib/site";
-import OfflineDownload from "@/components/OfflineDownload";
 
 // The face is a static SVG of baked vector outlines rather than <pre> text, so
 // a browser-forced font can no longer break its alignment. The wording beside
@@ -30,10 +29,6 @@ export default function Footer() {
           </div>
         </div>
         <p>{`© ${year} ${site.name} — All rights reserved.`}</p>
-
-        {/* Renders nothing until a service worker controls the page, so it
-            never appears in dev or on a browser without SW support. */}
-        <OfflineDownload />
       </div>
     </footer>
   );

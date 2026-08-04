@@ -4,34 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import { warmMermaidCache } from "@/lib/warm-mermaid";
 
 // Registers the service worker (production only — `next dev` is skipped to avoid
-// caching surprises) and drives two in-app banners:
+// caching surprises) and drives the one banner that is left:
 //
-//  1. New app version — when a freshly installed worker is waiting, we ask the
-//     user before activating it. Clicking "تحديث الآن" posts SKIP_WAITING to the
-//     waiting worker; once it takes control (controllerchange) we reload once.
-//  2. New content — every 30 minutes we ask the active worker to re-read the
-//     sitemap (CHECK_CONTENT). If it precached newly published pages it replies
-//     with NEW_CONTENT, and we show a banner; reloading pulls the fresh content
-//     (network-first) which also refreshes the cache. The worker ignores this
-//     entirely unless the visitor asked for an offline copy, so for everyone
-//     else it costs nothing — not even the sitemap read.
-//  3. Offline-download progress — the fill is opt-in (see OfflineDownload.tsx);
-//     while it runs the worker streams PRECACHE_PROGRESS / PRECACHE_MORE /
-//     PRECACHE_DONE and we show a floating progress pill. PRECACHE_MORE means
-//     one bounded chunk finished and the worker is waiting to be asked for the
-//     next one — that round trip is what lets a ~170-page fill complete without
-//     the browser killing the worker mid-run.
+//   New app version — when a freshly installed worker is waiting, we ask before
+//   activating it. Clicking "Update now" posts SKIP_WAITING to the waiting
+//   worker; once it takes control (controllerchange) we reload once.
+//
+// There used to be a "new content" banner and an offline-download progress pill
+// as well. Both existed to narrate a background job that walked the whole
+// sitemap and precached every page — that job is gone (see public/sw.js), so
+// there is nothing to announce: pages are cached as they are read, which needs
+// no ceremony.
 const UPDATE_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 const AUTO_DISMISS_BANNER_MS = 10 * 1000; // 10 seconds (auto hide if ignored)
 
-type Precache = { done: number; total: number; complete: boolean };
-
 export default function ServiceWorkerRegister() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
-  const [newContentCount, setNewContentCount] = useState(0);
-  const [precache, setPrecache] = useState<Precache | null>(null);
-  const precacheHideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // True only after the user clicks "تحديث الآن", so controllerchange reloads on
+  // True only after the user clicks "Update now", so controllerchange reloads on
   // demand and never on the first-ever install (which also fires it).
   const userTriggeredUpdate = useRef(false);
 
@@ -45,8 +34,6 @@ export default function ServiceWorkerRegister() {
     }
 
     let updateTimer: ReturnType<typeof setInterval> | undefined;
-    let contentTimer: ReturnType<typeof setInterval> | undefined;
-    let contentTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const promoteIfWaiting = (reg: ServiceWorkerRegistration) => {
       if (reg.waiting && navigator.serviceWorker.controller) {
@@ -54,15 +41,13 @@ export default function ServiceWorkerRegister() {
       }
     };
 
-    const checkContent = () => {
-      navigator.serviceWorker.controller?.postMessage({ type: "CHECK_CONTENT" });
-    };
-
     // Once the SW is in control and we're online, pull Mermaid's lazily-loaded
     // diagram chunks into the cache (idle-deferred so it never competes with
-    // the page). Those chunks aren't referenced by any page HTML, so the
-    // sitemap precache misses them — without this, diagrams render online but
-    // fall back to a raw code block offline. See lib/warm-mermaid.ts.
+    // the page). Those chunks aren't referenced by any page HTML, so nothing
+    // else would ever cache them — without this, diagrams render online but
+    // fall back to a raw code block offline. They are hashed build assets, so
+    // this costs a handful of CDN requests once per version. See
+    // lib/warm-mermaid.ts.
     const warmMermaid = () => {
       if (!navigator.onLine || !navigator.serviceWorker.controller) return;
       const run = () => warmMermaidCache();
@@ -96,39 +81,10 @@ export default function ServiceWorkerRegister() {
 
         // Poll for a new *version* every 30 minutes.
         updateTimer = setInterval(() => reg.update().catch(() => {}), UPDATE_INTERVAL_MS);
-
-        // Ask for new *content* shortly after load, then every 30 minutes.
-        contentTimeout = setTimeout(checkContent, 5000);
-        contentTimer = setInterval(checkContent, UPDATE_INTERVAL_MS);
       })
       .catch(() => {
         /* registration failures are non-fatal */
       });
-
-    const onMessage = (event: MessageEvent) => {
-      const data = event.data;
-      if (!data || typeof data !== "object") return;
-      if (data.type === "NEW_CONTENT") {
-        setNewContentCount((c) => c + (data.count || 0));
-      } else if (data.type === "PRECACHE_PROGRESS") {
-        clearTimeout(precacheHideTimer.current);
-        setPrecache({ done: data.done, total: data.total, complete: false });
-      } else if (data.type === "PRECACHE_MORE") {
-        // The worker filled one chunk and stopped on purpose: a single pass
-        // over the whole sitemap runs long enough that the browser kills the
-        // worker part-way, which used to leave the site half available
-        // offline. Ask for the next chunk so the fill runs to completion.
-        setPrecache({ done: data.done, total: data.total, complete: false });
-        clearTimeout(precacheHideTimer.current);
-        setTimeout(checkContent, 300);
-      } else if (data.type === "PRECACHE_DONE") {
-        setPrecache({ done: data.total, total: data.total, complete: true });
-        // Keep the "saved for offline ✓" state visible briefly, then hide.
-        clearTimeout(precacheHideTimer.current);
-        precacheHideTimer.current = setTimeout(() => setPrecache(null), 3000);
-      }
-    };
-    navigator.serviceWorker.addEventListener("message", onMessage);
 
     const onControllerChange = () => {
       if (userTriggeredUpdate.current) {
@@ -144,10 +100,6 @@ export default function ServiceWorkerRegister() {
 
     return () => {
       if (updateTimer) clearInterval(updateTimer);
-      if (contentTimer) clearInterval(contentTimer);
-      if (contentTimeout) clearTimeout(contentTimeout);
-      clearTimeout(precacheHideTimer.current);
-      navigator.serviceWorker.removeEventListener("message", onMessage);
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
     };
   }, []);
@@ -161,15 +113,6 @@ export default function ServiceWorkerRegister() {
     return () => clearTimeout(timer);
   }, [waitingWorker]);
 
-  // Automatically dismiss the "New content added" banner after 10 seconds if ignored
-  useEffect(() => {
-    if (newContentCount <= 0) return;
-    const timer = setTimeout(() => {
-      setNewContentCount(0);
-    }, AUTO_DISMISS_BANNER_MS);
-    return () => clearTimeout(timer);
-  }, [newContentCount]);
-
   const applyUpdate = () => {
     if (!waitingWorker) return;
     userTriggeredUpdate.current = true;
@@ -177,96 +120,31 @@ export default function ServiceWorkerRegister() {
     setWaitingWorker(null);
   };
 
-  const refreshContent = () => {
-    setNewContentCount(0);
-    window.location.reload();
-  };
-
-  if (!waitingWorker && newContentCount === 0 && !precache) return null;
-
-  const pct = precache && precache.total ? Math.round((precache.done / precache.total) * 100) : 0;
+  if (!waitingWorker) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4">
-      {precache && (
-        <div className="flex w-full max-w-sm items-center gap-3 rounded-2xl border border-emerald-400/25 bg-bg/70 px-4 py-3 shadow-[0_10px_40px_-8px_rgba(63,185,80,0.35)] backdrop-blur-xl">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-            {precache.complete ? (
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-              </span>
-            ) : (
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400/25 border-t-emerald-400" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <span className="truncate text-xs font-medium text-fg">
-                {precache.complete ? "Available offline" : "Saving for offline…"}
-              </span>
-              <span className="shrink-0 font-mono text-[11px] tabular-nums text-fg/55">{pct}%</span>
-            </div>
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-fg/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_12px_rgba(63,185,80,0.75)] transition-[width] duration-500 ease-out"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-          </div>
+      <div className="flex w-full max-w-md items-center justify-between gap-3 rounded-xl border border-fg/10 bg-bg/95 px-4 py-3 shadow-lg backdrop-blur">
+        <span className="text-sm text-fg">A new version is available 🎉</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={applyUpdate}
+            className="rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
+          >
+            Update now
+          </button>
+          <button
+            onClick={() => setWaitingWorker(null)}
+            className="rounded-lg p-1.5 text-fg/60 hover:bg-fg/10 hover:text-fg transition-colors"
+            title="Dismiss"
+            aria-label="Dismiss notification"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      )}
-
-      {waitingWorker && (
-        <div className="flex w-full max-w-md items-center justify-between gap-3 rounded-xl border border-fg/10 bg-bg/95 px-4 py-3 shadow-lg backdrop-blur">
-          <span className="text-sm text-fg">A new version is available 🎉</span>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={applyUpdate}
-              className="rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
-            >
-              Update now
-            </button>
-            <button
-              onClick={() => setWaitingWorker(null)}
-              className="rounded-lg p-1.5 text-fg/60 hover:bg-fg/10 hover:text-fg transition-colors"
-              title="Dismiss"
-              aria-label="Dismiss notification"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {newContentCount > 0 && (
-        <div className="flex w-full max-w-md items-center justify-between gap-3 rounded-xl border border-fg/10 bg-bg/95 px-4 py-3 shadow-lg backdrop-blur">
-          <span className="text-sm text-fg">
-            New content was added 🎉 Refresh to load it — it&apos;ll be saved for offline too.
-          </span>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={refreshContent}
-              className="rounded-lg bg-fg px-3 py-1.5 text-sm font-medium text-bg transition-opacity hover:opacity-90"
-            >
-              Refresh
-            </button>
-            <button
-              onClick={() => setNewContentCount(0)}
-              className="rounded-lg p-1.5 text-fg/60 hover:bg-fg/10 hover:text-fg transition-colors"
-              title="Dismiss"
-              aria-label="Dismiss notification"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
