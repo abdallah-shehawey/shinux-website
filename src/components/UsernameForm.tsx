@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { revalidateAuthorCaches } from "@/lib/revalidate-authors";
+import { completeUsernameRename } from "@/lib/username-rename";
 
 const USERNAME_PATTERN = /^[a-z0-9_-]{3,30}$/;
 
@@ -17,12 +17,18 @@ function normalize(raw: string) {
 
 export default function UsernameForm({ initialUsername }: { initialUsername: string }) {
   const router = useRouter();
+  // The handle currently on the account. Tracked in state, not read off the
+  // prop, so a second save in the same session compares against what was just
+  // written instead of the value /me was rendered with.
+  const [current, setCurrent] = useState(initialUsername);
   const [value, setValue] = useState(initialUsername);
   const [status, setStatus] = useState<"idle" | "loading" | "error" | "saved">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [renamedFrom, setRenamedFrom] = useState("");
+  const [staleContentFiles, setStaleContentFiles] = useState(0);
 
   const normalized = normalize(value);
-  const unchanged = normalized === initialUsername;
+  const unchanged = normalized === current;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +47,7 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
     } = await supabase.auth.getUser();
     if (!user) return;
 
+    const previous = current;
     const { error } = await supabase
       .from("profiles")
       .update({ username: normalized })
@@ -56,36 +63,78 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
       return;
     }
 
+    // Awaited, not fired and forgotten: this is what turns /u/<previous> into a
+    // 404 and publishes /u/<normalized>, and router.refresh() below must not
+    // run before it lands. A failure here is not a failed rename — the row is
+    // already written — so it only costs the stale-content notice, and the
+    // caches fall back to expiring on their own.
+    const stale = await completeUsernameRename(previous, normalized)
+      .then((r) => r.staleContentFiles)
+      .catch(() => 0);
+
+    setCurrent(normalized);
     setValue(normalized);
+    setRenamedFrom(previous);
+    setStaleContentFiles(stale);
     setStatus("saved");
-    void revalidateAuthorCaches();
     router.refresh();
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-      <div className="flex items-center gap-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm focus-within:border-accent">
-        <span className="text-muted">@</span>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-            setStatus("idle");
-          }}
-          maxLength={30}
-          className="w-full bg-transparent text-base sm:text-sm text-fg outline-none"
-        />
+    <form onSubmit={onSubmit} className="mt-3 flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm focus-within:border-accent">
+          <span className="text-muted">@</span>
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setStatus("idle");
+            }}
+            maxLength={30}
+            className="w-full bg-transparent text-base sm:text-sm text-fg outline-none"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={status === "loading" || unchanged}
+          className="btn-ghost shrink-0"
+        >
+          {status === "loading" ? "Saving..." : "Save username"}
+        </button>
+        {status === "error" && <p className="text-sm text-red-400 sm:ms-2">{errorMessage}</p>}
       </div>
-      <button
-        type="submit"
-        disabled={status === "loading" || unchanged}
-        className="btn-ghost shrink-0"
-      >
-        {status === "loading" ? "Saving..." : "Save username"}
-      </button>
-      {status === "error" && <p className="text-sm text-red-400 sm:ms-2">{errorMessage}</p>}
-      {status === "saved" && <p className="text-sm text-accent sm:ms-2">Saved.</p>}
+
+      {status === "saved" && (
+        <div className="text-sm">
+          <p className="text-accent">
+            Saved. Your profile is now at{" "}
+            <a href={`/u/${current}`} className="font-mono hover:underline">
+              /u/{current}
+            </a>
+            .
+          </p>
+          {renamedFrom && (
+            <p className="mt-1 text-muted">
+              <span className="font-mono">@{renamedFrom}</span> is released —{" "}
+              <span className="font-mono">/u/{renamedFrom}</span> no longer exists and anyone can
+              claim that handle.
+            </p>
+          )}
+          {staleContentFiles > 0 && (
+            <p className="mt-1 text-amber-500">
+              {staleContentFiles} published {staleContentFiles === 1 ? "item" : "items"} still
+              credit{staleContentFiles === 1 ? "s" : ""} <span className="font-mono">@{renamedFrom}</span>{" "}
+              in the repo. Run{" "}
+              <span className="font-mono">
+                npm run rename:author {renamedFrom} {current}
+              </span>{" "}
+              and redeploy, or those bylines stay pointed at a handle you no longer own.
+            </p>
+          )}
+        </div>
+      )}
     </form>
   );
 }

@@ -89,6 +89,7 @@ npm run dev                  # Available at http://localhost:3000
 | `npm start` | Serve production build |
 | `npm run lint` | Run ESLint static analysis |
 | `npm run test:rls` | Run Vitest integration test for Supabase RLS privacy rules |
+| `npm run rename:author -- <old> <new>` | Repoint content frontmatter at a renamed account (add `--dry` to preview) |
 
 > 💡 **Filesystem Note:** Build the project on a POSIX filesystem (`ext4` / `APFS`). NTFS/FUSE mounts can cause Next.js build crashes (`SIGBUS` on `mmap`).
 
@@ -141,6 +142,18 @@ Article body in Markdown...
 ### Adding a Tutorial Lesson
 
 Add a `.md` file inside `content/tutorials/<track-name>/`. Specify `order: <number>` in the frontmatter to define lesson sequence within the track.
+
+### Renaming an Account
+
+Changing the username in **My account** moves the profile immediately: `/u/<new>` goes live, `/u/<old>` starts returning 404, and the old handle is **released** — it holds no redirect and the next person to type it into the username field gets it. There is no handle history table by design.
+
+Content is the one thing that does not follow automatically, because `author:` frontmatter credits an author by handle and lives in git. After a rename, run:
+
+```bash
+npm run rename:author -- old-handle new-handle    # add --dry to preview
+```
+
+Then commit and redeploy. Skip it and every article/lesson written under the old handle keeps a byline linking to a handle its author no longer owns — and whoever claims that handle next inherits those bylines. The username form reports how many files are affected right after a rename.
 
 ## 📊 Mermaid Diagrams
 
