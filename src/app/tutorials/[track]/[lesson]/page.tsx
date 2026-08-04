@@ -10,7 +10,7 @@ import {
 } from "@/lib/tutorials";
 import { renderMarkdown } from "@/lib/markdown";
 import { getAuthorProfile, unresolvedAuthor } from "@/lib/authors";
-import { siteAuthor } from "@/lib/site";
+import { siteAuthor, ogCard } from "@/lib/site";
 import TutorialReader from "@/components/TutorialReader";
 import AuthorCard from "@/components/AuthorCard";
 
@@ -34,6 +34,12 @@ export async function generateMetadata({
       description: found.description,
       type: "article",
       tags: found.tags,
+      images: [ogCard],
+    },
+    twitter: {
+      title: found.title,
+      description: found.description,
+      images: [ogCard],
     },
   };
 }

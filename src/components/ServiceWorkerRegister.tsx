@@ -12,10 +12,15 @@ import { warmMermaidCache } from "@/lib/warm-mermaid";
 //  2. New content — every 30 minutes we ask the active worker to re-read the
 //     sitemap (CHECK_CONTENT). If it precached newly published pages it replies
 //     with NEW_CONTENT, and we show a banner; reloading pulls the fresh content
-//     (network-first) which also refreshes the cache.
-//  3. Offline-download progress — right after install the worker precaches the
-//     whole site and streams PRECACHE_PROGRESS / PRECACHE_DONE; we show a small
-//     progress indicator so the user can see the site being saved for offline.
+//     (network-first) which also refreshes the cache. The worker ignores this
+//     entirely unless the visitor asked for an offline copy, so for everyone
+//     else it costs nothing — not even the sitemap read.
+//  3. Offline-download progress — the fill is opt-in (see OfflineDownload.tsx);
+//     while it runs the worker streams PRECACHE_PROGRESS / PRECACHE_MORE /
+//     PRECACHE_DONE and we show a floating progress pill. PRECACHE_MORE means
+//     one bounded chunk finished and the worker is waiting to be asked for the
+//     next one — that round trip is what lets a ~170-page fill complete without
+//     the browser killing the worker mid-run.
 const UPDATE_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 const AUTO_DISMISS_BANNER_MS = 10 * 1000; // 10 seconds (auto hide if ignored)
 

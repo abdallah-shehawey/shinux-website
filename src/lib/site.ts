@@ -52,3 +52,23 @@ export const site = {
 } as const;
 
 export const siteAuthor: Author = site.author;
+
+/**
+ * The site's link-preview card (src/app/opengraph-image.png).
+ *
+ * The root layout picks this up on its own through Next's file convention, but
+ * that only covers routes which do not declare an `openGraph` of their own —
+ * a page that returns one from generateMetadata REPLACES the parent's, image
+ * included. Articles, lessons and questions all do, so they have to name the
+ * card explicitly or their links unfurl with no picture at all.
+ *
+ * Resolved against `metadataBase` (set in the root layout), so the relative URL
+ * still comes out absolute in the tag.
+ */
+export const ogCard = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  // Mirrors src/app/opengraph-image.alt.txt.
+  alt: 'A terminal window on a dark grid background running "$ whoami", answering with "Abdallah Shehawey — Building. Learning. Sharing." over a short blurb about the blog and pills for its Articles, Tutorials and Q&A sections.',
+};

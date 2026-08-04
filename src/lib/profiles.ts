@@ -1,6 +1,5 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { createAnonClient } from "@/lib/supabase/anon";
 
 export interface PublicProfile {
@@ -13,26 +12,39 @@ export interface PublicProfile {
   createdAt: string;
 }
 
-/** A user's public profile (/u/[username]) — see public.profiles_public. */
-export async function getPublicProfile(username: string): Promise<PublicProfile | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("profiles_public")
-    .select("id, username, display_name, avatar_url, social_links, role, created_at")
-    .eq("username", decodeURIComponent(username))
-    .maybeSingle();
-  if (error || !data) return null;
+/**
+ * A user's public profile (/u/[username]) — see public.profiles_public.
+ *
+ * Reads through the COOKIE-FREE anon client and the Next data cache. The view
+ * is anon-readable and identical for every viewer, so the session was only ever
+ * dead weight here — and asking for cookies() opted every /u/* route into
+ * dynamic rendering, so each profile (all of them are in the sitemap, so
+ * crawlers walk the lot) cost a serverless render plus its Supabase round trips
+ * on every single hit.
+ */
+export const getPublicProfile = unstable_cache(
+  async (username: string): Promise<PublicProfile | null> => {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase
+      .from("profiles_public")
+      .select("id, username, display_name, avatar_url, social_links, role, created_at")
+      .eq("username", decodeURIComponent(username))
+      .maybeSingle();
+    if (error || !data) return null;
 
-  return {
-    id: data.id,
-    username: data.username,
-    displayName: data.display_name || data.username,
-    avatarUrl: data.avatar_url,
-    socialLinks: data.social_links ?? [],
-    role: data.role,
-    createdAt: data.created_at,
-  };
-}
+    return {
+      id: data.id,
+      username: data.username,
+      displayName: data.display_name || data.username,
+      avatarUrl: data.avatar_url,
+      socialLinks: data.social_links ?? [],
+      role: data.role,
+      createdAt: data.created_at,
+    };
+  },
+  ["public-profile"],
+  { revalidate: 300, tags: ["profiles"] },
+);
 
 /**
  * All public profile usernames, for the sitemap. Cookie-free anon read wrapped

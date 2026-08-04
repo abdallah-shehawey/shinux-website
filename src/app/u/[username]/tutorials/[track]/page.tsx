@@ -1,8 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPublicProfile } from "@/lib/profiles";
+import { getPublicProfile, getCachedPublicProfileUsernames } from "@/lib/profiles";
 import { getLessonsByAuthor, getTrack } from "@/lib/tutorials";
+
+// Public and viewer-independent, like the profile page it hangs off: rendered
+// once and served from the cache, not rebuilt per request. See
+// src/app/u/[username]/page.tsx.
+export const revalidate = 3600;
+
+// Only the (username, track) pairs that actually exist — the page 404s on any
+// other combination, so a full cross-product would just prerender not-founds.
+export async function generateStaticParams() {
+  const usernames = await getCachedPublicProfileUsernames().catch(() => []);
+  return usernames.flatMap((username) => {
+    const tracks = new Set(getLessonsByAuthor(username).map((l) => l.track));
+    return [...tracks].map((track) => ({ username, track }));
+  });
+}
 
 export async function generateMetadata({
   params,

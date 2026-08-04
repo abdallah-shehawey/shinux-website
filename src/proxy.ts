@@ -40,6 +40,29 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+// Only the routes that actually read the session on the SERVER. This used to be
+// a negated catch-all ("everything except static assets"), which meant the
+// proxy ran on every page, every RSC flight and every prefetch — hundreds of
+// billed invocations per visitor for a function that had nothing to do on all
+// but a handful of them.
+//
+// Skipping the rest is safe because the proxy only *refreshes* an existing
+// token: the refresh cookie survives untouched while someone reads articles,
+// and the browser client (src/lib/supabase/client.ts, behind useSession)
+// refreshes itself independently — so the header never goes stale either. The
+// session is renewed the moment a route below is hit.
 export const config = {
-  matcher: "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|ico|webp)$).*)",
+  matcher: [
+    "/me/:path*",
+    "/admin/:path*",
+    "/ask/:path*",
+    "/login/:path*",
+    "/welcome/:path*",
+    "/auth/:path*",
+    // The question DETAIL page renders upvote/edit state per user. `:slug+`
+    // requires at least one segment, so the (static) /questions listing itself
+    // is left alone.
+    "/questions/:slug+",
+    "/api/render-markdown",
+  ],
 };

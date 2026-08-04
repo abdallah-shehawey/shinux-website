@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPublicProfile } from "@/lib/profiles";
+import { getPublicProfile, getCachedPublicProfileUsernames } from "@/lib/profiles";
 import { getAnswersByAuthor } from "@/lib/questions";
+
+// Public and viewer-independent, like the profile page it hangs off: rendered
+// once and served from the cache, not rebuilt per request. See
+// src/app/u/[username]/page.tsx.
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const usernames = await getCachedPublicProfileUsernames().catch(() => []);
+  return usernames.map((username) => ({ username }));
+}
 
 export async function generateMetadata({
   params,

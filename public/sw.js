@@ -6,27 +6,43 @@
 //    here — doing 170+ fetches during install delays the worker from
 //    controlling the page, and a user who goes offline right after install
 //    would get the browser's native error page instead of /offline.
-//  - activate() takes control immediately (clients.claim) and THEN, in the
-//    background (the worker is kept alive by waitUntil, but control is already
-//    granted), precaches every page URL from /sitemap.xml so the whole site is
-//    available offline even for pages never opened. Images/media are left to
-//    runtime caching only, to keep the on-device footprint light.
+//  - activate() takes control immediately (clients.claim) and caches the shell
+//    (fonts + global CSS), which is cheap and makes the first offline paint
+//    look right.
+//  - The full-site fill is OPT-IN. It used to run automatically on every
+//    visitor's first load, and because it walks the whole sitemap and asks for
+//    each page twice (HTML + RSC flight) that was ~340 requests per visitor —
+//    every one of them billed server-side, and every VERSION bump made every
+//    returning visitor do it all over again. It is now driven by the
+//    "Save for offline" control (src/components/OfflineDownload.tsx), which
+//    posts START_OFFLINE_DOWNLOAD. Whoever asks for the offline copy gets it;
+//    nobody else pays for it. Pages you actually visit are still cached at
+//    runtime by the fetch handler, so ordinary browsing keeps working offline
+//    either way.
 //  - Runtime races the network against the cache: the network still wins on
 //    any healthy connection (so content is live), but once the cache holds a
 //    copy nothing waits longer than NETWORK_TIMEOUT_MS for it. The slow
 //    request is left running to refresh the cache for next time. A navigation
 //    to a page that was never cached falls back to /offline.
-//  - The cache name is versioned; activate() deletes every older cache.
+//  - The cache name is versioned; activate() deletes every older cache — but
+//    NOT the prefs cache, which is what remembers the opt-in across versions.
 //  - Messages: SKIP_WAITING activates a freshly installed worker on demand;
-//    CHECK_CONTENT re-reads the sitemap, precaches any newly published pages,
-//    and tells open tabs how many new pages appeared so the app can show a
-//    "new content" banner.
+//    START_OFFLINE_DOWNLOAD / CLEAR_OFFLINE_DOWNLOAD / OFFLINE_STATUS drive the
+//    offline copy; CHECK_CONTENT re-reads the sitemap and precaches newly
+//    published pages — a no-op unless the offline copy was opted into.
 //
 // Bump VERSION whenever this file or the shell/offline page changes so clients
 // pick up a clean cache. (New *content* does not need a bump — CHECK_CONTENT
 // and the activate-time sync handle that live.)
-const VERSION = "v20";
+const VERSION = "v21";
 const CACHE = `shehaweyblog-${VERSION}`;
+
+// Deliberately NOT versioned, and deliberately spared by the activate-time
+// sweep: it holds the "the user asked for an offline copy" flag, which has to
+// outlive a VERSION bump or every deploy would silently switch the feature off
+// for the people who turned it on.
+const PREFS_CACHE = "shehaweyblog-prefs";
+const OPT_IN_URL = "/__sw_offline_optin";
 
 // Pages and essential shell assets we always want available offline.
 const CORE_URLS = [
@@ -234,6 +250,52 @@ async function writeManifest(cache, paths, complete = false) {
   );
 }
 
+// ---- offline opt-in -------------------------------------------------------
+
+/** Has the visitor asked for a full offline copy of the site? */
+async function readOptIn() {
+  try {
+    const cache = await caches.open(PREFS_CACHE);
+    const res = await cache.match(OPT_IN_URL);
+    if (!res) return false;
+    return (await res.json()) === true;
+  } catch {
+    return false;
+  }
+}
+
+async function writeOptIn(value) {
+  try {
+    const cache = await caches.open(PREFS_CACHE);
+    await cache.put(
+      OPT_IN_URL,
+      new Response(JSON.stringify(!!value), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  } catch {
+    /* storage refused — the fill just won't resume after a reload */
+  }
+}
+
+// Tell every open tab where the offline copy stands, so the button can render
+// the right state on mount instead of guessing.
+async function postOfflineStatus(cache, extra = {}) {
+  const optIn = await readOptIn();
+  const manifest = await readManifest(cache);
+  // CORE_URLS are cached for everyone (they back /offline); they are not part
+  // of what the user asked to download, so don't count them as progress.
+  const core = new Set(CORE_URLS);
+  const pages = manifest.paths.filter((p) => !core.has(p));
+  await postToClients({
+    type: "OFFLINE_STATUS",
+    optIn,
+    complete: optIn && manifest.complete,
+    pages: pages.length,
+    ...extra,
+  });
+}
+
 // Extract the same-origin build assets (global CSS, self-hosted fonts, JS
 // chunks) referenced by a rendered HTML document. next/font self-hosts the
 // fonts under /_next/static/media with hashed names, so parsing the shell HTML
@@ -383,6 +445,13 @@ async function respondRacingCache(event, request, url, { isRsc = false, isNaviga
 // that is what lets a 170-page fill finish without the browser killing the
 // worker mid-run. NEW_CONTENT is only raised once the site was already complete.
 async function syncContent(cache, { notify, reportProgress }) {
+  // The whole fill — including the /sitemap.xml read that drives it — happens
+  // only for visitors who asked for an offline copy. Without this gate the
+  // 30-minute CHECK_CONTENT tick would keep walking the sitemap for everyone,
+  // which is the behaviour that made a single reader cost hundreds of
+  // server-side requests.
+  if (!(await readOptIn())) return;
+
   let sitemapPaths;
   try {
     sitemapPaths = await fetchSitemapPaths();
@@ -396,6 +465,7 @@ async function syncContent(cache, { notify, reportProgress }) {
 
   if (remaining.length === 0) {
     if (!prev.complete) await writeManifest(cache, [...cached], true);
+    await postOfflineStatus(cache);
     return;
   }
 
@@ -433,6 +503,7 @@ async function syncContent(cache, { notify, reportProgress }) {
   }
 
   if (showProgress) await post("PRECACHE_DONE");
+  await postOfflineStatus(cache);
   if (notify && prev.complete) {
     await post("NEW_CONTENT", { count: cached.size - prev.paths.length });
   }
@@ -461,25 +532,29 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // Drop caches from older versions.
+      // Drop caches from older versions — but never the prefs cache, which is
+      // the only thing that remembers the offline opt-in across a VERSION bump.
       const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+      await Promise.all(
+        keys.filter((k) => k !== CACHE && k !== PREFS_CACHE).map((k) => caches.delete(k)),
+      );
       const cache = await caches.open(CACHE);
       // Take control of open pages NOW so /offline works on the very next
       // navigation, even if the user goes offline immediately.
       await self.clients.claim();
-      // Cache the shell's fonts + global CSS FIRST so an immediate offline load
+      // Cache the shell's fonts + global CSS so an immediate offline load
       // paints with the real typography (missing fonts fall back to system
-      // fonts, which reads as a "faded" render), then fill the rest of the site.
+      // fonts, which reads as a "faded" render). This is a handful of requests
+      // and everybody gets it.
       await precacheShellAssets(cache);
-      // Only then precache the whole sitemap in the background. Control is
-      // already granted above; this keeps the worker alive until it finishes
-      // without ever blocking navigation. notify:false ⇒ no first-run banner,
-      // but reportProgress ⇒ the app shows a "saving for offline" indicator.
+      await postOfflineStatus(cache);
+      // The full-site fill runs ONLY for someone who previously asked for an
+      // offline copy — a VERSION bump wipes the cache, so their download has to
+      // be rebuilt. syncContent() is a no-op for everyone else, so a first-time
+      // visitor's load is never competing with ~340 background requests.
       //
-      // The pause matters on a weak connection: this fires on the visitor's
-      // very first page load, and ~170 pages of fill competing with the page
-      // they are actually waiting for is why that first load dragged.
+      // The pause still matters on a weak connection: control is already
+      // granted above, so this only holds the fill, never a navigation.
       await new Promise((r) => setTimeout(r, PRECACHE_START_DELAY_MS));
       await syncContent(cache, { notify: false, reportProgress: true });
     })(),
@@ -558,6 +633,48 @@ self.addEventListener("message", (event) => {
       (async () => {
         const cache = await caches.open(CACHE);
         await syncContent(cache, { notify: true, reportProgress: true });
+      })(),
+    );
+    return;
+  }
+
+  // The visitor asked for the whole site to be available offline. Record the
+  // choice first so it survives a reload (and a future VERSION bump), then run
+  // the fill exactly as the activate path does.
+  if (type === "START_OFFLINE_DOWNLOAD") {
+    event.waitUntil(
+      (async () => {
+        await writeOptIn(true);
+        const cache = await caches.open(CACHE);
+        await postOfflineStatus(cache, { starting: true });
+        await syncContent(cache, { notify: false, reportProgress: true });
+      })(),
+    );
+    return;
+  }
+
+  // Give the space back: drop everything except the core pages, so /offline
+  // still works and the site keeps caching what the visitor actually reads.
+  if (type === "CLEAR_OFFLINE_DOWNLOAD") {
+    event.waitUntil(
+      (async () => {
+        await writeOptIn(false);
+        await caches.delete(CACHE);
+        const cache = await caches.open(CACHE);
+        await precachePaths(cache, CORE_URLS);
+        await writeManifest(cache, CORE_URLS);
+        await precacheShellAssets(cache);
+        await postOfflineStatus(cache, { cleared: true });
+      })(),
+    );
+    return;
+  }
+
+  if (type === "OFFLINE_STATUS") {
+    event.waitUntil(
+      (async () => {
+        const cache = await caches.open(CACHE);
+        await postOfflineStatus(cache);
       })(),
     );
   }

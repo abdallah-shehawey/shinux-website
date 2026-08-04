@@ -5,7 +5,19 @@ import { getQuestionsByAuthor, getAnswersByAuthor } from "@/lib/questions";
 import { getArticlesByAuthor } from "@/lib/articles";
 import { getLessonsByAuthor } from "@/lib/tutorials";
 import { getSocialIcon } from "@/lib/social-icons";
+import { getCachedPublicProfileUsernames } from "@/lib/profiles";
 import ProfileStats from "@/components/ProfileStats";
+
+// Every profile is public, identical for all viewers, and listed in the
+// sitemap — so it is prerendered at build and refreshed by ISR (plus straight
+// away whenever the "profiles"/"questions" cache tags are revalidated) instead
+// of being rebuilt from scratch on every crawler hit.
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const usernames = await getCachedPublicProfileUsernames().catch(() => []);
+  return usernames.map((username) => ({ username }));
+}
 
 export async function generateMetadata({
   params,

@@ -26,9 +26,9 @@ A modern Linux technical blog, structured tutorial platform, and community Q&A e
 - **Community Q&A System** — Authenticated users can ask (admin-moderated) and answer questions with nested replies, upvoting, tagging, search, and real-time + email notifications.
 - **Authentication & User Profiles** — Supabase Auth (GitHub, Google, Email Magic Link) with public user profile pages (`/u/[username]`).
 - **Privacy by Architecture** — Anonymous question submission guaranteed at the PostgreSQL database level using Row Level Security (RLS) views.
-- **Installable PWA** — Offline access supported via Service Worker precaching and sitemap caching.
+- **Installable PWA** — Pages are cached as you read them, and a **Save for offline** control in the footer downloads the whole site (every article, tutorial and question) for reading with no connection.
 - **Bilingual Support (EN / AR)** — English UI chrome with native support for both English (LTR) and Arabic (RTL) articles with language-specific typography.
-- **SEO & Social Optimization** — Dynamic `sitemap.xml`, `robots.txt`, dynamic OpenGraph images (`next/og`), and `Article`/`QAPage` JSON-LD structured data.
+- **SEO & Social Optimization** — Dynamic `sitemap.xml`, `robots.txt`, a static OpenGraph card, and `Article`/`QAPage` JSON-LD structured data.
 
 ## 🧱 Tech Stack
 
@@ -158,7 +158,8 @@ Diagrams are rendered client-side and pre-cached by the Service Worker to allow 
 
 ## 📴 PWA & Offline Support
 
-- Service Worker ([`public/sw.js`](./public/sw.js)) precaches application shell assets and sitemap pages.
+- Service Worker ([`public/sw.js`](./public/sw.js)) precaches the application shell (fonts, global CSS, `/offline`) for everyone.
+- The **full-site** download is opt-in, driven by [`src/components/OfflineDownload.tsx`](./src/components/OfflineDownload.tsx) in the footer. It walks `sitemap.xml` and fetches every page twice (document + RSC flight), so running it automatically for every visitor cost hundreds of server-side requests per reader — it now runs only for whoever asks for it, and the choice is remembered across releases.
 - Network-first strategy for dynamic content; cache-first for static build assets.
 - Built-in UI notifications for update availability and offline status.
 

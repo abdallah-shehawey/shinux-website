@@ -8,6 +8,7 @@ import {
   type ReplyRecord,
 } from "@/lib/questions";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
+import { ogCard } from "@/lib/site";
 import UpvoteButton from "@/components/UpvoteButton";
 import AnswerForm from "@/components/AnswerForm";
 import ReplyForm from "@/components/ReplyForm";
@@ -36,6 +37,12 @@ export async function generateMetadata({
       title: question.title,
       description: excerpt(question.body),
       type: "website",
+      images: [ogCard],
+    },
+    twitter: {
+      title: question.title,
+      description: excerpt(question.body),
+      images: [ogCard],
     },
   };
 }

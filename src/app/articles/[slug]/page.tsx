@@ -9,7 +9,7 @@ import {
   type ArticleMeta,
 } from "@/lib/articles";
 import { renderMarkdown } from "@/lib/markdown";
-import { site, siteAuthor } from "@/lib/site";
+import { site, siteAuthor, ogCard } from "@/lib/site";
 import { getAuthorProfiles } from "@/lib/authors";
 import AuthorCard from "@/components/AuthorCard";
 import ArticleCard from "@/components/ArticleCard";
@@ -37,6 +37,12 @@ export async function generateMetadata({
       type: "article",
       publishedTime: article.date,
       tags: article.tags,
+      images: [ogCard],
+    },
+    twitter: {
+      title: article.title,
+      description: article.description,
+      images: [ogCard],
     },
   };
 }

@@ -200,16 +200,20 @@ export async function getAnswersForQuestion(questionId: string): Promise<AnswerR
  * Naturally excludes anonymous questions of theirs — questions_public nulls
  * author_id for those, so they never match `.eq("author_id", authorId)`.
  */
-export async function getQuestionsByAuthor(authorId: string): Promise<QuestionSummary[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("questions_public")
-    .select(SUMMARY_COLUMNS)
-    .eq("author_id", authorId)
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as QuestionSummary[];
-}
+export const getQuestionsByAuthor = unstable_cache(
+  async (authorId: string): Promise<QuestionSummary[]> => {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase
+      .from("questions_public")
+      .select(SUMMARY_COLUMNS)
+      .eq("author_id", authorId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as QuestionSummary[];
+  },
+  ["questions-by-author"],
+  { revalidate: QUESTIONS_CACHE_REVALIDATE, tags: ["questions"] },
+);
 
 export interface AnswerWithQuestion extends AnswerRecord {
   question_title: string;
@@ -217,31 +221,35 @@ export interface AnswerWithQuestion extends AnswerRecord {
 }
 
 /** A user's public answers, with the parent question's title/slug for linking. */
-export async function getAnswersByAuthor(authorId: string): Promise<AnswerWithQuestion[]> {
-  const supabase = await createClient();
-  const { data: answers, error } = await supabase
-    .from("answers_public")
-    .select("id, question_id, body, is_accepted, created_at, author_id, author_display, author_avatar, author_username")
-    .eq("author_id", authorId)
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  if (!answers || answers.length === 0) return [];
+export const getAnswersByAuthor = unstable_cache(
+  async (authorId: string): Promise<AnswerWithQuestion[]> => {
+    const supabase = createAnonClient();
+    const { data: answers, error } = await supabase
+      .from("answers_public")
+      .select("id, question_id, body, is_accepted, created_at, author_id, author_display, author_avatar, author_username")
+      .eq("author_id", authorId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    if (!answers || answers.length === 0) return [];
 
-  const questionIds = [...new Set(answers.map((a) => a.question_id))];
-  const { data: questions, error: qError } = await supabase
-    .from("questions_public")
-    .select("id, title, slug")
-    .in("id", questionIds);
-  if (qError) throw qError;
+    const questionIds = [...new Set(answers.map((a) => a.question_id))];
+    const { data: questions, error: qError } = await supabase
+      .from("questions_public")
+      .select("id, title, slug")
+      .in("id", questionIds);
+    if (qError) throw qError;
 
-  const bySlug = new Map((questions ?? []).map((q) => [q.id, q]));
-  return (answers as AnswerRecord[])
-    .map((a) => {
-      const q = bySlug.get(a.question_id);
-      return q ? { ...a, question_title: q.title, question_slug: q.slug } : null;
-    })
-    .filter((a): a is AnswerWithQuestion => a !== null);
-}
+    const bySlug = new Map((questions ?? []).map((q) => [q.id, q]));
+    return (answers as AnswerRecord[])
+      .map((a) => {
+        const q = bySlug.get(a.question_id);
+        return q ? { ...a, question_title: q.title, question_slug: q.slug } : null;
+      })
+      .filter((a): a is AnswerWithQuestion => a !== null);
+  },
+  ["answers-by-author"],
+  { revalidate: QUESTIONS_CACHE_REVALIDATE, tags: ["questions"] },
+);
 
 export interface ReplyRecord {
   id: string;
