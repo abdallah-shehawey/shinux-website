@@ -105,15 +105,6 @@ function rscKey(pathname) {
   return `${pathname}?__sw_rsc=1`;
 }
 
-// Does this path point at a navigable page (so it also has an RSC flight worth
-// precaching), as opposed to a static asset like /icon.svg, /favicon.ico or
-// /manifest.webmanifest? A trailing dot in the last segment ⇒ a file asset.
-function looksLikePage(path) {
-  if (path.startsWith("/_next/")) return false;
-  const last = (path.split("?")[0].split("/").pop()) || "";
-  return !last.includes(".");
-}
-
 // Precache a page's RSC flight payload alongside its HTML. Without this, an
 // OFFLINE soft navigation (which fetches RSC, not HTML) has nothing to serve,
 // and the Next.js router shows its "This page couldn't load" error. Requesting

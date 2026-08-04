@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateAuthorCaches } from "@/lib/revalidate-authors";
 
 const PLATFORMS = [
   { value: "github", label: "GitHub" },
@@ -99,6 +100,10 @@ export default function SocialLinksForm({
     }
 
     setStatus("saved");
+    // Social links are part of the public profile, which is cached and
+    // prerendered like the rest of /u/[username] — without this the new links
+    // only appear there once the 5-minute cache expires.
+    void revalidateAuthorCaches();
     router.refresh();
   }
 
