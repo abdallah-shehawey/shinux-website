@@ -25,7 +25,6 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
   const [status, setStatus] = useState<"idle" | "loading" | "error" | "saved">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [renamedFrom, setRenamedFrom] = useState("");
-  const [staleContentFiles, setStaleContentFiles] = useState(0);
 
   const normalized = normalize(value);
   const unchanged = normalized === current;
@@ -66,16 +65,12 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
     // Awaited, not fired and forgotten: this is what turns /u/<previous> into a
     // 404 and publishes /u/<normalized>, and router.refresh() below must not
     // run before it lands. A failure here is not a failed rename — the row is
-    // already written — so it only costs the stale-content notice, and the
-    // caches fall back to expiring on their own.
-    const stale = await completeUsernameRename(previous, normalized)
-      .then((r) => r.staleContentFiles)
-      .catch(() => 0);
+    // already written — so the caches just fall back to expiring on their own.
+    await completeUsernameRename().catch(() => {});
 
     setCurrent(normalized);
     setValue(normalized);
     setRenamedFrom(previous);
-    setStaleContentFiles(stale);
     setStatus("saved");
     router.refresh();
   }
@@ -117,20 +112,8 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
           </p>
           {renamedFrom && (
             <p className="mt-1 text-muted">
-              <span className="font-mono">@{renamedFrom}</span> is released —{" "}
-              <span className="font-mono">/u/{renamedFrom}</span> no longer exists and anyone can
-              claim that handle.
-            </p>
-          )}
-          {staleContentFiles > 0 && (
-            <p className="mt-1 text-amber-500">
-              {staleContentFiles} published {staleContentFiles === 1 ? "item" : "items"} still
-              credit{staleContentFiles === 1 ? "s" : ""} <span className="font-mono">@{renamedFrom}</span>{" "}
-              in the repo. Run{" "}
-              <span className="font-mono">
-                npm run rename:author {renamedFrom} {current}
-              </span>{" "}
-              and redeploy, or those bylines stay pointed at a handle you no longer own.
+              <span className="font-mono">@{renamedFrom}</span> is released — anyone can claim it
+              now. Everything you published moved with you.
             </p>
           )}
         </div>

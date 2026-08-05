@@ -47,8 +47,8 @@ export default async function PublicProfilePage({
     getQuestionsByAuthor(profile.id),
     getAnswersByAuthor(profile.id),
   ]);
-  const articles = getArticlesByAuthor(profile.username);
-  const lessons = getLessonsByAuthor(profile.username);
+  const articles = getArticlesByAuthor(profile.contentHandles);
+  const lessons = getLessonsByAuthor(profile.contentHandles);
 
   const initial = profile.displayName.trim().charAt(0).toUpperCase();
   // The site has a single owner: the admin account. Everyone else is a member.

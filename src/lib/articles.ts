@@ -194,9 +194,17 @@ export function getLatestArticles(n = 3): ArticleMeta[] {
   return getArticles().slice(0, n);
 }
 
-/** Every article written by a given username — for public profiles. */
-export function getArticlesByAuthor(username: string): ArticleMeta[] {
-  return getArticles().filter((a) => a.author === username);
+/**
+ * Every article written by a given account — for public profiles.
+ *
+ * Takes a LIST of handles, not one username: frontmatter credits an author by
+ * whatever handle they wrote under, and a rename does not rewrite git. The
+ * caller passes the account's live username plus everything it has released
+ * (src/lib/content-handles.ts), so renaming never empties a profile.
+ */
+export function getArticlesByAuthor(username: string | string[]): ArticleMeta[] {
+  const handles = new Set(Array.isArray(username) ? username : [username]);
+  return getArticles().filter((a) => !!a.author && handles.has(a.author));
 }
 
 /** A single article (with body), or null if not found / draft in production. */

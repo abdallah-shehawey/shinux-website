@@ -195,12 +195,17 @@ export interface LessonByAuthor extends LessonMeta {
   trackTitle: string;
 }
 
-/** Every lesson (across all tracks) written by a given username — for public profiles. */
-export function getLessonsByAuthor(username: string): LessonByAuthor[] {
+/**
+ * Every lesson (across all tracks) written by a given account — for public
+ * profiles. Takes a list of handles for the same reason as
+ * getArticlesByAuthor(): a rename cannot rewrite the frontmatter in git.
+ */
+export function getLessonsByAuthor(username: string | string[]): LessonByAuthor[] {
+  const handles = new Set(Array.isArray(username) ? username : [username]);
   return readTrackDirs().flatMap(({ slug, dir, data }) => {
     const trackTitle = typeof data.title === "string" ? data.title : slug;
     return readLessons(slug, dir)
-      .filter((l) => l.author === username)
+      .filter((l) => !!l.author && handles.has(l.author))
       .map((l) => ({ ...stripBody(l), trackTitle }));
   });
 }

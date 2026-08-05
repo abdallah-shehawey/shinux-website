@@ -40,7 +40,7 @@ export default async function ProfileArticlesPage({
   const profile = await getPublicProfile(username);
   if (!profile) notFound();
 
-  const articles = getArticlesByAuthor(profile.username);
+  const articles = getArticlesByAuthor(profile.contentHandles);
   const authors = await getAuthorProfiles(
     articles.map((a) => a.author).filter((a): a is string => Boolean(a)),
   );

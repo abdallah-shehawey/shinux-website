@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { createAnonClient } from "@/lib/supabase/anon";
+import { getContentHandlesFor } from "@/lib/content-handles";
 
 export interface PublicProfile {
   id: string;
@@ -10,6 +11,13 @@ export interface PublicProfile {
   socialLinks: { platform: string; label: string; url: string }[];
   role: string;
   createdAt: string;
+  /**
+   * Every handle this account's articles and lessons may be filed under: the
+   * live username plus any it released by renaming. Pass to
+   * getArticlesByAuthor()/getLessonsByAuthor() — filtering on `username` alone
+   * empties the profile the moment its owner renames.
+   */
+  contentHandles: string[];
 }
 
 /**
@@ -40,6 +48,7 @@ export const getPublicProfile = unstable_cache(
       socialLinks: data.social_links ?? [],
       role: data.role,
       createdAt: data.created_at,
+      contentHandles: await getContentHandlesFor(data.id, data.username),
     };
   },
   ["public-profile"],

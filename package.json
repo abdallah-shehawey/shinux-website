@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:rls": "vitest run",
-    "rename:author": "node scripts/rename-author.mjs"
+    "test:rls": "vitest run"
   },
   "dependencies": {
     "@shikijs/rehype": "^4.3.1",

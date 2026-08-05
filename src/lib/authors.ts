@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { createAnonClient } from "@/lib/supabase/anon";
+import { getContentHandleOwners } from "@/lib/content-handles";
 import type { Author } from "@/lib/site";
 
 // Resolves an article/lesson frontmatter `author: <username>` into a real,
@@ -60,10 +61,40 @@ export async function getAuthorProfiles(usernames: string[]): Promise<Record<str
   const unique = [...new Set(usernames)].filter(Boolean);
   if (unique.length === 0) return {};
 
-  const all = await getAllAuthorProfiles();
+  const all = await resolvableAuthors();
   const map: Record<string, Author> = {};
   for (const username of unique) {
     map[username] = all[username] ?? unresolvedAuthor(username);
+  }
+  return map;
+}
+
+/**
+ * Live usernames, then released handles layered on top.
+ *
+ * The overlay wins deliberately. Once a handle has been released it is free for
+ * anyone to claim, so it can be BOTH a live username (its new holder) and a
+ * frontmatter credit (its original author). A byline is a statement about who
+ * wrote the file, so it has to resolve to the account that released the handle —
+ * otherwise renaming would hand every article ever written under that handle to
+ * whoever grabbed it next.
+ *
+ * Either way the Author carries the resolved account's CURRENT username, so the
+ * byline links to where that person lives today, not to the handle in the file.
+ */
+async function resolvableAuthors(): Promise<Record<string, Author>> {
+  const [live, released] = await Promise.all([
+    getAllAuthorProfiles(),
+    getContentHandleOwners(),
+  ]);
+
+  const map: Record<string, Author> = { ...live };
+  for (const owner of released) {
+    map[owner.handle] = {
+      name: owner.displayName,
+      username: owner.username,
+      avatar: owner.avatarUrl ?? undefined,
+    };
   }
   return map;
 }
@@ -74,6 +105,6 @@ export async function getAuthorProfiles(usernames: string[]): Promise<Record<str
  * siteAuthor (full display name), a lesson byline wants unresolvedAuthor().
  */
 export async function getAuthorProfile(username: string): Promise<Author | null> {
-  const all = await getAllAuthorProfiles();
+  const all = await resolvableAuthors();
   return all[username] ?? null;
 }

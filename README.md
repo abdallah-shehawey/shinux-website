@@ -89,7 +89,6 @@ npm run dev                  # Available at http://localhost:3000
 | `npm start` | Serve production build |
 | `npm run lint` | Run ESLint static analysis |
 | `npm run test:rls` | Run Vitest integration test for Supabase RLS privacy rules |
-| `npm run rename:author -- <old> <new>` | Repoint content frontmatter at a renamed account (add `--dry` to preview) |
 
 > 💡 **Filesystem Note:** Build the project on a POSIX filesystem (`ext4` / `APFS`). NTFS/FUSE mounts can cause Next.js build crashes (`SIGBUS` on `mmap`).
 
@@ -145,15 +144,18 @@ Add a `.md` file inside `content/tutorials/<track-name>/`. Specify `order: <numb
 
 ### Renaming an Account
 
-Changing the username in **My account** moves the profile immediately: `/u/<new>` goes live, `/u/<old>` starts returning 404, and the old handle is **released** — it holds no redirect and the next person to type it into the username field gets it. There is no handle history table by design.
+Any user can change their username from **My account**, and it takes effect immediately with no maintenance step: `/u/<new>` goes live, `/u/<old>` starts returning 404, and the old handle is **released** — no redirect, no reservation, the next person to type it into the username field gets it.
 
-Content is the one thing that does not follow automatically, because `author:` frontmatter credits an author by handle and lives in git. After a rename, run:
+Everything published moves with the account:
 
-```bash
-npm run rename:author -- old-handle new-handle    # add --dry to preview
-```
+| | Followed by | Survives a rename |
+| --- | --- | --- |
+| Questions, answers, replies | `profiles(id)` | Directly — they never referenced the handle |
+| Articles, lessons | `author:` frontmatter (a handle, stored in git) | Via `content_author_handles` |
 
-Then commit and redeploy. Skip it and every article/lesson written under the old handle keeps a byline linking to a handle its author no longer owns — and whoever claims that handle next inherits those bylines. The username form reports how many files are affected right after a rename.
+That table ([`0017_released_handles.sql`](./supabase/migrations/0017_released_handles.sql)) is written by a trigger whenever a username changes: it records `released handle → account`, and the byline resolver consults it before live usernames. Attribution only — it never affects routing, so the handle stays a 404 and stays claimable. If someone else later takes it, their profile lives at that URL while the older work still credits the person who wrote it.
+
+Handles released before that migration existed leave no trace; reconnect them with the backfill snippet at the bottom of the migration file.
 
 ## 📊 Mermaid Diagrams
 

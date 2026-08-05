@@ -34,7 +34,7 @@ export default async function ProfileTutorialsPage({
   const profile = await getPublicProfile(username);
   if (!profile) notFound();
 
-  const lessons = getLessonsByAuthor(profile.username);
+  const lessons = getLessonsByAuthor(profile.contentHandles);
 
   // Group by track, in the same order the tracks appear on the tutorials hub,
   // rather than a flat list — mirrors opening a track and seeing just its lessons.

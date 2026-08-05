@@ -43,7 +43,7 @@ export default async function ProfileTutorialsTrackPage({
   const trackData = getTrack(track);
   if (!trackData) notFound();
 
-  const lessons = getLessonsByAuthor(profile.username).filter((l) => l.track === track);
+  const lessons = getLessonsByAuthor(profile.contentHandles).filter((l) => l.track === track);
   if (lessons.length === 0) notFound();
 
   return (
