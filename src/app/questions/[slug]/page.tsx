@@ -11,10 +11,9 @@ import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { ogCard } from "@/lib/site";
 import UpvoteButton from "@/components/UpvoteButton";
 import AnswerForm from "@/components/AnswerForm";
-import ReplyForm from "@/components/ReplyForm";
 import QuestionContent from "@/components/QuestionContent";
 import AnswerContent from "@/components/AnswerContent";
-import ReplyItem from "@/components/ReplyItem";
+import AnswerReplies from "@/components/AnswerReplies";
 
 function excerpt(text: string, max = 160): string {
   const plain = text.replace(/[#*`>_\-\[\]()]/g, " ").replace(/\s+/g, " ").trim();
@@ -54,6 +53,7 @@ function AnswerBlock({
   loginNext,
   isAdmin,
   currentUserId,
+  mentionHandles,
 }: {
   answer: AnswerWithHtml;
   replies: ReplyRecord[];
@@ -61,6 +61,7 @@ function AnswerBlock({
   loginNext: string;
   isAdmin: boolean;
   currentUserId: string | null;
+  mentionHandles: string[];
 }) {
   return (
     <div className="card">
@@ -78,14 +79,15 @@ function AnswerBlock({
       />
 
       <div className="mt-4 border-t border-border pt-3">
-        {replies.length > 0 && (
-          <div className="mb-3 flex flex-col gap-2">
-            {replies.map((r) => (
-              <ReplyItem key={r.id} reply={r} currentUserId={currentUserId} isAdmin={isAdmin} />
-            ))}
-          </div>
-        )}
-        <ReplyForm answerId={answer.id} isLoggedIn={isLoggedIn} loginNext={loginNext} />
+        <AnswerReplies
+          answerId={answer.id}
+          replies={replies}
+          isLoggedIn={isLoggedIn}
+          loginNext={loginNext}
+          currentUserId={currentUserId}
+          isAdmin={isAdmin}
+          mentionHandles={mentionHandles}
+        />
       </div>
     </div>
   );
@@ -102,7 +104,7 @@ export default async function QuestionDetailPage({
   // comes from the Next data cache — only the auth lookup is per-request.
   const [thread, user] = await Promise.all([getQuestionThread(slug), getCurrentUser()]);
   if (!thread) notFound();
-  const { question, questionHtml, answers, repliesByAnswer } = thread;
+  const { question, questionHtml, answers, repliesByAnswer, mentionHandles } = thread;
 
   // Session-scoped reads: only signed-in visitors pay them, and in parallel.
   let upvoted = false;
@@ -204,6 +206,7 @@ export default async function QuestionDetailPage({
                   loginNext={currentPath}
                   isAdmin={isAdmin}
                   currentUserId={user?.id ?? null}
+                  mentionHandles={mentionHandles}
                 />
               ))}
             </div>

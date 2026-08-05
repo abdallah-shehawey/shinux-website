@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { renderMarkdown } from "@/lib/markdown";
+import { resolveMentionHandles } from "@/lib/mention-lookup";
 
 // ------------------------------------------------------------------------------
 // Q&A data layer (Phase 4/5). Mirrors the shape of src/lib/articles.ts for
@@ -301,6 +302,10 @@ export interface QuestionThread {
   /** Replies grouped by answer id — a plain object (not a Map) because this
    *  whole payload is JSON-serialized into the Next data cache. */
   repliesByAnswer: Record<string, ReplyRecord[]>;
+  /** Handles mentioned anywhere in this thread that belong to a real account.
+   *  Already applied to the rendered question/answer HTML; carried along for
+   *  the replies, which are plain text rendered on the client. */
+  mentionHandles: string[];
 }
 
 // The full public thread, fetched with the anon client (no cookies — required
@@ -318,41 +323,50 @@ async function fetchQuestionThread(slug: string): Promise<QuestionThread | null>
   const question = (data as QuestionDetail | null) ?? null;
   if (!question) return null;
 
-  const [{ html: questionHtml }, rawAnswers] = await Promise.all([
-    renderMarkdown(question.body),
-    supabase
-      .from("answers_public")
-      .select(ANSWER_COLUMNS)
-      .eq("question_id", question.id)
-      .order("is_accepted", { ascending: false })
-      .order("created_at", { ascending: true })
-      .then(({ data: rows, error: err }) => {
-        if (err) throw err;
-        return (rows ?? []) as AnswerRecord[];
-      }),
+  const { data: answerRows, error: answersError } = await supabase
+    .from("answers_public")
+    .select(ANSWER_COLUMNS)
+    .eq("question_id", question.id)
+    .order("is_accepted", { ascending: false })
+    .order("created_at", { ascending: true });
+  if (answersError) throw answersError;
+  const rawAnswers = (answerRows ?? []) as AnswerRecord[];
+
+  const repliesByAnswer: Record<string, ReplyRecord[]> = {};
+  const replyBodies: string[] = [];
+  if (rawAnswers.length > 0) {
+    const { data: rows, error: err } = await supabase
+      .from("answer_replies_public")
+      .select(REPLY_COLUMNS)
+      .in("answer_id", rawAnswers.map((a) => a.id))
+      .order("created_at", { ascending: true });
+    if (err) throw err;
+    for (const reply of (rows ?? []) as ReplyRecord[]) {
+      (repliesByAnswer[reply.answer_id] ??= []).push(reply);
+      replyBodies.push(reply.body);
+    }
+  }
+
+  // Resolved once for the whole thread, before anything is rendered: which
+  // handles are real decides how every body renders, and one lookup beats one
+  // per answer. Costs nothing when the thread mentions nobody.
+  const mentionHandles = await resolveMentionHandles([
+    question.body,
+    ...rawAnswers.map((a) => a.body),
+    ...replyBodies,
   ]);
 
-  const [answers, repliesByAnswer] = await Promise.all([
+  const [{ html: questionHtml }, answers] = await Promise.all([
+    renderMarkdown(question.body, { mentions: mentionHandles }),
     Promise.all(
-      rawAnswers.map(async (a) => ({ ...a, html: (await renderMarkdown(a.body)).html })),
+      rawAnswers.map(async (a) => ({
+        ...a,
+        html: (await renderMarkdown(a.body, { mentions: mentionHandles })).html,
+      })),
     ),
-    (async (): Promise<Record<string, ReplyRecord[]>> => {
-      const grouped: Record<string, ReplyRecord[]> = {};
-      if (rawAnswers.length === 0) return grouped;
-      const { data: rows, error: err } = await supabase
-        .from("answer_replies_public")
-        .select(REPLY_COLUMNS)
-        .in("answer_id", rawAnswers.map((a) => a.id))
-        .order("created_at", { ascending: true });
-      if (err) throw err;
-      for (const reply of (rows ?? []) as ReplyRecord[]) {
-        (grouped[reply.answer_id] ??= []).push(reply);
-      }
-      return grouped;
-    })(),
   ]);
 
-  return { question, questionHtml, answers, repliesByAnswer };
+  return { question, questionHtml, answers, repliesByAnswer, mentionHandles };
 }
 
 /**

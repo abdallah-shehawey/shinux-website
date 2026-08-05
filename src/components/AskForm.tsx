@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import MentionTextarea from "@/components/MentionTextarea";
 
 type Status = "idle" | "loading" | "error" | "limited" | "done";
 
@@ -161,15 +162,15 @@ export default function AskForm() {
         </div>
 
         {mode === "write" ? (
-          <textarea
+          <MentionTextarea
             id="body"
             required
             dir="auto"
             rows={8}
             value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="What have you tried? What did you expect vs. what happened? Markdown is supported."
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
+            onChange={setBody}
+            placeholder="What have you tried? What did you expect vs. what happened? Markdown is supported, and @ mentions someone."
+            textareaClassName="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
           />
         ) : (
           <div className="prose card min-h-40 max-w-none">

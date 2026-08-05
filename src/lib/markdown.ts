@@ -12,8 +12,15 @@ import rehypeStringify from "rehype-stringify";
 import { visit } from "unist-util-visit";
 import { toString as hastToString } from "hast-util-to-string";
 import type { Root, Element } from "hast";
-import type { Root as MdastRoot, Parent as MdastParent, Code as MdastCode } from "mdast";
+import type {
+  Root as MdastRoot,
+  Parent as MdastParent,
+  Code as MdastCode,
+  PhrasingContent,
+  Text as MdastText,
+} from "mdast";
 import { detectDirection } from "./bidi";
+import { MENTION_PATTERN } from "./mentions";
 
 // ------------------------------------------------------------------------------
 // Reusable Markdown → sanitized HTML pipeline.
@@ -39,6 +46,11 @@ export interface RenderOptions {
   // Sanitize the HTML (strip raw HTML, scripts, iframes, …). Default: true.
   // Keep it ON for anything a user can submit.
   sanitize?: boolean;
+  // Handles that resolve to a real account. Every `@handle` in this list becomes
+  // a link to /u/<handle>; anything else stays literal text, so a typo'd or
+  // deleted mention never renders as a link into nowhere. Callers resolve the
+  // list against profiles_public — see resolveMentionHandles in questions.ts.
+  mentions?: string[];
 }
 
 // Sanitize schema based on the GitHub-safe default, extended just enough to keep
@@ -59,6 +71,23 @@ const sanitizeSchema: Schema = {
       ["className", /^admonition(-\w+)?$/] as [string, RegExp],
     ],
     p: [...(defaultSchema.attributes?.p ?? []), ["className", "admonition-title"] as [string, string]],
+    // The GitHub default gives <a> its own className rule (footnote backrefs
+    // only), and a tag-specific rule wins over the "*" one above — so the two
+    // classes this pipeline puts on links have to be listed here or they are
+    // silently dropped from every sanitized body.
+    a: [
+      // The default's own className rule has to be REPLACED, not appended to:
+      // the first entry for a property is the one that applies, so leaving
+      // ["className", "data-footnote-backref"] in front would keep dropping
+      // everything else.
+      ...(defaultSchema.attributes?.a ?? []).filter(
+        (attr) => !(Array.isArray(attr) && attr[0] === "className"),
+      ),
+      ["className", "data-footnote-backref", "mention", "heading-anchor"] as [
+        string,
+        ...string[],
+      ],
+    ],
     // Tab-group wrappers set by remarkCodeTabs() below.
     div: [
       ...(defaultSchema.attributes?.div ?? []),
@@ -292,6 +321,55 @@ function rehypeCodeChrome() {
   };
 }
 
+// @mentions → links to /u/<handle>.
+//
+// Runs on the MARKDOWN tree, not the HTML one, which is what keeps it honest:
+// `code` fences and `inlineCode` hold their text in a `value`, not in child
+// text nodes, so a shell snippet containing `user@host` is never visited at
+// all. Text already inside a link is skipped explicitly so an autolinked URL
+// or a `[label](url)` whose label happens to contain an @handle doesn't end up
+// with a nested <a>.
+//
+// Only handles in `known` are linked — see RenderOptions.mentions.
+function remarkMentions(known: Set<string>) {
+  return (tree: MdastRoot) => {
+    if (known.size === 0) return;
+
+    visit(tree, "text", (node: MdastText, index, parent) => {
+      if (!parent || index === undefined) return;
+      if (parent.type === "link" || parent.type === "linkReference") return;
+
+      const value = node.value;
+      const replacement: PhrasingContent[] = [];
+      let cursor = 0;
+
+      for (const match of value.matchAll(MENTION_PATTERN)) {
+        const handle = match[2].toLowerCase();
+        if (!known.has(handle)) continue;
+
+        // match.index points at the lead character (group 1), not at the "@".
+        const at = match.index + match[1].length;
+        if (at > cursor) replacement.push({ type: "text", value: value.slice(cursor, at) });
+        replacement.push({
+          type: "link",
+          url: `/u/${handle}`,
+          children: [{ type: "text", value: `@${handle}` }],
+          data: { hProperties: { className: ["mention"] } },
+        });
+        cursor = at + 1 + match[2].length;
+      }
+
+      if (replacement.length === 0) return;
+      if (cursor < value.length) replacement.push({ type: "text", value: value.slice(cursor) });
+
+      parent.children.splice(index, 1, ...replacement);
+      // Resume past what was just inserted — the new link nodes hold text
+      // children that would otherwise be re-scanned (and skipped) one by one.
+      return index + replacement.length;
+    });
+  };
+}
+
 // Collect h2/h3 headings (after slugs are assigned) into a table of contents.
 function rehypeCollectToc(toc: TocItem[]) {
   return (tree: Root) => {
@@ -322,13 +400,19 @@ export function renderMarkdown(
   source: string,
   options: RenderOptions = {},
 ): Promise<RenderedMarkdown> {
-  const { sanitize = true } = options;
-  const key = `${sanitize ? "s" : "r"}:${createHash("sha1").update(source).digest("base64")}`;
+  const { sanitize = true, mentions = [] } = options;
+  // The mention set is part of the OUTPUT, so it has to be part of the key —
+  // the same body renders differently once a mentioned handle starts (or stops)
+  // resolving to a real account.
+  const mentionKey = [...new Set(mentions)].sort().join(",");
+  const key = `${sanitize ? "s" : "r"}:${createHash("sha1")
+    .update(`${mentionKey} ${source}`)
+    .digest("base64")}`;
 
   const hit = renderCache.get(key);
   if (hit) return hit;
 
-  const pending = renderMarkdownUncached(source, sanitize).catch((err) => {
+  const pending = renderMarkdownUncached(source, sanitize, mentions).catch((err) => {
     renderCache.delete(key); // never cache a failed compile
     throw err;
   });
@@ -343,6 +427,7 @@ export function renderMarkdown(
 async function renderMarkdownUncached(
   source: string,
   sanitize: boolean,
+  mentions: string[],
 ): Promise<RenderedMarkdown> {
   const toc: TocItem[] = [];
 
@@ -350,6 +435,7 @@ async function renderMarkdownUncached(
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkCodeTabs)
+    .use(remarkMentions, new Set(mentions.map((m) => m.toLowerCase())))
     // allowDangerousHtml stays false → raw HTML embedded in Markdown is dropped.
     .use(remarkRehype)
     // Runs before sanitize so the schema below can allow-list its classes.

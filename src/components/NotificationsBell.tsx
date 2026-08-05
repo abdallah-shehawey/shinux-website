@@ -141,7 +141,7 @@ export default function NotificationsBell({
                     className={`rounded-md px-2 py-2 transition hover:bg-bg active:scale-[0.98] ${!n.is_read ? "bg-bg/60" : ""}`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-fg">{notificationLabel(n.type)}</p>
+                      <p className="text-sm text-fg">{notificationLabel(n)}</p>
                       {!n.is_read && <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />}
                     </div>
                     {n.payload.question_title && (

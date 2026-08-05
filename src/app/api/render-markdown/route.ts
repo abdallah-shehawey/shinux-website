@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { renderMarkdown } from "@/lib/markdown";
+import { resolveMentionHandles } from "@/lib/mention-lookup";
 
 // Backs the Markdown preview tab on the ask/answer forms. Requires sign-in
 // purely to bound abuse of the Shiki highlighting pipeline — it never touches
@@ -17,6 +18,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const { html } = await renderMarkdown(body);
+  // Resolved here too, so the preview shows exactly which @handles will end up
+  // as real links (and therefore who is actually going to be notified).
+  const mentions = await resolveMentionHandles([body]);
+  const { html } = await renderMarkdown(body, { mentions });
   return NextResponse.json({ html });
 }

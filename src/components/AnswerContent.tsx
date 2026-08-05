@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 import { detectDirection } from "@/lib/bidi";
 import AuthorInline from "@/components/AuthorInline";
+import MentionTextarea from "@/components/MentionTextarea";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -126,12 +127,12 @@ export default function AnswerContent({
           }}
           className="flex flex-col gap-3"
         >
-          <textarea
+          <MentionTextarea
             value={bodyValue}
-            onChange={(e) => setBodyValue(e.target.value)}
+            onChange={setBodyValue}
             dir="auto"
             rows={6}
-            className="rounded-lg border border-border bg-bg px-3 py-2 font-mono text-base sm:text-sm text-fg outline-none focus:border-accent"
+            textareaClassName="w-full rounded-lg border border-border bg-bg px-3 py-2 font-mono text-base sm:text-sm text-fg outline-none focus:border-accent"
           />
           {status === "error" && <p className="text-sm text-red-400">{errorMessage}</p>}
           <div className="flex gap-2">

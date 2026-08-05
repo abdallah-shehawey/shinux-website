@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
+import MentionTextarea from "@/components/MentionTextarea";
 
 export default function AnswerForm({
   questionId,
@@ -114,14 +115,14 @@ export default function AnswerForm({
       </div>
 
       {mode === "write" ? (
-        <textarea
+        <MentionTextarea
           required
           dir="auto"
           rows={6}
           value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Share what worked for you. Markdown is supported."
-          className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
+          onChange={setBody}
+          placeholder="Share what worked for you. Markdown is supported, and @ mentions someone."
+          textareaClassName="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
         />
       ) : (
         <div className="prose card min-h-32 max-w-none">

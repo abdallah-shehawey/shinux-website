@@ -5,19 +5,32 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
+import MentionTextarea from "@/components/MentionTextarea";
 
+/**
+ * The reply box under one answer. Open state and draft text live in the parent
+ * (AnswerReplies) rather than here, because "Reply" on an individual comment has
+ * to open THIS box with that person already @mentioned — the same thing
+ * Facebook does when you reply to a comment.
+ */
 export default function ReplyForm({
   answerId,
   isLoggedIn,
   loginNext,
+  open,
+  onOpenChange,
+  body,
+  onBodyChange,
 }: {
   answerId: string;
   isLoggedIn: boolean;
   loginNext: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  body: string;
+  onBodyChange: (body: string) => void;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [body, setBody] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -25,7 +38,7 @@ export default function ReplyForm({
     return (
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => onOpenChange(true)}
         className="text-xs text-muted hover:text-accent"
       >
         Reply
@@ -69,8 +82,8 @@ export default function ReplyForm({
       return;
     }
 
-    setBody("");
-    setOpen(false);
+    onBodyChange("");
+    onOpenChange(false);
     setStatus("idle");
     await revalidateQuestionCaches();
     router.refresh();
@@ -78,14 +91,14 @@ export default function ReplyForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-2">
-      <textarea
+      <MentionTextarea
         required
         dir="auto"
         rows={2}
         value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="Reply…"
-        className="w-full rounded-lg border border-border bg-bg px-3 py-1.5 text-base sm:text-sm text-fg outline-none focus:border-accent"
+        onChange={onBodyChange}
+        placeholder="Reply… type @ to mention someone"
+        textareaClassName="w-full rounded-lg border border-border bg-bg px-3 py-1.5 text-base sm:text-sm text-fg outline-none focus:border-accent"
       />
       {status === "error" && <p className="text-xs text-red-400">{errorMessage}</p>}
       <div className="flex gap-2">
@@ -94,7 +107,7 @@ export default function ReplyForm({
         </button>
         <button
           type="button"
-          onClick={() => setOpen(false)}
+          onClick={() => onOpenChange(false)}
           className="px-3 py-2 text-sm text-muted hover:text-fg"
         >
           Cancel

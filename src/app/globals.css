@@ -287,6 +287,28 @@ input:not([type]) {
   color: inherit;
   text-decoration: none;
 }
+/* @mentions — a name, not a link to go read something, so it gets a soft chip
+   instead of the underline every other inline link carries. Styled outside
+   .prose too: reply bodies are plain text, not rendered Markdown. */
+.mention,
+.prose .mention {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  padding-inline: 0.15em;
+  margin-inline: -0.15em;
+  transition: background-color 0.15s;
+  unicode-bidi: isolate;
+}
+.mention:hover,
+.prose .mention:hover {
+  background-color: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.mention:active,
+.prose .mention:active {
+  background-color: color-mix(in srgb, var(--accent) 24%, transparent);
+}
 .prose ul,
 .prose ol {
   padding-inline-start: 1.4em;

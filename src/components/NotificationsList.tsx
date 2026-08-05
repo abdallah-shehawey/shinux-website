@@ -51,7 +51,7 @@ export default function NotificationsList({ initial }: { initial: NotificationRe
           const inner = (
             <div className={`card flex items-center justify-between gap-3 ${href ? "hover:border-accent" : ""}`}>
               <div>
-                <p className="text-sm font-medium text-fg">{notificationLabel(n.type)}</p>
+                <p className="text-sm font-medium text-fg">{notificationLabel(n)}</p>
                 {n.payload.question_title && (
                   <p className="mt-0.5 text-sm text-muted" dir="auto">
                     {n.payload.question_title}

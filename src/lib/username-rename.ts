@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { revalidateAuthorCaches } from "@/lib/revalidate-authors";
+import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 
 // Every prerendered route whose output embeds a username. Listed as route
 // PATTERNS, not as `/u/<handle>` literals: a literal only purges an entry that
@@ -43,6 +44,10 @@ const PROFILE_ROUTES = [
  */
 export async function completeUsernameRename(): Promise<void> {
   await revalidateAuthorCaches();
+  // Cached question threads bake in the handle twice over: the asker's and each
+  // answerer's byline, and every @mention link resolved when the thread was
+  // rendered. All of them point at a handle this account no longer owns.
+  await revalidateQuestionCaches();
   for (const route of PROFILE_ROUTES) revalidatePath(route, "page");
   // Lists every profile URL, so it names the dead handle until it is rebuilt.
   revalidatePath("/sitemap.xml");
