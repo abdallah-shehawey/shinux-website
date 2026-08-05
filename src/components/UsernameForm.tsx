@@ -24,7 +24,6 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
   const [value, setValue] = useState(initialUsername);
   const [status, setStatus] = useState<"idle" | "loading" | "error" | "saved">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [renamedFrom, setRenamedFrom] = useState("");
 
   const normalized = normalize(value);
   const unchanged = normalized === current;
@@ -46,7 +45,6 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const previous = current;
     const { error } = await supabase
       .from("profiles")
       .update({ username: normalized })
@@ -70,7 +68,6 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
 
     setCurrent(normalized);
     setValue(normalized);
-    setRenamedFrom(previous);
     setStatus("saved");
     router.refresh();
   }
@@ -101,23 +98,9 @@ export default function UsernameForm({ initialUsername }: { initialUsername: str
         {status === "error" && <p className="text-sm text-red-400 sm:ms-2">{errorMessage}</p>}
       </div>
 
-      {status === "saved" && (
-        <div className="text-sm">
-          <p className="text-accent">
-            Saved. Your profile is now at{" "}
-            <a href={`/u/${current}`} className="font-mono hover:underline">
-              /u/{current}
-            </a>
-            .
-          </p>
-          {renamedFrom && (
-            <p className="mt-1 text-muted">
-              <span className="font-mono">@{renamedFrom}</span> is released — anyone can claim it
-              now. Everything you published moved with you.
-            </p>
-          )}
-        </div>
-      )}
+      {/* Just the outcome. What a rename does to the old handle and to already
+          published work is mechanics the person renaming did not ask about. */}
+      {status === "saved" && <p className="text-sm text-accent">Username updated.</p>}
     </form>
   );
 }
