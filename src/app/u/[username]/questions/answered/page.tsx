@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPublicProfile, getCachedPublicProfileUsernames } from "@/lib/profiles";
 import { getAnswersByAuthor } from "@/lib/questions";
+import { detectDirection } from "@/lib/bidi";
 
 // Public and viewer-independent, like the profile page it hangs off: rendered
 // once and served from the cache, not rebuilt per request. See
@@ -54,6 +55,12 @@ export default async function ProfileAnswersGivenPage({
             <Link
               key={a.id}
               href={`/questions/${a.question_slug}`}
+              // The question's locale is not on this row, but its title is —
+              // and that is what the thread's direction is read from anyway, so
+              // the skeleton gets the same answer without another query.
+              data-skeleton-dir={
+                detectDirection(a.question_title) === "rtl" ? "rtl" : undefined
+              }
               className="card active:scale-[0.98] active:opacity-90 transition-colors hover:border-accent"
             >
               <p className="text-sm font-medium text-fg" dir="auto">

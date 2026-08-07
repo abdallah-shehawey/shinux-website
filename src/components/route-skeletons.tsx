@@ -68,7 +68,7 @@ const ROUTES: Readonly<Record<string, Skeleton>> = {
   "/login": <LoginLoading />,
   "/me": <MeLoading />,
   "/questions": <QuestionsLoading />,
-  "/questions/[slug]": <QuestionLoading />,
+  "/questions/[slug]": ({ dir }) => <QuestionLoading dir={dir} />,
   "/tutorials": <TutorialsLoading />,
   "/tutorials/[track]": <TrackLoading />,
   "/tutorials/[track]/[lesson]": <LessonLoading />,

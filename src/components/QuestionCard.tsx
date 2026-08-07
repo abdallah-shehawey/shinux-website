@@ -20,10 +20,16 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
     // independently clickable to the asker's profile.
     <div className="card group relative flex h-full flex-col gap-2 transition-all duration-150 hover:border-accent">
       {/* Viewport prefetch off — see ArticleCard for why the card grids must
-          not compete with the header tabs for a slow connection. */}
+          not compete with the header tabs for a slow connection.
+
+          data-skeleton-dir: an Arabic question opens into a mirrored thread, so
+          the click hands its direction to the skeleton — otherwise the
+          placeholder is left-aligned and the whole page flips sides when the
+          real one lands. */}
       <Link
         href={`/questions/${question.slug}`}
         prefetch={false}
+        data-skeleton-dir={question.locale === "ar" ? "rtl" : undefined}
         className="card-hit absolute inset-0 z-0"
         aria-label={question.title}
       />

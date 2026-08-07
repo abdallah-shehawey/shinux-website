@@ -14,18 +14,30 @@ function Bubble({ width }: { width: string }) {
   );
 }
 
-export default function Loading() {
+// `dir` mirrors the whole thread for an Arabic question, the way the real page
+// does: avatars and bubbles start from the right, replies indent from the
+// right. Next.js renders this with no props (hence the LTR default); the hint
+// comes from the link that was clicked — see NavigationPending — so an Arabic
+// question no longer opens as an English-shaped skeleton that flips sides the
+// moment the real page lands.
+export default function Loading({ dir = "ltr" }: { dir?: "rtl" | "ltr" }) {
   return (
     <>
-      {/* Sticky back-bar, matching the real one's height so the content below
-          starts at the same y. */}
+      {/* Sticky back-bar. Deliberately NOT mirrored: "← Back to questions" is
+          site chrome and sits outside the thread's direction on the real page
+          too, so it stays on the left in both. */}
       <div className="sticky top-14 z-10 bg-bg">
         <div className="mx-auto flex h-11 w-full max-w-3xl items-center px-4 sm:px-6">
           <div className="h-4 w-32 animate-pulse rounded skeleton-bar" />
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl animate-pulse px-4 pt-2 pb-16 sm:px-6">
+      {/* One dir on the column is enough: every offset below is a logical
+          property (ps-, flex gap), so they all flip together. */}
+      <div
+        dir={dir}
+        className="mx-auto w-full max-w-3xl animate-pulse px-4 pt-2 pb-16 sm:px-6"
+      >
         {/* Post header: avatar + name + timestamp */}
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 shrink-0 rounded-full skeleton-bar" />
