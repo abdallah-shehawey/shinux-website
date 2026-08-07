@@ -231,6 +231,15 @@ export default function NotificationsBell({
                         {n.payload.question_title}
                       </p>
                     )}
+                    {/* The admin's feedback on a rejection. It only ever lived
+                        in the payload — the asker had no way to read it,
+                        which made writing one pointless. */}
+                    {n.payload.rejection_reason && (
+                      <p className="mt-1 line-clamp-3 text-xs text-fg" dir="auto">
+                        <span className="text-muted">Reason: </span>
+                        {n.payload.rejection_reason}
+                      </p>
+                    )}
                     <p className="mt-0.5 font-mono text-[10px] text-muted">{formatDate(n.created_at)}</p>
                   </div>
                 );

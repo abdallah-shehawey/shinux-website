@@ -71,6 +71,9 @@ export interface OwnQuestion {
   is_anonymous: boolean;
   answer_count: number;
   created_at: string;
+  /** The admin's feedback when status is "rejected" — optional, and null for
+   *  every other status. This is the asker's only in-app copy of it. */
+  rejection_reason: string | null;
 }
 
 const SUMMARY_COLUMNS =
@@ -436,7 +439,7 @@ export async function getOwnQuestions(userId: string): Promise<OwnQuestion[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("questions")
-    .select("id, title, status, slug, is_anonymous, answer_count, created_at")
+    .select("id, title, status, slug, is_anonymous, answer_count, created_at, rejection_reason")
     .eq("author_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;

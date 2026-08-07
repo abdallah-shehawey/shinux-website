@@ -69,7 +69,9 @@ export default async function MePage() {
         <NotificationsList initial={notifications} />
       </div>
 
-      <div className="mt-8">
+      {/* id + scroll-mt: a "your question was not approved" notification links
+          straight here, since a rejected question has no page of its own. */}
+      <div id="questions" className="mt-8 scroll-mt-20">
         <h2 className="mb-3 text-lg font-semibold">Your questions</h2>
         {questions.length === 0 ? (
           <p className="text-sm text-muted">
@@ -85,15 +87,24 @@ export default async function MePage() {
               <Link
                 key={q.id}
                 href={q.slug ? `/questions/${q.slug}` : "#"}
-                className={`card flex items-center justify-between gap-3 ${q.slug ? "hover:border-accent" : "pointer-events-none opacity-70"}`}
+                className={`card flex items-start justify-between gap-3 ${q.slug ? "hover:border-accent" : "pointer-events-none opacity-70"}`}
               >
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-fg" dir="auto">
                     {q.title} {q.is_anonymous && <span title="Posted anonymously">🕶️</span>}
                   </p>
                   {q.status === "answered" && (
                     <p className="mt-0.5 text-xs text-muted">
                       {q.answer_count} {q.answer_count === 1 ? "answer" : "answers"}
+                    </p>
+                  )}
+                  {/* The one place the asker can read why it was turned down.
+                      Until now it was written by the admin, mailed out, and
+                      then shown nowhere in the site itself. */}
+                  {q.status === "rejected" && q.rejection_reason && (
+                    <p className="mt-1.5 text-xs text-fg" dir="auto">
+                      <span className="text-muted">Reason: </span>
+                      {q.rejection_reason}
                     </p>
                   )}
                 </div>

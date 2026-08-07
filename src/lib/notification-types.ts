@@ -57,5 +57,10 @@ export function notificationLabel(n: NotificationRecord | string): string {
  * question_slug yet (unpublished), so they route to the review queue instead. */
 export function notificationHref(n: NotificationRecord): string | null {
   if (n.type === "question_submitted") return "/admin/questions";
+  // A rejected question is never given a slug — it was never published — so
+  // there is no public page to open, and this used to fall through to `null`
+  // and render as a button that did nothing. The asker's own list is where its
+  // status and the admin's feedback live, so send them there.
+  if (n.type === "question_rejected") return "/me#questions";
   return n.payload.question_slug ? `/questions/${n.payload.question_slug}` : null;
 }
