@@ -132,6 +132,7 @@ export default async function QuestionDetailPage({
           bodyHtml={questionHtml}
           locale={question.locale}
           tags={question.tags}
+          images={question.images ?? []}
           authorDisplay={question.author_display}
           authorUsername={question.author_username}
           authorAvatar={question.author_avatar}

@@ -10,6 +10,7 @@ import { relativeTime, fullTimestamp } from "@/lib/time";
 import Avatar from "@/components/Avatar";
 import ThreadMenu, { type ThreadMenuItem } from "@/components/ThreadMenu";
 import MentionTextarea from "@/components/MentionTextarea";
+import QuestionImages from "@/components/QuestionImages";
 
 // The question itself, laid out as the post at the top of a discussion: who
 // asked it and when on one line, the question below, and its actions in a bar
@@ -25,6 +26,7 @@ export default function QuestionContent({
   bodyHtml,
   locale,
   tags,
+  images,
   authorDisplay,
   authorUsername,
   authorAvatar,
@@ -39,6 +41,7 @@ export default function QuestionContent({
   bodyHtml: string;
   locale: string;
   tags: string[];
+  images: string[];
   authorDisplay: string;
   authorUsername: string | null;
   authorAvatar: string | null;
@@ -198,6 +201,8 @@ export default function QuestionContent({
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
           )}
+
+          <QuestionImages images={images} />
 
           {tags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">

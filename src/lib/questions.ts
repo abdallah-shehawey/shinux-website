@@ -42,7 +42,13 @@ export interface QuestionSummary {
 
 export interface QuestionDetail extends QuestionSummary {
   body: string;
+  /** Public URLs of the photos attached to the question, in upload order.
+   *  Empty until migration 0019 has been applied — see fetchQuestionThread. */
+  images: string[];
 }
+
+/** Postgres "column does not exist". */
+const UNDEFINED_COLUMN = "42703";
 
 export interface AnswerRecord {
   id: string;
@@ -314,14 +320,31 @@ export interface QuestionThread {
 async function fetchQuestionThread(slug: string): Promise<QuestionThread | null> {
   const supabase = createAnonClient();
 
-  const { data, error } = await supabase
+  // `images` arrived with migration 0019. Asking for a column the database
+  // does not have fails the WHOLE select, which would take every question page
+  // down in the window between deploying this and running that SQL — so a
+  // missing column is retried without it and the question simply has no photos.
+  // Once the migration is applied this is a single query again, forever.
+  let { data, error } = await supabase
     .from("questions_public")
-    .select(`${SUMMARY_COLUMNS}, body`)
+    .select(`${SUMMARY_COLUMNS}, body, images`)
     .eq("slug", slug)
     .maybeSingle();
+
+  if (error?.code === UNDEFINED_COLUMN) {
+    ({ data, error } = await supabase
+      .from("questions_public")
+      .select(`${SUMMARY_COLUMNS}, body`)
+      .eq("slug", slug)
+      .maybeSingle());
+  }
   if (error) throw error;
-  const question = (data as QuestionDetail | null) ?? null;
-  if (!question) return null;
+  if (!data) return null;
+
+  // The retry above returns a row with no `images` key at all, so it is
+  // normalised to an empty list here rather than reaching the page as undefined.
+  const row = data as QuestionDetail;
+  const question: QuestionDetail = { ...row, images: row.images ?? [] };
 
   const { data: answerRows, error: answersError } = await supabase
     .from("answers_public")

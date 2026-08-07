@@ -1,39 +1,38 @@
-// Skeleton matching the Ask page: title + subtitle + form fields.
+// Skeleton for the Ask page, matching the composer card it becomes: the same
+// 2xl column, the author row, the two borderless fields, and the footer under
+// its divider.
 export default function Loading() {
   return (
-    <div className="mx-auto w-full animate-pulse px-4 pt-6 pb-12 sm:px-8 lg:px-12">
-      {/* Title */}
-      <div className="mb-2 h-9 w-52 rounded skeleton-bar" />
-      <div className="mb-8 h-4 w-96 max-w-full rounded skeleton-bar" />
+    <div className="mx-auto w-full max-w-2xl animate-pulse px-4 pt-6 pb-16 sm:px-6">
+      <div className="mb-1.5 h-8 w-52 rounded skeleton-bar" />
+      <div className="mb-6 h-4 w-full max-w-md rounded skeleton-bar" />
 
-      {/* Form skeleton */}
-      <div className="flex flex-col gap-6">
-        {/* Title input */}
-        <div>
-          <div className="mb-1.5 h-3 w-12 rounded skeleton-bar" />
-          <div className="h-10 w-full rounded-lg border border-border bg-card" />
-        </div>
-
-        {/* Body textarea */}
-        <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <div className="h-3 w-16 rounded skeleton-bar" />
-            <div className="flex gap-2">
-              <div className="h-6 w-14 rounded skeleton-bar" />
-              <div className="h-6 w-16 rounded skeleton-bar" />
-            </div>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        {/* Author row */}
+        <div className="flex items-center gap-3 p-4 sm:p-5">
+          <div className="h-10 w-10 shrink-0 rounded-full skeleton-bar" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-4 w-40 rounded skeleton-bar" />
+            <div className="h-6 w-28 rounded-full skeleton-bar" />
           </div>
-          <div className="h-40 w-full rounded-lg border border-border bg-card" />
         </div>
 
-        {/* Tags input */}
-        <div>
-          <div className="mb-1.5 h-3 w-10 rounded skeleton-bar" />
-          <div className="h-10 w-full rounded-lg border border-border bg-card" />
+        {/* Title + details, both borderless in the real form */}
+        <div className="flex flex-col gap-3 px-4 sm:px-5">
+          <div className="h-6 w-3/5 rounded skeleton-bar" />
+          <div className="h-4 w-full rounded skeleton-bar" />
+          <div className="h-4 w-4/5 rounded skeleton-bar" />
+          <div className="h-16" />
         </div>
 
-        {/* Submit button */}
-        <div className="h-10 w-36 rounded-lg skeleton-bar" />
+        {/* Footer: tags + submit */}
+        <div className="mt-4 flex flex-col gap-4 border-t border-border p-4 sm:p-5">
+          <div>
+            <div className="mb-1.5 h-3 w-32 rounded skeleton-bar" />
+            <div className="h-10 w-full rounded-lg border border-border bg-bg" />
+          </div>
+          <div className="h-11 w-full rounded-lg skeleton-bar" />
+        </div>
       </div>
     </div>
   );
