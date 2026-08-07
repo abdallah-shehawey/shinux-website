@@ -10,6 +10,9 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+/** Fallback refresh while the tab is visible, if the live stream is not up. */
+const POLL_MS = 45_000;
+
 export default function NotificationsBell({
   initial,
   userId,
@@ -18,47 +21,113 @@ export default function NotificationsBell({
   userId: string;
 }) {
   const [notifications, setNotifications] = useState(initial);
+  // Counted by the database rather than derived from the eight rows above: the
+  // badge has to be right even when more than eight are unread, and it has to
+  // be able to move without the list being open.
+  const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   // `initial` is a server-render snapshot from the root layout, which Next.js
-  // does not re-render on client-side navigation — so it can go stale (e.g.
-  // showing 0 notifications on every page after the first, even once real
-  // ones exist). Refetch on mount to self-correct, and again whenever the
-  // dropdown opens so a long-lived tab stays current.
+  // does not re-render on client-side navigation — so it can go stale. This
+  // reads both the list and the unread count, and is the single thing every
+  // trigger below calls.
   //
-  // Returns the rows instead of setting state itself: each caller applies the
-  // result behind its own cancellation guard, so a slow response that lands
-  // after unmount — or after a newer one — is dropped rather than clobbering
-  // fresher data (e.g. open, close, reopen quickly and the first, staler
-  // response would otherwise win).
+  // Returns the result instead of setting state itself: each caller applies it
+  // behind its own cancellation guard, so a slow response that lands after
+  // unmount — or after a newer one — is dropped rather than clobbering fresher
+  // data.
   const fetchNotifications = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
-      .from("notifications")
-      .select("id, type, payload, is_read, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(8);
-    return (data as NotificationRecord[] | null) ?? null;
+    const [list, count] = await Promise.all([
+      supabase
+        .from("notifications")
+        .select("id, type, payload, is_read, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_read", false),
+    ]);
+    return {
+      rows: (list.data as NotificationRecord[] | null) ?? null,
+      unread: count.count ?? null,
+    };
   }, [userId]);
 
-  useEffect(() => {
-    let cancelled = false;
-    void fetchNotifications().then((rows) => {
-      if (!cancelled && rows) setNotifications(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
+  const refresh = useCallback(async () => {
+    const { rows, unread } = await fetchNotifications();
+    if (rows) setNotifications(rows);
+    if (unread !== null) setUnreadCount(unread);
   }, [fetchNotifications]);
 
+  // ---- Keeping the badge current ----
+  // Three independent triggers, because none of them is reliable alone:
+  //
+  //   1. The live stream. Only works once `notifications` is in the
+  //      supabase_realtime publication (migration 0020) — before that it
+  //      connects and silently receives nothing, which is why the other two
+  //      exist and why they are NOT conditional on it.
+  //   2. Coming back to the tab. The common case by far: the badge is right
+  //      the moment you look at it again.
+  //   3. A slow poll while the tab is visible, so a tab left open in the
+  //      foreground still catches up.
+  useEffect(() => {
+    let cancelled = false;
+    const run = () => {
+      if (!cancelled) void refresh();
+    };
+
+    run();
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        run,
+      )
+      .subscribe();
+
+    function onVisibility() {
+      if (document.visibilityState === "visible") run();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", onVisibility);
+
+    // Skipped while the tab is hidden — a background tab does not need a badge,
+    // and the visibility handler above refreshes it on the way back in.
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") run();
+    }, POLL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", onVisibility);
+      void supabase.removeChannel(channel);
+    };
+  }, [userId, refresh]);
+
+  // Opening the dropdown still refetches: the list it shows may be older than
+  // the count, and this is the moment it is about to be read.
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    void fetchNotifications().then((rows) => {
-      if (!cancelled && rows) setNotifications(rows);
+    void fetchNotifications().then(({ rows, unread }) => {
+      if (cancelled) return;
+      if (rows) setNotifications(rows);
+      if (unread !== null) setUnreadCount(unread);
     });
     return () => {
       cancelled = true;
@@ -68,17 +137,30 @@ export default function NotificationsBell({
   const dismiss = useDismissOnOutsideOrBack(open, () => setOpen(false), rootRef);
 
   async function markRead(id: string) {
+    // Read from the current render's state, NOT from inside a setState updater:
+    // React may run an updater more than once, which would decrement the badge
+    // twice for a single click.
+    if (notifications.find((n) => n.id === id)?.is_read !== false) return;
+
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+    setUnreadCount((c) => Math.max(0, c - 1));
+
     const supabase = createClient();
     await supabase.from("notifications").update({ is_read: true }).eq("id", id);
   }
 
   async function markAllRead() {
-    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
-    if (unreadIds.length === 0) return;
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setUnreadCount(0);
     const supabase = createClient();
-    await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds);
+    // Every unread row of this user's, not just the eight on screen — the badge
+    // counts all of them, so "Mark all read" has to clear all of them or it
+    // would come straight back on the next refresh.
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", userId)
+      .eq("is_read", false);
   }
 
   return (
