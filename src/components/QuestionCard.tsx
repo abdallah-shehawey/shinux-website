@@ -56,9 +56,10 @@ export default function QuestionCard({ question }: { question: QuestionSummary }
           ))}
         </div>
       )}
+      {/* Answers only — the question upvote was removed, so its count would be
+          a number nothing can ever move. */}
       <p className="mt-1 font-mono text-xs text-muted">
-        {question.answer_count} {question.answer_count === 1 ? "answer" : "answers"} &middot;{" "}
-        {question.upvote_count} {question.upvote_count === 1 ? "upvote" : "upvotes"}
+        {question.answer_count} {question.answer_count === 1 ? "answer" : "answers"}
       </p>
     </div>
   );

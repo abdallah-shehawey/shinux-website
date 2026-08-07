@@ -174,6 +174,198 @@ input:not([type]) {
   opacity: 0.9;
 }
 
+/* ---- Q&A thread (social-feed layout) ----
+   The question page reads as a discussion rather than a document: an answer is
+   a comment in a bubble next to its author's avatar, a reply is a nested
+   comment under it, and every action (Reply, Edit, Delete) is a quiet control
+   under the bubble instead of a link buried in the byline. Everything here is
+   written with LOGICAL properties so an Arabic thread mirrors correctly. */
+
+/* A comment's body. Filled rather than outlined so a run of answers reads as a
+   stack of separate messages, the way the eye already expects a thread to. */
+.bubble {
+  border-radius: 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.9rem 0.65rem;
+  overflow-wrap: break-word;
+  min-width: 0;
+  /* Hugs its text rather than filling the column: a one-line "worked for me
+     too" in a full-width slab does not read as a remark, it reads as a
+     section. Long text still stops at the column edge. */
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* A display name inside a post that has taken its author's direction. It must
+   NOT carry dir="auto": that resolves from the name's own letters, so a Latin
+   name inside an Arabic post became an LTR block and aligned itself to the
+   left, away from the avatar it belongs to. Isolation gives the same
+   protection — the name can never reorder the text around it — while leaving
+   the placement to the post. */
+.bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+/* A bubble and its "⋯" menu. The menu lives OUTSIDE the bubble because the
+   bubble is only as wide as its text — inside, it would either stretch the
+   bubble or crowd the name — and it stays hidden until the comment is hovered
+   or focused, so a thread reads as writing rather than as rows of controls.
+   Touch devices have no hover, so there it is simply always visible (the same
+   bargain .copy-code-btn makes). */
+.bubble-row {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.bubble-menu {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.bubble-row:hover .bubble-menu,
+.bubble-row:focus-within .bubble-menu {
+  opacity: 1;
+}
+@media (hover: none) {
+  .bubble-menu {
+    opacity: 1;
+  }
+}
+/* Replies sit one level in, so they get a flatter corner on the side the
+   connector elbow arrives from — the same cue a chat thread uses. */
+.bubble-nested {
+  border-start-start-radius: 0.35rem;
+}
+
+/* The small bold controls under a bubble (Reply / Edit / Delete). Padding
+   gives them a real touch target; the row's own negative margin cancels it so
+   the text still lines up with the bubble's edge. */
+.thread-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.thread-action:hover {
+  color: var(--fg);
+  background: var(--card);
+}
+.thread-action:active {
+  transform: scale(0.94);
+}
+.thread-action[data-tone="danger"]:hover {
+  color: #f85149;
+}
+.thread-action[data-active="true"] {
+  color: var(--accent);
+}
+.thread-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem;
+  margin-inline-start: -0.4rem;
+  margin-top: 0.15rem;
+}
+
+/* ---- Reply connectors ----
+   The elbow that ties a reply to the answer above it, drawn per row so the
+   line always stops at the LAST reply instead of running off the end of the
+   group. `::after` is the curve into the avatar; `::before` continues the
+   trunk down to the next reply. */
+.reply-row {
+  position: relative;
+  padding-inline-start: 2.1rem;
+}
+.reply-row::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.85rem;
+  top: 0;
+  width: 0.95rem;
+  /* Stops level with the centre of a 1.75rem (size="sm") reply avatar, so the
+     curve runs INTO the avatar rather than past it. */
+  height: 0.9rem;
+  border-inline-start: 2px solid var(--border);
+  border-block-end: 2px solid var(--border);
+  border-end-start-radius: 0.6rem;
+  pointer-events: none;
+}
+/* Carries the trunk past this reply down to the next one. The overshoot equals
+   the list's own gap (0.5rem), so the line is unbroken between rows. */
+.reply-row:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.85rem;
+  top: 0.9rem;
+  bottom: -0.5rem;
+  border-inline-start: 2px solid var(--border);
+  pointer-events: none;
+}
+
+/* ---- Composer ----
+   The rounded field an answer or reply is written in. It carries the focus
+   ring itself (rather than the textarea inside it) so the avatar, the text and
+   the toolbar all sit inside one control. */
+.composer-field {
+  border-radius: 1.1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 0.45rem 0.85rem;
+  transition: border-color 0.15s ease;
+}
+.composer-field:focus-within {
+  border-color: var(--accent);
+}
+/* The textarea inside a composer is invisible: no chrome of its own, and it
+   grows with the text instead of showing a scrollbar (see useAutoGrow). */
+.composer-input {
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  padding: 0.3rem 0;
+  line-height: 1.55;
+  max-height: 18rem;
+}
+.composer-input::placeholder {
+  color: var(--muted);
+}
+
+/* The post's own action bar — one row of equal, full-width buttons under the
+   question, split off by a divider. */
+.post-action {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  min-height: 2.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.post-action:hover {
+  color: var(--fg);
+  background: var(--card);
+}
+.post-action:active {
+  transform: scale(0.97);
+}
+.post-action[data-active="true"] {
+  color: var(--accent);
+}
+
 /* ---- Reader layout ----
    Height of the sticky chrome stacked above a reader page — the site header
    (3.5rem + its 1px bottom border) plus the back-link bar (2.75rem). Anything

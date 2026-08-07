@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { findActiveMention } from "@/lib/mentions";
+import Avatar from "@/components/Avatar";
 
 // ------------------------------------------------------------------------------
 // A textarea that suggests people while you type — start an @, keep typing, pick
@@ -22,12 +23,23 @@ export interface MentionCandidate {
 
 const SUGGESTION_LIMIT = 6;
 
+// Sizing the box has to happen before the browser paints, or a reply box that
+// opens pre-filled with "@someone" flashes at one row first. useLayoutEffect
+// warns during SSR though — and every client component here is still rendered
+// on the server — so it is only picked up in the browser.
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 export default function MentionTextarea({
   value,
   onChange,
   textareaClassName = "",
   showMentionButton = true,
   autoFocus = false,
+  autoGrow = false,
+  onEnterSubmit,
+  mentionButton = "chip",
+  toolbarExtra,
+  toolbarClassName = "mt-1.5",
   ...textareaProps
 }: {
   value: string;
@@ -36,6 +48,22 @@ export default function MentionTextarea({
   /** The "@" affordance under the box, for people who don't know the shortcut. */
   showMentionButton?: boolean;
   autoFocus?: boolean;
+  /** Grow with the text instead of scrolling — for the comment composers. */
+  autoGrow?: boolean;
+  /** Enter posts, Shift+Enter breaks the line (a comment box, not a document
+   *  editor). Never fires while the mention list is open: Enter belongs to the
+   *  list there, for picking the highlighted person. */
+  onEnterSubmit?: () => void;
+  /** "icon" is the round @ used inside a composer pill; "chip" is the bordered
+   *  "@ Mention" button used under a bare editing textarea. */
+  mentionButton?: "chip" | "icon";
+  /** The caller's own controls (Preview, Post…), placed on the same row as the
+   *  @ button. Passed as a node rather than a render prop on purpose: handing
+   *  the caller a callback that reads the textarea ref would be reading a ref
+   *  during render. */
+  toolbarExtra?: React.ReactNode;
+  /** Layout for that row — the composers align their buttons differently. */
+  toolbarClassName?: string;
 } & Omit<
   React.TextareaHTMLAttributes<HTMLTextAreaElement>,
   "value" | "onChange" | "className"
@@ -58,6 +86,17 @@ export default function MentionTextarea({
     mention !== null && mention.query.startsWith(candidates.key) ? candidates.items : [];
   const open = items.length > 0;
   const highlighted = Math.min(activeIndex, items.length - 1);
+
+  // Fit the box to its text. Re-measured from `auto` every time so the box
+  // shrinks back when text is deleted, not just grows. CSS caps it
+  // (.composer-input max-height) and takes over with a scrollbar past that.
+  useIsomorphicLayoutEffect(() => {
+    if (!autoGrow) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [autoGrow, value]);
 
   const syncMention = useCallback((el: HTMLTextAreaElement) => {
     // selectionStart !== selectionEnd means a selection, not a caret — nothing
@@ -134,7 +173,15 @@ export default function MentionTextarea({
   );
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (!open) return;
+    if (!open) {
+      // `isComposing` guards an IME: while composing Arabic/CJK candidates,
+      // Enter commits the candidate and must not also post the comment.
+      if (onEnterSubmit && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+        e.preventDefault();
+        onEnterSubmit();
+      }
+      return;
+    }
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActiveIndex((i) => (Math.min(i, items.length - 1) + 1) % items.length);
@@ -204,7 +251,7 @@ export default function MentionTextarea({
           id={listId}
           role="listbox"
           onMouseDown={(e) => e.preventDefault()}
-          className="dropdown-panel absolute start-0 top-full z-30 mt-1 max-h-60 w-[min(18rem,100%)] overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-lg"
+          className="dropdown-panel absolute start-0 top-full z-30 mt-1.5 max-h-72 w-[min(20rem,100%)] overflow-y-auto rounded-xl border border-border bg-card p-1.5 shadow-xl"
         >
           {items.map((candidate, i) => (
             <li key={candidate.username} id={`${listId}-option-${i}`} role="option" aria-selected={i === highlighted}>
@@ -212,24 +259,17 @@ export default function MentionTextarea({
                 type="button"
                 onClick={() => insert(candidate.username)}
                 onMouseEnter={() => setActiveIndex(i)}
-                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start transition ${
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-start transition ${
                   i === highlighted ? "bg-bg" : ""
                 }`}
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-mono text-[10px] font-bold text-accent-fg">
-                  {candidate.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={candidate.avatar_url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    (candidate.display_name || candidate.username).trim().charAt(0).toUpperCase()
-                  )}
-                </span>
+                <Avatar
+                  name={candidate.display_name || candidate.username}
+                  avatar={candidate.avatar_url}
+                  size="md"
+                />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm text-fg" dir="auto">
+                  <span className="block truncate text-sm font-semibold text-fg" dir="auto">
                     {candidate.display_name || candidate.username}
                   </span>
                   <span className="block truncate font-mono text-xs text-muted">
@@ -242,15 +282,31 @@ export default function MentionTextarea({
         </ul>
       )}
 
-      {showMentionButton && (
-        <button
-          type="button"
-          onClick={startMention}
-          title="Mention someone"
-          className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-mono text-xs text-muted transition hover:border-accent hover:text-accent active:scale-95"
-        >
-          @ <span className="font-sans">Mention</span>
-        </button>
+      {(showMentionButton || toolbarExtra) && (
+        <div className={toolbarClassName}>
+          {showMentionButton &&
+            (mentionButton === "icon" ? (
+              <button
+                type="button"
+                onClick={startMention}
+                title="Mention someone"
+                aria-label="Mention someone"
+                className="flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm text-muted transition hover:bg-bg hover:text-accent active:scale-90"
+              >
+                @
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={startMention}
+                title="Mention someone"
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-mono text-xs text-muted transition hover:border-accent hover:text-accent active:scale-95"
+              >
+                @ <span className="font-sans">Mention</span>
+              </button>
+            ))}
+          {toolbarExtra}
+        </div>
       )}
     </div>
   );

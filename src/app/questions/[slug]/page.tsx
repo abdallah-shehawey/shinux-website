@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  getQuestionThread,
-  hasUserUpvoted,
-  type AnswerWithHtml,
-  type ReplyRecord,
-} from "@/lib/questions";
+import { getQuestionThread } from "@/lib/questions";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { ogCard } from "@/lib/site";
-import UpvoteButton from "@/components/UpvoteButton";
-import AnswerForm from "@/components/AnswerForm";
+import type { ThreadViewer } from "@/lib/viewer";
 import QuestionContent from "@/components/QuestionContent";
-import AnswerContent from "@/components/AnswerContent";
-import AnswerReplies from "@/components/AnswerReplies";
+import QuestionActions from "@/components/QuestionActions";
+import AnswerThread from "@/components/AnswerThread";
+import AnswerForm from "@/components/AnswerForm";
 
 function excerpt(text: string, max = 160): string {
   const plain = text.replace(/[#*`>_\-\[\]()]/g, " ").replace(/\s+/g, " ").trim();
@@ -46,53 +41,6 @@ export async function generateMetadata({
   };
 }
 
-function AnswerBlock({
-  answer,
-  replies,
-  isLoggedIn,
-  loginNext,
-  isAdmin,
-  currentUserId,
-  mentionHandles,
-}: {
-  answer: AnswerWithHtml;
-  replies: ReplyRecord[];
-  isLoggedIn: boolean;
-  loginNext: string;
-  isAdmin: boolean;
-  currentUserId: string | null;
-  mentionHandles: string[];
-}) {
-  return (
-    <div className="card">
-      <AnswerContent
-        answerId={answer.id}
-        authorId={answer.author_id}
-        body={answer.body}
-        bodyHtml={answer.html}
-        authorDisplay={answer.author_display ?? "Deleted user"}
-        authorUsername={answer.author_username}
-        authorAvatar={answer.author_avatar}
-        createdAt={answer.created_at}
-        isAdmin={isAdmin}
-        currentUserId={currentUserId}
-      />
-
-      <div className="mt-4 border-t border-border pt-3">
-        <AnswerReplies
-          answerId={answer.id}
-          replies={replies}
-          isLoggedIn={isLoggedIn}
-          loginNext={loginNext}
-          currentUserId={currentUserId}
-          isAdmin={isAdmin}
-          mentionHandles={mentionHandles}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default async function QuestionDetailPage({
   params,
 }: {
@@ -106,20 +54,25 @@ export default async function QuestionDetailPage({
   if (!thread) notFound();
   const { question, questionHtml, answers, repliesByAnswer, mentionHandles } = thread;
 
-  // Session-scoped reads: only signed-in visitors pay them, and in parallel.
-  let upvoted = false;
+  // Session-scoped read: only signed-in visitors pay it. One profile row does
+  // two jobs — gating the admin controls, and giving the composers an avatar to
+  // draw next to the box.
   let isAdmin = false;
+  let viewer: ThreadViewer | null = null;
   if (user) {
     const supabase = await createClient();
-    [upvoted, isAdmin] = await Promise.all([
-      hasUserUpvoted(question.id, user.id),
-      supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
-        .then(({ data: profile }) => profile?.role === "admin"),
-    ]);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, display_name, username, avatar_url")
+      .eq("id", user.id)
+      .single();
+    isAdmin = profile?.role === "admin";
+    viewer = {
+      id: user.id,
+      displayName: profile?.display_name || profile?.username || "You",
+      username: profile?.username ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
+    };
   }
 
   // Built from question.slug (straight from the DB) rather than the route
@@ -135,7 +88,6 @@ export default async function QuestionDetailPage({
       name: question.title,
       text: excerpt(question.body, 500),
       answerCount: question.answer_count,
-      upvoteCount: question.upvote_count,
       dateCreated: question.created_at,
       author: { "@type": "Person", name: question.author_display },
       suggestedAnswer: answers.map((a) => ({
@@ -150,14 +102,22 @@ export default async function QuestionDetailPage({
   return (
     <>
       <div className="sticky top-14 z-10 bg-bg">
-        <div className="mx-auto flex h-11 w-full items-center px-4 sm:px-8 lg:px-12">
-          <Link href="/questions" prefetch={true} scroll={false} className="text-sm text-muted hover:text-accent transition-colors">
+        <div className="mx-auto flex h-11 w-full max-w-3xl items-center px-4 sm:px-6">
+          <Link
+            href="/questions"
+            prefetch={true}
+            scroll={false}
+            className="text-sm text-muted transition-colors hover:text-accent"
+          >
             &larr; Back to questions
           </Link>
         </div>
       </div>
 
-      <div className="mx-auto w-full px-4 pt-4 pb-12 sm:px-8 lg:px-12">
+      {/* A discussion reads as a column, not a page-wide document: the thread is
+          capped so a long answer keeps a comfortable measure and the replies
+          stay visibly nested under what they answer. */}
+      <div className="mx-auto w-full max-w-3xl px-4 pt-2 pb-16 sm:px-6">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -179,43 +139,50 @@ export default async function QuestionDetailPage({
           isAdmin={isAdmin}
         />
 
-        <div className="mt-6">
-          <UpvoteButton
-            questionId={question.id}
-            initialUpvoted={upvoted}
-            initialCount={question.upvote_count}
-            isLoggedIn={Boolean(user)}
-            loginNext={currentPath}
-          />
-        </div>
+        <QuestionActions />
 
-        <div className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold">
-            {answers.length} {answers.length === 1 ? "Answer" : "Answers"}
+        {/* The answers section follows the QUESTION's language: its heading and
+            composer belong to the question, while each answer inside sets its
+            own direction from its own text. */}
+        <section
+          dir={question.locale === "ar" ? "rtl" : "ltr"}
+          className="mt-4 border-t border-border pt-5"
+        >
+          {/* dir="ltr" on the English UI strings inside this section: without
+              it, an Arabic question's section reorders "1 answer" to
+              "answer 1" and throws the full stop to the front of a sentence.
+              The attribute isolates them, so they still sit on the section's
+              own side. */}
+          <h2 className="mb-4 text-sm font-semibold text-muted">
+            <span dir="ltr">
+              {answers.length === 0
+                ? "Answers"
+                : `${answers.length} ${answers.length === 1 ? "answer" : "answers"}`}
+            </span>
           </h2>
+
           {answers.length === 0 ? (
-            <p className="text-sm text-muted">No answers yet — be the first to help out.</p>
+            <p dir="ltr" className="mb-5 text-sm text-muted">
+              No answers yet — be the first to help out.
+            </p>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="mb-6 flex flex-col gap-5">
               {answers.map((answer) => (
-                <AnswerBlock
+                <AnswerThread
                   key={answer.id}
                   answer={answer}
                   replies={repliesByAnswer[answer.id] ?? []}
-                  isLoggedIn={Boolean(user)}
+                  viewer={viewer}
                   loginNext={currentPath}
                   isAdmin={isAdmin}
-                  currentUserId={user?.id ?? null}
                   mentionHandles={mentionHandles}
                 />
               ))}
             </div>
           )}
-        </div>
 
-        <div className="mt-8">
-          <AnswerForm questionId={question.id} isLoggedIn={Boolean(user)} loginNext={currentPath} />
-        </div>
+          <AnswerForm questionId={question.id} viewer={viewer} loginNext={currentPath} />
+        </section>
       </div>
     </>
   );

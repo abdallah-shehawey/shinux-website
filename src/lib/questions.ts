@@ -356,12 +356,17 @@ async function fetchQuestionThread(slug: string): Promise<QuestionThread | null>
     ...replyBodies,
   ]);
 
+  // `breaks: true` — questions and answers are typed into a comment box, not
+  // authored as Markdown, so a newline the writer typed has to survive as one.
+  const renderBody = (body: string) =>
+    renderMarkdown(body, { mentions: mentionHandles, breaks: true });
+
   const [{ html: questionHtml }, answers] = await Promise.all([
-    renderMarkdown(question.body, { mentions: mentionHandles }),
+    renderBody(question.body),
     Promise.all(
       rawAnswers.map(async (a) => ({
         ...a,
-        html: (await renderMarkdown(a.body, { mentions: mentionHandles })).html,
+        html: (await renderBody(a.body)).html,
       })),
     ),
   ]);

@@ -6,20 +6,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
 import { detectDirection } from "@/lib/bidi";
-import AuthorInline from "@/components/AuthorInline";
+import { relativeTime, fullTimestamp } from "@/lib/time";
+import Avatar from "@/components/Avatar";
+import ThreadMenu, { type ThreadMenuItem } from "@/components/ThreadMenu";
 import MentionTextarea from "@/components/MentionTextarea";
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-// Owns the question's byline, title and body, plus the admin-only edit toggle
-// for both (slug is never editable — it's baked into the URL on publish), and
-// the owner-or-admin delete action.
+// The question itself, laid out as the post at the top of a discussion: who
+// asked it and when on one line, the question below, and its actions in a bar
+// of their own (see QuestionActions) rather than mixed into the byline.
+//
+// Admins can edit the title and body in place; the author or an admin can
+// delete. The slug is never editable — it is baked into the URL on publish.
 export default function QuestionContent({
   questionId,
   authorId,
@@ -107,39 +104,49 @@ export default function QuestionContent({
     router.push("/questions");
   }
 
+  const menuItems: ThreadMenuItem[] = [];
+  if (isAdmin) menuItems.push({ label: "Edit question", onSelect: () => setEditing(true) });
+  if (canDelete)
+    menuItems.push({ label: "Delete question", onSelect: handleDelete, tone: "danger" });
+
   return (
-    <div>
-      <div className="mt-4 mb-2 flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
-        <AuthorInline name={authorDisplay} username={authorUsername} avatar={authorAvatar} />
-        <span>&middot;</span>
-        <span>{formatDate(createdAt)}</span>
-        {locale === "ar" && <span className="tag-chip">AR</span>}
-        {isAdmin && !editing && (
-          <>
-            <span>&middot;</span>
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="hover:text-accent active:opacity-60"
+    // The WHOLE post takes the question's direction, not just its text: an
+    // Arabic question with an avatar and byline pinned to the left read as a
+    // broken layout, because every other Arabic surface starts on the right.
+    <article dir={isRtl ? "rtl" : "ltr"} lang={locale}>
+      <header className="flex items-center gap-3">
+        <Avatar name={authorDisplay} avatar={authorAvatar} username={authorUsername} size="lg" />
+        <div className="min-w-0 flex-1">
+          {authorUsername ? (
+            <Link
+              href={`/u/${authorUsername}`}
+              prefetch={false}
+              className="bidi-isolate block truncate font-semibold text-fg transition hover:text-accent hover:underline"
             >
-              Edit
-            </button>
-          </>
-        )}
-        {canDelete && !editing && (
-          <>
-            <span>&middot;</span>
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="hover:text-red-400 active:opacity-60"
-            >
-              Delete
-            </button>
-          </>
-        )}
-      </div>
-      {!editing && status === "error" && <p className="mb-2 text-sm text-red-400">{errorMessage}</p>}
+              {authorDisplay}
+            </Link>
+          ) : (
+            <span className="bidi-isolate block truncate font-semibold text-fg">
+              {authorDisplay}
+            </span>
+          )}
+          <p className="flex items-center gap-2 font-mono text-xs text-muted">
+            <time dateTime={createdAt} title={fullTimestamp(createdAt)}>
+              {relativeTime(createdAt)}
+            </time>
+            {isRtl && (
+              <span className="rounded-full border border-border px-1.5 py-px text-[0.65rem]">
+                AR
+              </span>
+            )}
+          </p>
+        </div>
+        {!editing && <ThreadMenu items={menuItems} label="Question options" />}
+      </header>
+
+      {!editing && status === "error" && (
+        <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
+      )}
 
       {editing ? (
         <form
@@ -147,13 +154,14 @@ export default function QuestionContent({
             e.preventDefault();
             handleSave();
           }}
-          className="mb-6 flex flex-col gap-3"
+          className="mt-4 flex flex-col gap-3"
         >
           <input
             type="text"
             value={titleValue}
             onChange={(e) => setTitleValue(e.target.value)}
             dir="auto"
+            aria-label="Question title"
             className="rounded-lg border border-border bg-bg px-3 py-2 text-xl font-bold text-fg outline-none focus:border-accent"
           />
           <MentionTextarea
@@ -166,8 +174,8 @@ export default function QuestionContent({
           />
           {status === "error" && <p className="text-sm text-red-400">{errorMessage}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={status === "loading"} className="btn-ghost">
-              {status === "loading" ? "Saving..." : "Save"}
+            <button type="submit" disabled={status === "loading"} className="btn-primary">
+              {status === "loading" ? "Saving…" : "Save"}
             </button>
             <button type="button" onClick={handleCancel} className="btn-ghost">
               Cancel
@@ -176,31 +184,36 @@ export default function QuestionContent({
         </form>
       ) : (
         <>
-          <h1 className="mb-4 text-3xl font-bold tracking-tight" dir={detectDirection(title)} lang={locale}>
+          <h1
+            className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl"
+            dir={detectDirection(title)}
+          >
             {title}
           </h1>
 
+          {bodyHtml && (
+            <div
+              className="prose mt-3 max-w-none"
+              style={isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined}
+              dangerouslySetInnerHTML={{ __html: bodyHtml }}
+            />
+          )}
+
           {tags.length > 0 && (
-            <div className="mb-6 flex flex-wrap gap-1.5" dir={isRtl ? "rtl" : "ltr"}>
+            <div className="mt-4 flex flex-wrap gap-1.5">
               {tags.map((tag) => (
-                <Link key={tag} href={`/questions?tag=${encodeURIComponent(tag)}`} className="tag-chip">
+                <Link
+                  key={tag}
+                  href={`/questions?tag=${encodeURIComponent(tag)}`}
+                  className="tag-chip"
+                >
                   {tag}
                 </Link>
               ))}
             </div>
           )}
-
-          {bodyHtml && (
-            <div
-              className="prose max-w-none"
-              dir={isRtl ? "rtl" : "ltr"}
-              lang={locale}
-              style={isRtl ? { fontFamily: "var(--font-ibm-plex-arabic)" } : undefined}
-              dangerouslySetInnerHTML={{ __html: bodyHtml }}
-            />
-          )}
         </>
       )}
-    </div>
+    </article>
   );
 }

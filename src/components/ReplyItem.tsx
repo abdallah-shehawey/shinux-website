@@ -1,20 +1,19 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
-import AuthorInline from "@/components/AuthorInline";
+import { detectDirection } from "@/lib/bidi";
+import { relativeTime, fullTimestamp } from "@/lib/time";
+import Avatar from "@/components/Avatar";
 import MentionText from "@/components/MentionText";
+import ThreadMenu, { type ThreadMenuItem } from "@/components/ThreadMenu";
 import type { ReplyRecord } from "@/lib/questions";
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
+// A reply, one level in from the answer it belongs to. The connector elbow on
+// the left is drawn by .reply-row in globals.css.
 export default function ReplyItem({
   reply,
   currentUserId,
@@ -32,58 +31,88 @@ export default function ReplyItem({
   onReply?: (handle: string | null) => void;
 }) {
   const router = useRouter();
+  const [error, setError] = useState("");
   const canDelete = isAdmin || currentUserId === reply.author_id;
+  const authorName = reply.author_display ?? "Deleted user";
 
   async function handleDelete() {
     if (!confirm("Delete this reply? This can't be undone.")) return;
     const supabase = createClient();
-    const { error } = await supabase.from("answer_replies").delete().eq("id", reply.id);
-    if (error) {
-      alert(error.message);
+    const { error: deleteError } = await supabase
+      .from("answer_replies")
+      .delete()
+      .eq("id", reply.id);
+    if (deleteError) {
+      setError(deleteError.message);
       return;
     }
     await revalidateQuestionCaches();
     router.refresh();
   }
 
+  const menuItems: ThreadMenuItem[] = canDelete
+    ? [{ label: "Delete reply", onSelect: handleDelete, tone: "danger" }]
+    : [];
+
   return (
-    <div className="ps-3" style={{ borderInlineStart: "2px solid var(--border)" }}>
-      <p className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted">
-        <AuthorInline
-          name={reply.author_display ?? "Deleted user"}
-          username={reply.author_username}
+    // A reply follows its own text too, so a reply in the other language flips
+    // its avatar and connector rather than sitting backwards under the answer.
+    <div dir={detectDirection(reply.body)} className="reply-row">
+      <div className="flex gap-2">
+        <Avatar
+          name={authorName}
           avatar={reply.author_avatar}
+          username={reply.author_username}
+          size="sm"
         />
-        <span>&middot;</span>
-        <span>{formatDate(reply.created_at)}</span>
-        {onReply && (
-          <>
-            <span>&middot;</span>
-            <button
-              type="button"
-              onClick={() => onReply(reply.author_username)}
-              className="hover:text-accent active:opacity-60"
+        <div className="min-w-0 flex-1">
+          <div className="bubble-row">
+            <div className="bubble bubble-nested">
+              <p className="bidi-isolate text-sm font-semibold">
+                {reply.author_username ? (
+                  <Link
+                    href={`/u/${reply.author_username}`}
+                    prefetch={false}
+                    className="text-fg transition hover:text-accent hover:underline"
+                  >
+                    {authorName}
+                  </Link>
+                ) : (
+                  <span className="text-fg">{authorName}</span>
+                )}
+              </p>
+              <p className="mt-0.5 text-[0.95rem] whitespace-pre-wrap text-fg" dir="auto">
+                <MentionText text={reply.body} knownHandles={mentionHandles} />
+              </p>
+            </div>
+
+            <div className="bubble-menu">
+              <ThreadMenu items={menuItems} label="Reply options" />
+            </div>
+          </div>
+
+          {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+
+          <div className="thread-action-row">
+            <time
+              dateTime={reply.created_at}
+              title={fullTimestamp(reply.created_at)}
+              className="px-1.5 font-mono text-xs text-muted"
             >
-              Reply
-            </button>
-          </>
-        )}
-        {canDelete && (
-          <>
-            <span>&middot;</span>
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="hover:text-red-400 active:opacity-60"
-            >
-              Delete
-            </button>
-          </>
-        )}
-      </p>
-      <p className="mt-0.5 text-sm text-fg whitespace-pre-wrap" dir="auto">
-        <MentionText text={reply.body} knownHandles={mentionHandles} />
-      </p>
+              {relativeTime(reply.created_at)}
+            </time>
+            {onReply && (
+              <button
+                type="button"
+                onClick={() => onReply(reply.author_username)}
+                className="thread-action"
+              >
+                Reply
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

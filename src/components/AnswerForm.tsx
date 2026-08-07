@@ -5,56 +5,47 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateQuestionCaches } from "@/lib/revalidate-questions";
+import Avatar from "@/components/Avatar";
 import MentionTextarea from "@/components/MentionTextarea";
+import { ANSWER_COMPOSER_ID } from "@/components/QuestionActions";
+import type { ThreadViewer } from "@/lib/viewer";
 
+// The box you answer a question in: your avatar, one growing field, a way to
+// mention someone, and Post. Deliberately no Markdown editor and no preview —
+// you write an answer the way you write a comment, and what you typed is what
+// appears. (Bodies still go through the renderer so that the answers written
+// before this change keep their formatting; see renderBody in questions.ts.)
 export default function AnswerForm({
   questionId,
-  isLoggedIn,
+  viewer,
   loginNext,
 }: {
   questionId: string;
-  isLoggedIn: boolean;
+  /** null when signed out — the box then only offers a way in. */
+  viewer: ThreadViewer | null;
   loginNext: string;
 }) {
   const router = useRouter();
   const [body, setBody] = useState("");
-  const [mode, setMode] = useState<"write" | "preview">("write");
-  const [previewHtml, setPreviewHtml] = useState("");
-  const [previewLoading, setPreviewLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  if (!isLoggedIn) {
+  if (!viewer) {
     return (
-      <div className="card text-center">
-        <p className="text-sm text-muted">
-          <Link href={`/login?next=${encodeURIComponent(loginNext)}`} className="text-accent hover:underline">
+      <div id={ANSWER_COMPOSER_ID} className="card text-center">
+        {/* dir="ltr": this English sentence can sit inside an Arabic question's
+            section, where it would otherwise put its full stop first. */}
+        <p dir="ltr" className="text-sm text-muted">
+          <Link
+            href={`/login?next=${encodeURIComponent(loginNext)}`}
+            className="font-semibold text-accent hover:underline"
+          >
             Log in
           </Link>{" "}
           to post an answer.
         </p>
       </div>
     );
-  }
-
-  async function showPreview() {
-    setMode("preview");
-    if (!body.trim()) {
-      setPreviewHtml("<p><em>Nothing to preview yet.</em></p>");
-      return;
-    }
-    setPreviewLoading(true);
-    try {
-      const res = await fetch("/api/render-markdown", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body }),
-      });
-      const data = await res.json();
-      setPreviewHtml(res.ok ? data.html : "<p><em>Preview failed.</em></p>");
-    } finally {
-      setPreviewLoading(false);
-    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -83,7 +74,6 @@ export default function AnswerForm({
     }
 
     setBody("");
-    setMode("write");
     setStatus("idle");
     // Bust the cached thread BEFORE refreshing, or the refresh re-serves it.
     await revalidateQuestionCaches();
@@ -91,54 +81,38 @@ export default function AnswerForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-fg">Your answer</p>
-        <div className="flex overflow-hidden rounded-md border border-border">
+    <form id={ANSWER_COMPOSER_ID} onSubmit={onSubmit} className="flex gap-2.5">
+      <Avatar name={viewer.displayName} avatar={viewer.avatarUrl} size="md" />
+
+      <div className="min-w-0 flex-1">
+        <div className="composer-field">
+          <MentionTextarea
+            required
+            autoGrow
+            dir="auto"
+            rows={2}
+            value={body}
+            onChange={setBody}
+            aria-label="Write an answer"
+            placeholder="Write an answer… type @ to mention someone"
+            textareaClassName="composer-input text-base sm:text-sm"
+            mentionButton="icon"
+            toolbarClassName="flex items-center pb-0.5"
+          />
+        </div>
+
+        {status === "error" && <p className="mt-2 text-sm text-red-400">{errorMessage}</p>}
+
+        <div className="mt-2 flex justify-end">
           <button
-            type="button"
-            onClick={() => setMode("write")}
-            className="lang-toggle-btn"
-            data-active={mode === "write"}
+            type="submit"
+            disabled={status === "loading" || !body.trim()}
+            className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Write
-          </button>
-          <button
-            type="button"
-            onClick={showPreview}
-            className="lang-toggle-btn"
-            data-active={mode === "preview"}
-          >
-            Preview
+            {status === "loading" ? "Posting…" : "Post answer"}
           </button>
         </div>
       </div>
-
-      {mode === "write" ? (
-        <MentionTextarea
-          required
-          dir="auto"
-          rows={6}
-          value={body}
-          onChange={setBody}
-          placeholder="Share what worked for you. Markdown is supported, and @ mentions someone."
-          textareaClassName="w-full rounded-lg border border-border bg-bg px-3 py-2 text-base sm:text-sm text-fg outline-none focus:border-accent"
-        />
-      ) : (
-        <div className="prose card min-h-32 max-w-none">
-          {previewLoading ? (
-            <p className="text-sm text-muted">Rendering&hellip;</p>
-          ) : (
-            <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
-          )}
-        </div>
-      )}
-
-      {status === "error" && <p className="text-sm text-red-400">{errorMessage}</p>}
-
-      <button type="submit" disabled={status === "loading"} className="btn-primary self-start">
-        {status === "loading" ? "Posting…" : "Post answer"}
-      </button>
     </form>
   );
 }

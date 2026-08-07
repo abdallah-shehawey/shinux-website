@@ -51,6 +51,11 @@ export interface RenderOptions {
   // deleted mention never renders as a link into nowhere. Callers resolve the
   // list against profiles_public — see resolveMentionHandles in questions.ts.
   mentions?: string[];
+  // Treat a single newline as a line break, the way a chat box does. Markdown
+  // normally folds one into a space, which is right for an article written in
+  // Markdown and wrong for a question typed into a comment box — the writer
+  // pressed Enter and expects a new line. On for Q&A, off for articles.
+  breaks?: boolean;
 }
 
 // Sanitize schema based on the GitHub-safe default, extended just enough to keep
@@ -388,6 +393,33 @@ function rehypeCollectToc(toc: TocItem[]) {
   };
 }
 
+// Every single newline becomes a hard line break, for bodies typed into a
+// comment box rather than authored as Markdown. Markdown's own rule — a lone
+// newline is just whitespace, two spaces at end-of-line make a break — is a
+// rule nobody typing a question knows, so their line breaks silently vanished.
+//
+// Splits the text of each `text` node on "\n" and re-inserts `break` nodes
+// between the pieces. Runs on the mdast, so it cannot touch code blocks or
+// inline code: their content is not made of `text` nodes.
+function remarkSoftBreaks() {
+  return (tree: MdastRoot) => {
+    visit(tree, "text", (node: MdastText, index, parent: MdastParent | undefined) => {
+      if (!parent || index === undefined || !node.value.includes("\n")) return;
+
+      const pieces = node.value.split("\n");
+      const replacement: PhrasingContent[] = [];
+      pieces.forEach((piece, i) => {
+        if (i > 0) replacement.push({ type: "break" });
+        if (piece) replacement.push({ type: "text", value: piece });
+      });
+
+      parent.children.splice(index, 1, ...replacement);
+      // Continue past everything just inserted.
+      return index + replacement.length;
+    });
+  };
+}
+
 // Rendered-output cache keyed by content hash: a given Markdown source is
 // compiled at most once per server process (Shiki tokenization dominates the
 // cost, and the question page renders the question + EVERY answer on each
@@ -400,19 +432,20 @@ export function renderMarkdown(
   source: string,
   options: RenderOptions = {},
 ): Promise<RenderedMarkdown> {
-  const { sanitize = true, mentions = [] } = options;
+  const { sanitize = true, mentions = [], breaks = false } = options;
   // The mention set is part of the OUTPUT, so it has to be part of the key —
   // the same body renders differently once a mentioned handle starts (or stops)
   // resolving to a real account.
   const mentionKey = [...new Set(mentions)].sort().join(",");
-  const key = `${sanitize ? "s" : "r"}:${createHash("sha1")
+  // `breaks` changes the output too, so it is part of the key as well.
+  const key = `${sanitize ? "s" : "r"}${breaks ? "b" : ""}:${createHash("sha1")
     .update(`${mentionKey} ${source}`)
     .digest("base64")}`;
 
   const hit = renderCache.get(key);
   if (hit) return hit;
 
-  const pending = renderMarkdownUncached(source, sanitize, mentions).catch((err) => {
+  const pending = renderMarkdownUncached(source, sanitize, mentions, breaks).catch((err) => {
     renderCache.delete(key); // never cache a failed compile
     throw err;
   });
@@ -428,6 +461,7 @@ async function renderMarkdownUncached(
   source: string,
   sanitize: boolean,
   mentions: string[],
+  breaks: boolean,
 ): Promise<RenderedMarkdown> {
   const toc: TocItem[] = [];
 
@@ -436,6 +470,9 @@ async function renderMarkdownUncached(
     .use(remarkGfm)
     .use(remarkCodeTabs)
     .use(remarkMentions, new Set(mentions.map((m) => m.toLowerCase())))
+    // Last of the mdast passes, so it only ever splits text the earlier
+    // plugins have finished with.
+    .use(breaks ? [remarkSoftBreaks] : [])
     // allowDangerousHtml stays false → raw HTML embedded in Markdown is dropped.
     .use(remarkRehype)
     // Runs before sanitize so the schema below can allow-list its classes.
