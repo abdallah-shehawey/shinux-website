@@ -13,7 +13,16 @@ import { updateTag } from "next/cache";
 //              username list). These went from per-request rendering to ISR in
 //              a2f6428, so without this an edit sat behind the 5-minute cache:
 //              you renamed yourself and your own public page kept the old name.
+//   questions — every questions cache bakes the byline in too: author_display,
+//              author_avatar and author_username ride along in SUMMARY_COLUMNS,
+//              ANSWER_COLUMNS and the reply columns alike. A username change
+//              always came through here (username-rename.ts), but changing only
+//              a display name or an avatar did not, so a new photo stayed off
+//              your own answers until the timer in questions.ts happened to
+//              lapse. That timer is a backstop, not the invalidation — so the
+//              tag has to be busted here for it to stay one.
 export async function revalidateAuthorCaches(): Promise<void> {
   updateTag("authors");
   updateTag("profiles");
+  updateTag("questions");
 }

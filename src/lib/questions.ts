@@ -89,7 +89,19 @@ const REPLY_COLUMNS =
 // the cookie-free anon client, stored in the Next data cache. Mutations bust
 // the tag via revalidateQuestionCaches(); `revalidate` is only a backstop for
 // writes that bypass the app (e.g. edits straight in the Supabase dashboard).
-const QUESTIONS_CACHE_REVALIDATE = 300;
+//
+// An hour, not the five minutes this used to be, and the difference is real
+// work: every lapse re-queries Supabase and re-runs the whole Markdown+Shiki
+// pipeline over a thread — question, every answer, every reply — to rebuild
+// bytes that are usually identical. Twelve times an hour, per thread, for
+// content that changes a few times a week.
+//
+// Raising it is only honest because the tag is genuinely busted by every writer
+// that can change what these caches hold. Answers, replies, edits, deletes,
+// approvals, rejections and reordering all call revalidateQuestionCaches(), and
+// profile edits now bust "questions" too (see revalidate-authors.ts) — that was
+// the one gap, and the old five-minute timer was quietly covering it.
+const QUESTIONS_CACHE_REVALIDATE = 3600;
 
 /** Published/answered questions — unanswered ones first, newest first within
  *  each group — with optional search + tag filter. */
