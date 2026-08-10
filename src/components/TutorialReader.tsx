@@ -84,7 +84,7 @@ export default function TutorialReader({
 
         <div
           id={CONTENT_ID}
-          className="prose"
+          className="prose prose-float"
           dir={isRtl ? "rtl" : "ltr"}
           lang={isRtl ? "ar" : "en"}
           style={langStyle}

@@ -119,7 +119,7 @@ export default function ArticleReader({
           <div
             id={CONTENT_ID}
             key={locale}
-            className="prose"
+            className="prose prose-float"
             dir={isRtl ? "rtl" : "ltr"}
             lang={locale}
             style={langStyle}

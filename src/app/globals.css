@@ -646,6 +646,67 @@ input:not([type]) {
   justify-content: center;
   margin-block: 1.75rem;
 }
+
+/* Standalone images in the ARTICLE/TUTORIAL readers sit beside the prose
+   instead of under it: the image takes the inline-END side, so an Arabic
+   article keeps its text on the right with the image on the left, and an
+   English one mirrors that.
+
+   The side is driven by the READER's own dir, never by the image paragraph's:
+   markdown.ts stamps every block with detectDirection(), and a paragraph
+   holding nothing but an <img> has no text at all — so it always comes out
+   dir="ltr" and would flip Arabic articles to the wrong side.
+
+   That same stamp is why the margins here are PHYSICAL. `margin-inline`
+   resolves against the element's own direction, so on the dir="ltr" image
+   paragraph inside an Arabic article it put the gap on the left — against the
+   outer edge — and left the text touching the picture. Spelling both sides out
+   per direction is the only reading that survives the mismatch.
+
+   Only from the tablet breakpoint up. Below it the column is too narrow to
+   hold text next to a picture, so the base centered-block layout stands. */
+@media (min-width: 768px) {
+  .prose-float p:has(> img:only-child) {
+    display: block;
+    float: right;
+    width: min(45%, 420px);
+    /* gap on the left, between the picture and the text it sits beside */
+    margin: 0.35rem 0 1.25rem 1.75rem;
+  }
+  .prose-float[dir="rtl"] p:has(> img:only-child) {
+    float: left;
+    margin: 0.35rem 1.75rem 1.25rem 0;
+  }
+  .prose-float p:has(> img:only-child) img {
+    max-width: 100%;
+    max-height: none;
+    margin-block: 0;
+  }
+
+  /* A float must not outlive the section it was written in — without this it
+     slides past the next heading and sits next to a block it has nothing to
+     do with. Code blocks and tables clear too: both scroll horizontally, and
+     a float eating half their width makes that scroll start immediately. */
+  .prose-float h1,
+  .prose-float h2,
+  .prose-float h3,
+  .prose-float hr,
+  .prose-float pre,
+  .prose-float figure,
+  .prose-float table,
+  .prose-float .code-tabs,
+  .prose-float blockquote {
+    clear: both;
+  }
+
+  /* …and not past the end of the article either. */
+  .prose-float::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
+
 @media (max-width: 640px) {
   .prose table {
     display: block;
