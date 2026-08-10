@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { createAnonClient } from "@/lib/supabase/anon";
+import { QUESTIONS_CACHE_REVALIDATE } from "@/lib/cache-windows";
 
 /** question_id -> explicit position (lower = earlier), from public.question_order.
  *  Cached under the shared "questions" tag — reordering busts it like any other
@@ -18,5 +19,5 @@ export const getQuestionOrder = unstable_cache(
     return map;
   },
   ["questions-order"],
-  { revalidate: 300, tags: ["questions"] },
+  { revalidate: QUESTIONS_CACHE_REVALIDATE, tags: ["questions"] },
 );

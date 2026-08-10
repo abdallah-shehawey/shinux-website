@@ -2,6 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { getContentHandlesFor } from "@/lib/content-handles";
+import { PROFILES_CACHE_REVALIDATE } from "@/lib/cache-windows";
 
 export interface PublicProfile {
   id: string;
@@ -52,7 +53,7 @@ export const getPublicProfile = unstable_cache(
     };
   },
   ["public-profile"],
-  { revalidate: 300, tags: ["profiles"] },
+  { revalidate: PROFILES_CACHE_REVALIDATE, tags: ["profiles"] },
 );
 
 /**
@@ -69,5 +70,5 @@ export const getCachedPublicProfileUsernames = unstable_cache(
     return (data ?? []).map((row) => row.username as string);
   },
   ["public-profile-usernames"],
-  { revalidate: 300, tags: ["profiles"] },
+  { revalidate: PROFILES_CACHE_REVALIDATE, tags: ["profiles"] },
 );

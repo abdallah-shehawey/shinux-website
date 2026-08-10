@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAnonClient } from "@/lib/supabase/anon";
 import { renderMarkdown } from "@/lib/markdown";
 import { resolveMentionHandles } from "@/lib/mention-lookup";
+import { QUESTIONS_CACHE_REVALIDATE } from "@/lib/cache-windows";
 
 // ------------------------------------------------------------------------------
 // Q&A data layer (Phase 4/5). Mirrors the shape of src/lib/articles.ts for
@@ -87,7 +88,7 @@ const REPLY_COLUMNS =
 
 // Everything under the "questions" cache tag is public-view data fetched with
 // the cookie-free anon client, stored in the Next data cache. Mutations bust
-// the tag via revalidateQuestionCaches(); `revalidate` is only a backstop for
+// the tag via revalidateQuestionCaches(); the window is only a backstop for
 // writes that bypass the app (e.g. edits straight in the Supabase dashboard).
 //
 // An hour, not the five minutes this used to be, and the difference is real
@@ -101,7 +102,6 @@ const REPLY_COLUMNS =
 // approvals, rejections and reordering all call revalidateQuestionCaches(), and
 // profile edits now bust "questions" too (see revalidate-authors.ts) — that was
 // the one gap, and the old five-minute timer was quietly covering it.
-const QUESTIONS_CACHE_REVALIDATE = 3600;
 
 /** Published/answered questions — unanswered ones first, newest first within
  *  each group — with optional search + tag filter. */
