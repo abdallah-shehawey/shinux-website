@@ -8,6 +8,7 @@ import type { Schema } from "hast-util-sanitize";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
+import type { BundledLanguage } from "shiki";
 import rehypeStringify from "rehype-stringify";
 import { visit } from "unist-util-visit";
 import { toString as hastToString } from "hast-util-to-string";
@@ -476,6 +477,36 @@ function rehypeSectionSplit() {
   };
 }
 
+// Grammars loaded into the highlighter up front.
+//
+// Left unset, @shikijs/rehype defaults to `Object.keys(bundledLanguages)` —
+// all 332 of Shiki's grammars, ~10 MB of @shikijs/langs parsed into every
+// server instance before it can highlight its first line. These ten are every
+// language the site's own Markdown actually fences; `text` is deliberately
+// absent because Shiki treats it as a special language that needs no grammar
+// at all, so listing it would only fail to resolve.
+//
+// `lazy` covers everything else. A question body is written by whoever asked
+// it and may fence anything, so an unlisted language is fetched on first use
+// and then stays loaded for the life of the instance — the cost is paid by the
+// one thread that needs Rust, not by every cold start. `fallbackLanguage`
+// catches what is left: a typo'd or nonexistent fence renders as plain text
+// instead of throwing.
+// Typed as BundledLanguage rather than string[] so a name that is not a real
+// Shiki grammar fails the build instead of silently falling back at runtime.
+const EAGER_LANGS: BundledLanguage[] = [
+  "bash",
+  "ini",
+  "yaml",
+  "dockerfile",
+  "c",
+  "json",
+  "python",
+  "html",
+  "zsh",
+  "mermaid",
+];
+
 // Collect h2/h3 headings (after slugs are assigned) into a table of contents.
 function rehypeCollectToc(toc: TocItem[]) {
   return (tree: Root) => {
@@ -606,6 +637,9 @@ async function renderMarkdownUncached(
       themes: { light: "catppuccin-latte", dark: "catppuccin-mocha" },
       defaultColor: false,
       addLanguageClass: true,
+      langs: EAGER_LANGS,
+      lazy: true,
+      fallbackLanguage: "text",
     })
     .use(rehypeUnwrapShikiRoots)
     .use(rehypeCodeChrome)
