@@ -103,7 +103,7 @@ export default async function ArticlePage({
     await Promise.all(
       article.locales.map(async (loc) => {
         const t = article.translations[loc];
-        const { html, toc } = await renderMarkdown(t.body);
+        const { html, toc } = await renderMarkdown(t.body, { sideBySideImages: true });
         return [loc, { title: t.title, html, toc, readingMinutes: t.readingMinutes }] as const;
       }),
     ),

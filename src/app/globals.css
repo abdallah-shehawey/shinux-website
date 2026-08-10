@@ -666,14 +666,16 @@ input:not([type]) {
    Only from the tablet breakpoint up. Below it the column is too narrow to
    hold text next to a picture, so the base centered-block layout stands. */
 @media (min-width: 768px) {
-  .prose-float p:has(> img:only-child) {
+  /* Direct children only: a picture that rehypeSectionSplit() lifted into a
+     column is laid out by the grid below, not by this float. */
+  .prose-float > p:has(> img:only-child) {
     display: block;
     float: right;
     width: min(45%, 420px);
     /* gap on the left, between the picture and the text it sits beside */
     margin: 0.35rem 0 1.25rem 1.75rem;
   }
-  .prose-float[dir="rtl"] p:has(> img:only-child) {
+  .prose-float[dir="rtl"] > p:has(> img:only-child) {
     float: left;
     margin: 0.35rem 1.75rem 1.25rem 0;
   }
@@ -704,6 +706,52 @@ input:not([type]) {
     content: "";
     display: block;
     clear: both;
+  }
+
+  /* A section carved into two columns by rehypeSectionSplit(): its prose on one
+     side, its picture centred against it on the other. This is what a float
+     could never do — a float starts where the image was written in the
+     Markdown, so it hung low in the section and left a hole under the text.
+
+     The column ORDER needs no direction rule of its own. Grid tracks follow the
+     container's inline direction, so the text track (declared first) lands on
+     the right in an Arabic article and on the left in an English one, with the
+     picture opposite it either way — the one place in this file where the
+     bidi behaviour comes for free. */
+  .prose-float .prose-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1.75rem;
+    margin-block: 1.5rem;
+  }
+  .prose-float .prose-split-media {
+    max-width: 420px;
+  }
+  .prose-float .prose-split-media p,
+  .prose-float .prose-split-media img {
+    margin: 0;
+    max-height: none;
+  }
+  /* The columns are centred against each other, so a stray outer margin on the
+     first or last block would tilt the alignment. */
+  .prose-float .prose-split-text > :first-child {
+    margin-block-start: 0;
+  }
+  .prose-float .prose-split-text > :last-child {
+    margin-block-end: 0;
+  }
+}
+
+/* Below the breakpoint the wrappers dissolve and the section flows as one
+   column again, spacing untouched — `display: contents` leaves the blocks
+   themselves as direct children of .prose. The picture lands at the end of its
+   section rather than mid-paragraph, which is the one thing the split changes
+   on a phone. */
+@media (max-width: 767px) {
+  .prose-split,
+  .prose-split-text {
+    display: contents;
   }
 }
 

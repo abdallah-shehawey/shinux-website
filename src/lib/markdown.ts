@@ -11,7 +11,7 @@ import rehypeShiki from "@shikijs/rehype";
 import rehypeStringify from "rehype-stringify";
 import { visit } from "unist-util-visit";
 import { toString as hastToString } from "hast-util-to-string";
-import type { Root, Element } from "hast";
+import type { Root, Element, RootContent } from "hast";
 import type {
   Root as MdastRoot,
   Parent as MdastParent,
@@ -56,6 +56,11 @@ export interface RenderOptions {
   // Markdown and wrong for a question typed into a comment box — the writer
   // pressed Enter and expects a new line. On for Q&A, off for articles.
   breaks?: boolean;
+  // Lift a section's lone picture out of the text flow and set it in a column
+  // beside the prose — see rehypeSectionSplit(). On for articles and lessons,
+  // which are written in `---`-delimited sections; off for Q&A, where a body
+  // is a few paragraphs with no section structure to split on.
+  sideBySideImages?: boolean;
 }
 
 // Sanitize schema based on the GitHub-safe default, extended just enough to keep
@@ -375,6 +380,102 @@ function remarkMentions(known: Set<string>) {
   };
 }
 
+// A section's picture belongs BESIDE its prose, not buried in the middle of it.
+//
+// Markdown can only place an image between two paragraphs, and a CSS float
+// inherits that position — it starts wherever the image was written, so it
+// hangs low in the section and leaves a hole under the shorter column. Handing
+// the section to a two-column grid is what lets the picture be centred against
+// the text it belongs to.
+//
+// The sections are the ones the articles are already written in: a `---` rule,
+// a heading, then the body (see content/articles/*.md). The heading stays above
+// the columns — it titles the whole section, not one column of it.
+//
+// Skipped when a section carries a code block or a table. Both scroll
+// horizontally, and squeezing one into ~55% of the width makes it open already
+// scrolled — on a site whose code blocks are mostly shell commands, that costs
+// more than the layout gains. Those sections keep the plain float instead.
+const SPLIT_BLOCKING = new Set(["pre", "table", "figure"]);
+const HEADING = /^h[1-6]$/;
+
+function isStandaloneImage(node: RootContent): node is Element {
+  if (node.type !== "element" || node.tagName !== "p") return false;
+  const meaningful = node.children.filter(
+    (child) => !(child.type === "text" && child.value.trim() === ""),
+  );
+  return (
+    meaningful.length === 1 &&
+    meaningful[0].type === "element" &&
+    meaningful[0].tagName === "img"
+  );
+}
+
+function splitSection(run: RootContent[]): RootContent[] {
+  const elements = run.filter((n): n is Element => n.type === "element");
+  // Two pictures in one section have no single side to sit on, and zero means
+  // there is nothing to split.
+  if (elements.filter(isStandaloneImage).length !== 1) return run;
+  if (elements.some((el) => SPLIT_BLOCKING.has(el.tagName))) return run;
+
+  const image = run.find(isStandaloneImage)!;
+
+  // Peel off the leading heading (and the whitespace around it) so it spans
+  // the full width above the two columns.
+  let start = 0;
+  while (start < run.length) {
+    const node = run[start];
+    const isBlank = node.type === "text" && node.value.trim() === "";
+    const isHeading = node.type === "element" && HEADING.test(node.tagName);
+    if (!isBlank && !isHeading) break;
+    start++;
+  }
+
+  const lead = run.slice(0, start);
+  const body = run.slice(start).filter((node) => node !== image);
+  // A picture with no prose beside it is just a picture — leave it in flow.
+  if (!body.some((node) => node.type === "element")) return run;
+
+  const column = (className: string, children: RootContent[]): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: { className: [className] },
+    children: children as Element["children"],
+  });
+
+  return [
+    ...lead,
+    column("prose-split", [
+      column("prose-split-text", body),
+      column("prose-split-media", [image]),
+    ]),
+  ];
+}
+
+function rehypeSectionSplit() {
+  return (tree: Root) => {
+    const out: RootContent[] = [];
+    let run: RootContent[] = [];
+
+    const flush = () => {
+      if (run.length) out.push(...splitSection(run));
+      run = [];
+    };
+
+    for (const node of tree.children) {
+      if (node.type === "element" && node.tagName === "hr") {
+        flush();
+        out.push(node);
+      } else {
+        run.push(node);
+      }
+    }
+    flush();
+
+    tree.children = out;
+  };
+}
+
 // Collect h2/h3 headings (after slugs are assigned) into a table of contents.
 function rehypeCollectToc(toc: TocItem[]) {
   return (tree: Root) => {
@@ -432,20 +533,27 @@ export function renderMarkdown(
   source: string,
   options: RenderOptions = {},
 ): Promise<RenderedMarkdown> {
-  const { sanitize = true, mentions = [], breaks = false } = options;
+  const { sanitize = true, mentions = [], breaks = false, sideBySideImages = false } = options;
   // The mention set is part of the OUTPUT, so it has to be part of the key —
   // the same body renders differently once a mentioned handle starts (or stops)
   // resolving to a real account.
   const mentionKey = [...new Set(mentions)].sort().join(",");
-  // `breaks` changes the output too, so it is part of the key as well.
-  const key = `${sanitize ? "s" : "r"}${breaks ? "b" : ""}:${createHash("sha1")
+  // `breaks` and `sideBySideImages` change the output too, so they join the key
+  // as well.
+  const key = `${sanitize ? "s" : "r"}${breaks ? "b" : ""}${sideBySideImages ? "x" : ""}:${createHash("sha1")
     .update(`${mentionKey} ${source}`)
     .digest("base64")}`;
 
   const hit = renderCache.get(key);
   if (hit) return hit;
 
-  const pending = renderMarkdownUncached(source, sanitize, mentions, breaks).catch((err) => {
+  const pending = renderMarkdownUncached(
+    source,
+    sanitize,
+    mentions,
+    breaks,
+    sideBySideImages,
+  ).catch((err) => {
     renderCache.delete(key); // never cache a failed compile
     throw err;
   });
@@ -462,6 +570,7 @@ async function renderMarkdownUncached(
   sanitize: boolean,
   mentions: string[],
   breaks: boolean,
+  sideBySideImages: boolean,
 ): Promise<RenderedMarkdown> {
   const toc: TocItem[] = [];
 
@@ -500,6 +609,9 @@ async function renderMarkdownUncached(
     })
     .use(rehypeUnwrapShikiRoots)
     .use(rehypeCodeChrome)
+    // Dead last: it groups the FINAL block list, so it has to see the <figure>
+    // wrappers rehypeCodeChrome puts around code blocks to skip those sections.
+    .use(sideBySideImages ? [rehypeSectionSplit] : [])
     .use(rehypeStringify);
 
   const file = await processor.process(source);

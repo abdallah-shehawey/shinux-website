@@ -79,7 +79,7 @@ export default async function LessonPage({
   if (!found) notFound();
 
   const trackData = getTrack(track);
-  const { html, toc } = await renderMarkdown(found.body);
+  const { html, toc } = await renderMarkdown(found.body, { sideBySideImages: true });
   const { prev, next } = getAdjacentLessons(track, lesson);
   // A lesson with an `author` keeps that byline even if they have no profile
   // row yet; only an author-less lesson falls back to the site owner.
