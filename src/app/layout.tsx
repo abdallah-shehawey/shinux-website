@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { ThemeScript } from "@/components/ThemeScript";
 import ServiceWorkerCleanup from "@/components/ServiceWorkerCleanup";
 import ScrollMemory from "@/components/ScrollMemory";
+import PrefetchOnIntent from "@/components/PrefetchOnIntent";
 import NavigationPendingProvider from "@/components/NavigationPending";
 import NavigationSkeleton from "@/components/NavigationSkeleton";
 import "./globals.css";
@@ -123,6 +124,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
         </NavigationPendingProvider>
         <ScrollMemory />
+        {/* Warms a route the moment the reader points at it. The card grids
+            have viewport prefetch switched off, so without this every card
+            click paid a full round trip staring at a skeleton. */}
+        <PrefetchOnIntent />
         <ServiceWorkerCleanup />
         <Analytics />
       </body>
