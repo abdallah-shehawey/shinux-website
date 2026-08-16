@@ -112,9 +112,10 @@ export default async function HomePage() {
               </h2>
               <p className="text-sm leading-relaxed text-muted">
                 Embedded software engineer and an Electronics &amp;
-                Communication Engineering graduate of Al-Azhar University
-                (2026). I write firmware in C/C++, build device drivers from the
-                datasheet up, and care about deterministic, real-time code —
+                Communication Engineering graduate of Al-Azhar University (May
+                2026 — Cumulative Grade: Very Good). I write firmware in C/C++,
+                build device drivers from the datasheet up, and care about
+                deterministic, real-time code —
                 automotive-grade, RTOS-based systems (CAN, LIN, UART, SPI, I2C)
                 and the AUTOSAR stack. Lately I&apos;m going deeper into
                 Embedded Linux — kernel fundamentals, Yocto, and Buildroot — and

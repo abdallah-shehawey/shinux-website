@@ -24,15 +24,16 @@ export default async function AboutPage() {
       <div className="flex flex-col gap-4 text-lg leading-relaxed text-muted">
         <p>
           Hi, I&apos;m {author.name} — an Electronics &amp; Communication Engineering
-          graduate from Al-Azhar University (Cairo, 2026) who fell in love with what
-          happens below the operating system. I write firmware in C/C++, build device
-          drivers from the datasheet up, and care about deterministic, real-time code.
+          graduate from Al-Azhar University (Cairo, May 2026 — Cumulative Grade: Very
+          Good) who fell in love with what happens below the operating system. I write
+          firmware in C/C++, build device drivers from the datasheet up, and care about
+          deterministic, real-time code.
         </p>
         <p>
           My focus is automotive-grade embedded software: RTOS-based architectures,
           communication protocols (CAN, LIN, UART, SPI, I2C), and the AUTOSAR layered
-          architecture. My graduation project was a V2X collision-avoidance vehicle, and
-          these days I&apos;m digging deeper into Embedded Linux — kernel fundamentals,
+          architecture. My graduation project was a V2X collision-avoidance vehicle,
+          graded Excellent, and these days I&apos;m digging deeper into Embedded Linux — kernel fundamentals,
           Yocto, and Buildroot. This blog is where I write that part down.
         </p>
         <p>
