@@ -41,34 +41,23 @@ import ProfileAnsweredLoading from "@/app/u/[username]/questions/answered/loadin
  * They take no props and hold no state, so a single frozen element per route
  * is all anyone ever needs — and it keeps the lookup below from handing a
  * component back to a caller that would have to instantiate it mid-render.
- *
- * The exception is a route whose skeleton depends on where it is being opened
- * FROM: an Arabic article reads right-to-left, and its skeleton has to be
- * mirrored too or the page visibly flips sides when it lands. Those routes hold
- * a function of the hints instead — see SkeletonHints.
+ * That includes the two skeletons that mirror for an Arabic page: they read
+ * their direction from an attribute on <html>, not from a prop, so that the
+ * copy Next.js renders for itself agrees with this one (see NavigationPending).
  */
 export type SkeletonDir = "ltr" | "rtl";
 
-/**
- * What the clicked link could tell us about the page it opens, beyond its URL.
- * Everything here is optional: a skeleton rendered without hints (a direct
- * load, an unhinted link) must still be the sensible default.
- */
-export type SkeletonHints = { dir?: SkeletonDir };
-
-type Skeleton = ReactElement | ((hints: SkeletonHints) => ReactElement);
-
-const ROUTES: Readonly<Record<string, Skeleton>> = {
+const ROUTES: Readonly<Record<string, ReactElement>> = {
   "/": <HomeLoading />,
   "/about": <AboutLoading />,
   "/admin/questions": <AdminQuestionsLoading />,
   "/articles": <ArticlesLoading />,
-  "/articles/[slug]": ({ dir }) => <ArticleLoading dir={dir} />,
+  "/articles/[slug]": <ArticleLoading />,
   "/ask": <AskLoading />,
   "/login": <LoginLoading />,
   "/me": <MeLoading />,
   "/questions": <QuestionsLoading />,
-  "/questions/[slug]": ({ dir }) => <QuestionLoading dir={dir} />,
+  "/questions/[slug]": <QuestionLoading />,
   "/tutorials": <TutorialsLoading />,
   "/tutorials/[track]": <TrackLoading />,
   "/tutorials/[track]/[lesson]": <LessonLoading />,
@@ -94,18 +83,14 @@ function splitPath(pathname: string): string[] {
 }
 
 /**
- * The skeleton Next.js would show for `pathname`, tailored by whatever `hints`
- * the caller could gather about the destination.
+ * The skeleton Next.js would show for `pathname`.
  *
  * Resolution mirrors the App Router's own: the deepest matching route wins,
  * and a path with no route of its own inherits the nearest ancestor's loading
  * boundary — which is also what makes an unrecognised URL fall back to the
  * root skeleton, exactly as a real navigation to a 404 does.
  */
-export function skeletonForPath(
-  pathname: string,
-  hints: SkeletonHints = {},
-): ReactElement | null {
+export function skeletonForPath(pathname: string): ReactElement | null {
   const segments = splitPath(pathname);
 
   for (let depth = segments.length; depth >= 0; depth--) {
@@ -120,9 +105,7 @@ export function skeletonForPath(
       if (matches && (best === null || route.literals > best.literals)) best = route;
     }
 
-    if (best !== null) {
-      return typeof best.skeleton === "function" ? best.skeleton(hints) : best.skeleton;
-    }
+    if (best !== null) return best.skeleton;
   }
 
   return null;

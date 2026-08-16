@@ -25,23 +25,11 @@ const SHOW_AFTER_MS = 90;
  */
 const GIVE_UP_AFTER_MS = 10_000;
 
-/**
- * Where an in-flight navigation is heading, and what the link that started it
- * knew about the destination — `dir` is how an Arabic article gets a mirrored
- * skeleton (a URL alone can't say which way a page reads).
- */
-export type PendingTarget = { to: string; dir: SkeletonDir };
-
-const PendingContext = createContext<PendingTarget | null>(null);
-
-/** The in-flight navigation, or null if none is. */
-export function usePendingTarget(): PendingTarget | null {
-  return useContext(PendingContext);
-}
+const PendingContext = createContext<string | null>(null);
 
 /** Where an in-flight navigation is heading, or null if none is in flight. */
 export function usePendingNavigation(): string | null {
-  return usePendingTarget()?.to ?? null;
+  return useContext(PendingContext);
 }
 
 /**
@@ -58,9 +46,33 @@ export function useNavigationTarget(): string {
   return usePendingNavigation() ?? pathname;
 }
 
-// `target` is handed to consumers as-is, so the object identity is stable for
-// as long as one navigation is in flight.
-type Pending = { from: string; target: PendingTarget };
+type Pending = { from: string; to: string };
+
+/**
+ * Which way each page reads, learned from the links that point at it.
+ *
+ * A URL cannot say whether the article behind it is Arabic, and the skeleton
+ * has to know before the page arrives — so the link carries the answer
+ * (`data-skeleton-dir`), because whoever rendered it knew the locale. Kept per
+ * path so Back and Forward, which have no click to read it from, can replay it.
+ */
+const dirByPath = new Map<string, SkeletonDir>();
+
+/**
+ * Tell the skeletons which way to read.
+ *
+ * An attribute on <html> rather than a prop, because the skeleton is rendered
+ * twice by two different things: once here, and again by Next.js as the route's
+ * own loading boundary the moment the URL commits — that second one gets no
+ * props, and used to flip an Arabic article's layout to English and back while
+ * it was still loading. CSS is the one channel both copies can read. LTR is the
+ * default and carries no attribute, so a page with no hint is unaffected.
+ */
+function applySkeletonDir(dir: SkeletonDir) {
+  const root = document.documentElement;
+  if (dir === "rtl") root.dataset.skeletonDir = "rtl";
+  else delete root.dataset.skeletonDir;
+}
 
 /**
  * Tracks the navigation a link click has started but the router hasn't
@@ -150,22 +162,29 @@ export default function NavigationPendingProvider({
 
       if (skeletonForPath(to) === null) return;
 
-      // The one thing the URL cannot tell us: an Arabic article's reader is
-      // mirrored, so its skeleton has to be too. The link carries the answer
-      // (data-skeleton-dir), because whoever rendered it knew the locale.
+      // Before the timer, not after it: the skeleton Next.js paints for itself
+      // can beat our 90ms on a warm route, and it reads this too.
       const dir: SkeletonDir = anchor.dataset.skeletonDir === "rtl" ? "rtl" : "ltr";
+      dirByPath.set(to, dir);
+      applySkeletonDir(dir);
 
       cancel();
       const from = pathnameRef.current;
-      timer.current = window.setTimeout(
-        () => setPending({ from, target: { to, dir } }),
-        SHOW_AFTER_MS,
-      );
+      timer.current = window.setTimeout(() => setPending({ from, to }), SHOW_AFTER_MS);
+    };
+
+    // Back and Forward reach a page without a click to read the direction from,
+    // so replay whatever the link that first opened it said. An unvisited entry
+    // falls back to LTR, exactly as it would on a cold load.
+    const onPopState = () => {
+      applySkeletonDir(dirByPath.get(window.location.pathname) ?? "ltr");
     };
 
     document.addEventListener("click", onClick, { capture: true });
+    window.addEventListener("popstate", onPopState);
     return () => {
       document.removeEventListener("click", onClick, { capture: true });
+      window.removeEventListener("popstate", onPopState);
       cancel();
     };
   }, []);
@@ -190,7 +209,7 @@ export default function NavigationPendingProvider({
   }, [pending]);
 
   return (
-    <PendingContext.Provider value={current === null ? null : current.target}>
+    <PendingContext.Provider value={current === null ? null : current.to}>
       {children}
     </PendingContext.Provider>
   );

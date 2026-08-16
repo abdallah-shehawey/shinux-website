@@ -400,6 +400,17 @@ input:not([type]) {
   background: color-mix(in srgb, var(--fg) 17%, var(--card));
 }
 
+/* Which way a skeleton reads, for the two routes whose content can be Arabic.
+   It has to come from the DOM and not from a React prop: the moment the router
+   commits the URL, Next.js renders that route's `loading.tsx` again as its own
+   loading boundary — with no props — so a prop-driven mirror flipped the whole
+   layout to English and back while the page was still loading. Both copies read
+   this attribute instead, so they look the same. NavigationPending sets it from
+   the link that was clicked; a direct visit has no hint and reads LTR. */
+[data-skeleton-dir="rtl"] .skeleton-mirror {
+  direction: rtl;
+}
+
 .tag-chip {
   display: inline-flex;
   align-items: center;

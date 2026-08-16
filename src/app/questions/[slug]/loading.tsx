@@ -14,13 +14,14 @@ function Bubble({ width }: { width: string }) {
   );
 }
 
-// `dir` mirrors the whole thread for an Arabic question, the way the real page
-// does: avatars and bubbles start from the right, replies indent from the
-// right. Next.js renders this with no props (hence the LTR default); the hint
-// comes from the link that was clicked — see NavigationPending — so an Arabic
-// question no longer opens as an English-shaped skeleton that flips sides the
-// moment the real page lands.
-export default function Loading({ dir = "ltr" }: { dir?: "rtl" | "ltr" }) {
+// An Arabic question opens into a mirrored thread — avatars and bubbles start
+// from the right, replies indent from the right — so this mirrors with it, or
+// the page visibly flips sides the moment it lands. It reads the direction from
+// `.skeleton-mirror` (globals.css) rather than a prop, because Next.js renders
+// this same component again with no props as the route's own loading boundary:
+// see NavigationPending, which sets the attribute from the link that was
+// clicked.
+export default function Loading() {
   return (
     <>
       {/* Sticky back-bar. Deliberately NOT mirrored: "← Back to questions" is
@@ -32,12 +33,9 @@ export default function Loading({ dir = "ltr" }: { dir?: "rtl" | "ltr" }) {
         </div>
       </div>
 
-      {/* One dir on the column is enough: every offset below is a logical
+      {/* One direction on the column is enough: every offset below is a logical
           property (ps-, flex gap), so they all flip together. */}
-      <div
-        dir={dir}
-        className="mx-auto w-full max-w-3xl animate-pulse px-4 pt-2 pb-16 sm:px-6"
-      >
+      <div className="skeleton-mirror mx-auto w-full max-w-3xl animate-pulse px-4 pt-2 pb-16 sm:px-6">
         {/* Post header: avatar + name + timestamp */}
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 shrink-0 rounded-full skeleton-bar" />
