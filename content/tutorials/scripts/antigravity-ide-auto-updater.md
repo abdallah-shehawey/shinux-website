@@ -78,13 +78,18 @@ Paste this content into the editor, then save with `Ctrl+O`, `Enter`, `Ctrl+X`:
 # Steps (all in one run):
 #   1. Read the locally installed version.
 #   2. Find the latest version + real download URL from the website.
-#   3. If the site is newer: download the tar.gz to $HOME (resumable),
+#   3. If the site is newer: download the tar.gz to ~/Downloads (resumable),
 #      verify it, extract it, and install it into the system install dir.
 set -euo pipefail
 
 INSTALL_DIR="/usr/share/antigravity-ide"
 PRODUCT_JSON="$INSTALL_DIR/resources/app/product.json"
-DEST_DIR="$HOME"
+
+# Download the tarball into the user's Downloads folder. xdg-user-dir resolves
+# it even when the desktop localises the name; fall back to ~/Downloads.
+DEST_DIR="$(xdg-user-dir DOWNLOAD 2>/dev/null || true)"
+[[ -n "$DEST_DIR" && "$DEST_DIR" != "$HOME" ]] || DEST_DIR="$HOME/Downloads"
+mkdir -p "$DEST_DIR"
 
 # ---- arch -> URL arch segment -------------------------------------------------
 case "$(uname -m)" in
