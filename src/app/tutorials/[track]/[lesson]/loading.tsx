@@ -14,7 +14,7 @@ export default function Loading() {
         <div className="mt-6 grid gap-6 lg:mt-0 lg:gap-4 lg:grid-cols-[16rem_1fr_17rem]">
           {/* ── Left sidebar: Lessons ── */}
           <aside className="hidden lg:flex lg:flex-col">
-            <div className="card reader-rail flex flex-col overflow-hidden">
+            <div className="card reader-rail reader-rail-fill flex flex-col overflow-hidden">
               <div className="mb-4 h-3 w-16 shrink-0 rounded bg-border" />
               <div className="min-h-0 flex-1 space-y-2 overflow-hidden">
                 <div className="h-7 w-full rounded-md bg-border/60" />
@@ -65,7 +65,7 @@ export default function Loading() {
 
           {/* ── Right sidebar: On this page ── */}
           <aside className="hidden lg:flex lg:flex-col">
-            <div className="card reader-rail flex flex-col overflow-hidden">
+            <div className="card reader-rail reader-rail-fill flex flex-col overflow-hidden">
               <div className="mb-4 h-3 w-24 shrink-0 rounded bg-border" />
               <div className="min-h-0 flex-1 space-y-2.5 overflow-hidden">
                 <div className="h-3.5 w-full rounded bg-border" />

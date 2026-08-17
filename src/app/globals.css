@@ -388,6 +388,15 @@ input:not([type]) {
     top: var(--reader-rail-top);
     max-height: calc(100vh - var(--reader-rail-top) - 1.5rem);
   }
+
+  /* The same rail as a placeholder. A skeleton has no real list to grow to, so
+     it collapses to the height of its few bars and then jumps to full height
+     the moment the page lands. On a tutorial both rails always reach the cap —
+     a track has dozens of lessons and a lesson has a long table of contents —
+     so the placeholder takes that height directly instead of guessing. */
+  .reader-rail-fill {
+    height: calc(100vh - var(--reader-rail-top) - 1.5rem);
+  }
 }
 
 /* ---- Loading skeletons ----
