@@ -20,6 +20,7 @@ author: abdallah-shehawey
 ## What it does
 
 - **Updates everything in one go** — apt/dnf, Snap, Flatpak, firmware (`fwupd`), GNOME extensions, then cleans up.
+- **No wasted work.** The repository metadata is downloaded exactly once per run; no step re-fetches what the one before it already had.
 - **You still watch it work.** No stream is redirected anywhere, so every download draws its progress bar live, exactly as if you had typed the command yourself.
 - **Retries a failing step, but not forever.** Each step gets 5 attempts by default (`-c N` to change it). A dropped connection recovers on its own; a step that is genuinely broken burns its attempts and the script **moves on to the next one** instead of hanging there.
 - **Tells you what happened.** The run ends with a summary: what succeeded and on which attempt, what was skipped because the tool isn't installed, and what failed with its exit code.
@@ -30,7 +31,7 @@ author: abdallah-shehawey
 
 ## Install it
 
-The script is just a file on your `PATH`. `/usr/local/bin` is the standard home for scripts you add yourself: it's already on every user's `PATH`, and no package manager will ever overwrite it.
+The script is just a file on your `PATH`. `/usr/local/bin` is the standard home for scripts you add yourself: it's already on every user's `PATH`, and no package manager will overwrite it.
 
 ```bash
 # 1) Open the file, paste in the Ubuntu script from below, then save & exit
@@ -43,7 +44,7 @@ sudo chmod +x /usr/local/bin/update-every-thing
 update-every-thing -h
 ```
 
-Use whichever editor you like in step 1 — `sudo nvim`, `sudo vim`, `sudo gedit`, they all work. If you already have the script saved as a file (say in `~/Downloads`), skip the copy-paste and install it in one line:
+Any editor works in step 1 (`sudo nvim`, `sudo vim`, …). Already have it saved as a file? Install it in one line instead:
 
 ```bash
 sudo install -m 755 ~/Downloads/update-every-thing /usr/local/bin/update-every-thing
@@ -78,8 +79,8 @@ update-every-thing -h                 # help
 #   9. Cleanup
 #
 # A step that fails is retried a bounded number of times, then given up on so
-# the run always reaches the end. Every outcome — and the error behind each
-# failure — is printed as a summary once everything is done.
+# the run always reaches the end, and every outcome is printed as a summary
+# once everything is done.
 #
 # Usage: update-every-thing [-c N] [--with-nvidia]
 #   -c N            retry a failing step N times before moving on (default: 5)
@@ -483,15 +484,15 @@ update-every-thing -h                 # help
 #
 # Update order:
 #   1. Antigravity IDE
-#   2. DNF System Packages
+#   2. DNF System Packages   (the run's one and only metadata refresh)
 #   3. Firmware (fwupd)
 #   4. Flatpak
-#   5. GNOME Extensions
+#   5. GNOME extensions      (listing only — the RPMs come with step 2)
 #   6. Cleanup
 #
 # A step that fails is retried a bounded number of times, then given up on so
-# the run always reaches the end. Every outcome — and the error behind each
-# failure — is printed as a summary once everything is done.
+# the run always reaches the end, and every outcome is printed as a summary
+# once everything is done.
 #
 # Usage: update-every-thing [-c N] [--with-nvidia]
 #   -c N            retry a failing step N times before moving on (default: 5)
@@ -722,10 +723,6 @@ if [[ "$WITH_NVIDIA" == false ]]; then
 fi
 
 retry_command \
-    "sudo dnf makecache --refresh" \
-    "DNF Metadata Refresh"
-
-retry_command \
     "sudo dnf upgrade -y --refresh $EXCLUDE_NVIDIA" \
     "DNF System Update"
 
@@ -765,22 +762,17 @@ fi
 
 
 # ==============================================================================
-# 5. GNOME Extensions (RPM)
+# 5. GNOME Extensions (listing only)
 # ==============================================================================
 
+# RPM-packaged extensions (gnome-shell-extension-*) were already upgraded by the
+# system update above — running dnf again for them only re-downloads every repo
+# to print "Nothing to do". So this section just lists what is installed.
 if command -v gnome-extensions &> /dev/null; then
-
-    retry_command \
-        "sudo dnf upgrade -y 'gnome-shell-extension-*'" \
-        "GNOME Extensions Update"
-
     echo
     echo "📋 Installed GNOME Extensions:"
     gnome-extensions list || true
     echo "ℹ️ Extensions from extensions.gnome.org update via GNOME Software."
-
-else
-    skip_step "GNOME Extensions Update" "gnome-extensions CLI not installed"
 fi
 
 if [[ "$WITH_NVIDIA" == true ]]; then
@@ -814,16 +806,15 @@ Nothing scrolls away. When the last step is done you get the whole run on one sc
 ============================================================
 📋 Update Summary
 ============================================================
-  ✅ Antigravity IDE Update           succeeded on attempt 1/5
-  ✅ DNF Metadata Refresh             succeeded on attempt 1/5
+  ⏭️  Antigravity IDE Update           antigravity-update.sh not found in PATH
   ✅ DNF System Update                succeeded on attempt 2/5
   ✅ Firmware Metadata Refresh        succeeded on attempt 1/5
   ❌ Firmware Update                  gave up after 5 attempt(s), exit 1
   ✅ Flatpak Update                   succeeded on attempt 1/5
-  ⏭️  GNOME Extensions Update          gnome-extensions CLI not installed
   ✅ Cleanup (autoremove)             succeeded on attempt 1/1
+  ✅ Cleanup (clean cache)            succeeded on attempt 1/1
 ------------------------------------------------------------
-  6 succeeded · 1 failed · 1 skipped   (retry limit: 5, took 6m 12s)
+  5 succeeded · 1 failed · 1 skipped   (retry limit: 5, took 6m 12s)
 ============================================================
 ⚠️ Some updates did not go through — scroll up to the ❌ steps for their errors.
 ```
@@ -835,6 +826,7 @@ Press `Ctrl-C` and you still get the summary, with the step you interrupted mark
 ## How it works
 
 - **Bounded retries** — `retry_command` loops `attempt` from 1 to `$RETRIES`. When the attempts run out it records the failure and returns; it never aborts the script, so one broken step can't take the rest of the run with it. Steps where retrying is pointless (`autoremove`, `clean`, `pro security-status`) pass `1` as a third argument and get a single shot.
+- **The repo metadata is downloaded once.** `dnf upgrade --refresh` is the only command in the Fedora script that refreshes it: there is no separate `dnf makecache --refresh` beforehand, and no second `dnf upgrade` for `gnome-shell-extension-*` afterwards — those RPMs are already part of the system upgrade, so running dnf again for them only re-downloads every repository to print *Nothing to do*. On Ubuntu the single `apt update` plays the same role.
 - **Nothing is redirected — on purpose.** `dnf`, `apt` and `flatpak` draw their download progress on **stderr**, sized from the terminal. Pipe either stream anywhere — through `tee`, to a file — and they lose the terminal: the width goes wrong, `\r` stops overwriting, and every redraw lands on a new line as a wall of duplicated bars. So `retry_command` runs `eval "$cmd"` bare. You watch the download exactly as if you had typed the command yourself, and the summary records which step failed with which exit code — the error text itself is already on screen, right above it.
 - **`set -uo pipefail`, deliberately without `-e`** — the script *expects* commands to fail and handles it itself. `-e` would defeat the whole design.
 - **`set -f`** — globbing off, so patterns like `--exclude=*nvidia*` reach the package manager intact instead of the shell expanding them against the current directory first.
