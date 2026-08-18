@@ -1,31 +1,32 @@
 ---
 title: Automating Full System Updates (update-every-thing)
 description: >-
-  A resilient update-every-thing script that retries a failing step a fixed
-  number of times, moves on instead of hanging, and prints a summary of what
-  succeeded, what was skipped, and what failed.
+  A resilient update-every-thing script for Ubuntu and Fedora that retries a
+  failing step a fixed number of times, moves on instead of hanging, and prints
+  a summary of what succeeded, what was skipped, and what failed.
 order: 2
 tags:
   - bash
   - scripts
+  - ubuntu
   - fedora
   - automation
 draft: false
 author: abdallah-shehawey
 ---
 
-`update-every-thing` is a single Bash script that updates your whole Fedora desktop in one go: the IDE, DNF packages, firmware, Flatpaks, and GNOME extensions.
-
-> The **Ubuntu/Debian** version of the same script lives in [One Script to Update Everything on Ubuntu & Fedora](/articles/linux-update-scripts).
+`update-every-thing` is a single Bash script that updates your whole desktop in one go: the IDE, system packages, firmware, Flatpaks, Snaps, and GNOME extensions. There are two versions below — **one for Ubuntu/Debian, one for Fedora** — same name, same options, same behaviour. Install the one that matches your distro.
 
 Network hiccups are common mid-update, so every step is retried — but only a **bounded** number of times. A step that is genuinely broken (a firmware write the EFI variable store rejects, a dead Flatpak remote) is given up on once its attempts are spent, and the run carries on to the next step instead of looping forever. Meanwhile no stream is redirected anywhere, so you still watch every download draw its progress bar live.
+
+# Ubuntu
 
 ## Install it
 
 The script is just a file on your `PATH`. `/usr/local/bin` is the standard home for scripts you add yourself: it's already on every user's `PATH`, and no package manager will overwrite it.
 
 ```bash
-# 1) Open the file, paste in the script from below, then save & exit
+# 1) Open the file, paste in the Ubuntu script from below, then save & exit
 sudo nano /usr/local/bin/update-every-thing
 
 # 2) Make it executable
@@ -47,11 +48,426 @@ sudo install -m 755 ~/Downloads/update-every-thing /usr/local/bin/update-every-t
 update-every-thing                    # 5 attempts per failing step (default)
 update-every-thing -c 3               # 3 attempts per step
 update-every-thing -c 1               # no retries: one shot per step
+update-every-thing --with-nvidia      # update NVIDIA drivers too
+update-every-thing -h                 # help
+```
+
+## The Ubuntu script
+
+```bash
+#!/usr/bin/env bash
+# Script: update-every-thing  (Ubuntu / Debian)
+# Put it in: /usr/local/bin/update-every-thing   (then: sudo chmod +x it)
+#
+# Update order:
+#   1. Antigravity IDE
+#   2. APT System Packages
+#   3. Snap
+#   4. Firmware (fwupd)
+#   5. Flatpak
+#   6. Ubuntu Pro security status
+#   7. GNOME Extensions
+#   8. Drivers (only with --with-nvidia)
+#   9. Cleanup
+#
+# A step that fails is retried a bounded number of times, then given up on so
+# the run always reaches the end. Every outcome — and the error behind each
+# failure — is printed as a summary once everything is done.
+#
+# Usage: update-every-thing [-c N] [--with-nvidia]
+#   -c N            retry a failing step N times before moving on (default: 5)
+#   --with-nvidia   update NVIDIA drivers too (held back by default)
+
+set -uo pipefail
+
+# Globbing off: patterns like *nvidia* are meant for the package manager, not
+# for the shell to expand against the current directory.
+set -f
+
+# ==============================================================================
+# Options
+# ==============================================================================
+
+RETRIES=5            # attempts per step before we give up on it and move on
+RETRY_DELAY=2        # seconds between attempts
+WITH_NVIDIA=false    # NVIDIA updates can break a running session — opt in
+
+usage() {
+    cat <<'USAGE'
+Usage: update-every-thing [-c N] [--with-nvidia] [-h]      (Ubuntu / Debian)
+
+  -c N, --retries N   Attempt each failing step up to N times before giving up
+                      on it and moving to the next one (default: 5).
+  --with-nvidia       Update NVIDIA drivers as well (held back by default).
+  -h, --help          Show this help.
+
+Nothing aborts the run: a step that keeps failing is reported in the summary at
+the end, together with the error it died on.
+
+Exit status: 0 if every step that ran succeeded, 1 if any step failed.
+USAGE
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -c|--retries)
+            if [[ ! "${2:-}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "❌ $1 needs a positive integer, e.g. '$1 3'" >&2
+                exit 2
+            fi
+            RETRIES="$2"
+            shift 2
+            ;;
+        --with-nvidia)
+            WITH_NVIDIA=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "❌ Unknown option: $1" >&2
+            echo >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+# ==============================================================================
+# Bookkeeping — every step records its outcome for the final summary
+# ==============================================================================
+
+SUMMARY=()           # one "STATUS|NAME|DETAIL" record per step
+FAILED=0
+CURRENT_STEP=""      # set while a step is running, for the Ctrl-C handler
+INTERRUPTED=false
+
+record() {
+    SUMMARY+=("$1|$2|$3")
+}
+
+# retry_command <command> <name> [attempts]
+#
+# Runs a command, retrying it up to $RETRIES times — or [attempts], for
+# best-effort steps that are pointless to repeat. Never aborts the script: a
+# step that keeps failing is recorded and the run moves on to the next one.
+#
+# Neither stdout nor stderr is redirected anywhere. That is deliberate: dnf,
+# apt and flatpak draw their download progress on stderr and size it from the
+# terminal, so piping either stream (through `tee`, say) costs them the
+# terminal and their progress bars come out duplicated and wrapped. The command
+# runs exactly as if you had typed it yourself, and the summary at the end
+# records which step failed and with what exit code — its error text is already
+# on screen, right above.
+retry_command() {
+    local cmd="$1"
+    local name="$2"
+    local max="${3:-$RETRIES}"
+    local attempt=1
+    local status=0
+
+    while (( attempt <= max )); do
+        echo
+        echo "============================================================"
+        echo "🔄 Trying: $name... (attempt $attempt/$max)"
+        echo "============================================================"
+
+        CURRENT_STEP="$name"
+        eval "$cmd"
+        status=$?
+        CURRENT_STEP=""
+
+        if (( status == 0 )); then
+            echo "✅ $name finished successfully"
+            record OK "$name" "succeeded on attempt $attempt/$max"
+            return 0
+        fi
+
+        echo "❌ $name failed (attempt $attempt/$max, exit $status)."
+        attempt=$(( attempt + 1 ))
+
+        if (( attempt <= max )); then
+            echo "🔁 Retrying in ${RETRY_DELAY} seconds..."
+            sleep "$RETRY_DELAY"
+        fi
+    done
+
+    echo "⛔ $name failed $max time(s) — giving up on it and moving on."
+    record FAIL "$name" "gave up after $max attempt(s), exit $status"
+    FAILED=$(( FAILED + 1 ))
+    return 1
+}
+
+skip_step() {
+    echo
+    echo "⏭️ $1 — $2"
+    record SKIP "$1" "$2"
+}
+
+print_summary() {
+    local ok=0 fail=0 skip=0 entry status name detail
+
+    echo
+    echo "============================================================"
+    echo "📋 Update Summary"
+    echo "============================================================"
+
+    if (( ${#SUMMARY[@]} == 0 )); then
+        echo "  (nothing ran)"
+    else
+        for entry in "${SUMMARY[@]}"; do
+            IFS='|' read -r status name detail <<<"$entry"
+            case "$status" in
+                OK)   printf '  ✅ %-32s %s\n' "$name" "$detail"; ok=$((   ok   + 1 )) ;;
+                FAIL) printf '  ❌ %-32s %s\n' "$name" "$detail"; fail=$(( fail + 1 )) ;;
+                SKIP) printf '  ⏭️  %-32s %s\n' "$name" "$detail"; skip=$(( skip + 1 )) ;;
+            esac
+        done
+    fi
+
+    echo "------------------------------------------------------------"
+    printf '  %d succeeded · %d failed · %d skipped   (retry limit: %d, took %dm %ds)\n' \
+        "$ok" "$fail" "$skip" "$RETRIES" "$(( SECONDS / 60 ))" "$(( SECONDS % 60 ))"
+    echo "============================================================"
+
+    if [[ "$INTERRUPTED" == true ]]; then
+        echo "🛑 Stopped early — the steps after this one never ran."
+    elif (( fail > 0 )); then
+        echo "⚠️ Some updates did not go through — scroll up to the ❌ steps for their errors."
+    else
+        echo "🎉 All updates completed successfully!"
+    fi
+    echo
+}
+
+# Ctrl-C stops the run, but still reports honestly: the step that was running
+# is recorded as interrupted, and the summary says the run ended early.
+on_interrupt() {
+    INTERRUPTED=true
+    echo
+    echo "🛑 Interrupted."
+    if [[ -n "$CURRENT_STEP" ]]; then
+        record FAIL "$CURRENT_STEP" "interrupted by Ctrl-C"
+        FAILED=$(( FAILED + 1 ))
+        CURRENT_STEP=""
+    fi
+    print_summary
+    exit 130
+}
+trap on_interrupt INT
+
+# Ask for the sudo password once, up front — then keep the timestamp fresh so no
+# prompt can appear in the middle of a long download.
+sudo -v || true
+( while kill -0 "$$" 2>/dev/null; do sudo -n true 2>/dev/null; sleep 50; done ) &
+SUDO_KEEPALIVE_PID=$!
+
+# NVIDIA packages are pinned for the duration of the apt run; release them
+# however the script ends, so an interrupted run can't leave them held.
+NVIDIA_HELD=false
+NVIDIA_PACKAGES="nvidia-driver-* nvidia-dkms-* nvidia-kernel-* libnvidia-*"
+
+unhold_nvidia() {
+    if [[ "$NVIDIA_HELD" == true ]]; then
+        sudo apt-mark unhold $NVIDIA_PACKAGES >/dev/null 2>&1
+        NVIDIA_HELD=false
+    fi
+}
+
+cleanup() {
+    unhold_nvidia
+    [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
+}
+trap cleanup EXIT
+
+echo
+echo "============================================================"
+echo "🚀 Starting Full Ubuntu Update  (retries per step: $RETRIES)"
+if [[ "$WITH_NVIDIA" == true ]]; then
+    echo "   ⚠️ NVIDIA drivers WILL be updated."
+else
+    echo "   ⏭️ NVIDIA drivers will be held back (--with-nvidia to include them)."
+fi
+echo "============================================================"
+
+
+# ==============================================================================
+# 1. Antigravity IDE Update
+# ==============================================================================
+
+if command -v antigravity-update.sh &> /dev/null; then
+    retry_command \
+        "antigravity-update.sh" \
+        "Antigravity IDE Update"
+else
+    skip_step "Antigravity IDE Update" "antigravity-update.sh not found in PATH"
+fi
+
+
+# ==============================================================================
+# 2. APT System Update
+# ==============================================================================
+
+if [[ "$WITH_NVIDIA" == false ]]; then
+    sudo apt-mark hold $NVIDIA_PACKAGES >/dev/null 2>&1
+    NVIDIA_HELD=true
+fi
+
+retry_command \
+    "sudo apt update" \
+    "APT Metadata Refresh"
+
+retry_command \
+    "sudo apt full-upgrade -y" \
+    "APT System Update"
+
+retry_command \
+    "sudo apt install -y linux-generic" \
+    "Kernel Metapackage"
+
+
+# ==============================================================================
+# 3. Snap Update
+# ==============================================================================
+
+if command -v snap &> /dev/null; then
+
+    retry_command \
+        "sudo snap refresh" \
+        "Snap Update"
+
+else
+    skip_step "Snap Update" "snap not installed"
+fi
+
+
+# ==============================================================================
+# 4. Firmware Update
+# ==============================================================================
+
+if command -v fwupdmgr &> /dev/null; then
+
+    retry_command \
+        "sudo fwupdmgr refresh --force" \
+        "Firmware Metadata Refresh"
+
+    retry_command \
+        "sudo fwupdmgr update -y" \
+        "Firmware Update"
+
+else
+    skip_step "Firmware Update" "fwupdmgr not installed"
+fi
+
+
+# ==============================================================================
+# 5. Flatpak Update
+# ==============================================================================
+
+if command -v flatpak &> /dev/null; then
+
+    retry_command \
+        "flatpak update -y" \
+        "Flatpak Update"
+
+else
+    skip_step "Flatpak Update" "flatpak not installed"
+fi
+
+
+# ==============================================================================
+# 6. Ubuntu Pro Security
+# ==============================================================================
+
+if command -v pro &> /dev/null; then
+
+    # Best effort, one shot each: repeating these fixes nothing.
+    retry_command "pro security-status"    "Ubuntu Pro Security Status" 1
+    retry_command "sudo pro fix --dry-run" "Ubuntu Pro Fixes (dry run)" 1
+
+else
+    skip_step "Ubuntu Pro Security Status" "pro not installed"
+fi
+
+
+# ==============================================================================
+# 7. GNOME Extensions
+# ==============================================================================
+
+if command -v gnome-extensions &> /dev/null; then
+
+    retry_command \
+        "gnome-extensions update" \
+        "GNOME Extensions Update"
+
+    echo
+    echo "📋 Installed GNOME Extensions:"
+    gnome-extensions list || true
+    echo "ℹ️ Extensions from extensions.gnome.org update via GNOME Software."
+
+else
+    skip_step "GNOME Extensions Update" "gnome-extensions CLI not installed"
+fi
+
+
+# ==============================================================================
+# 8. Drivers (only when NVIDIA is explicitly opted into)
+# ==============================================================================
+
+if [[ "$WITH_NVIDIA" == true ]] && command -v ubuntu-drivers &> /dev/null; then
+    retry_command \
+        "sudo ubuntu-drivers autoinstall" \
+        "NVIDIA / Ubuntu Drivers"
+fi
+
+
+# ==============================================================================
+# 9. Cleanup
+# ==============================================================================
+
+unhold_nvidia
+
+retry_command "sudo apt autoremove -y" "Cleanup (autoremove)"  1
+retry_command "sudo apt autoclean -y"  "Cleanup (clean cache)" 1
+
+
+# ==============================================================================
+# Finished
+# ==============================================================================
+
+print_summary
+exit $(( FAILED > 0 ? 1 : 0 ))
+```
+
+# Fedora
+
+## Install it
+
+Exactly the same three steps — just paste the Fedora script instead:
+
+```bash
+# 1) Open the file, paste in the Fedora script from below, then save & exit
+sudo nano /usr/local/bin/update-every-thing
+
+# 2) Make it executable
+sudo chmod +x /usr/local/bin/update-every-thing
+
+# 3) Check it's picked up — this prints the usage text
+update-every-thing -h
+```
+
+## Use it
+
+```bash
+update-every-thing                    # 5 attempts per failing step (default)
+update-every-thing -c 3               # 3 attempts per step
 update-every-thing --with-nvidia      # update NVIDIA/CUDA packages too
 update-every-thing -h                 # help
 ```
 
-## Script Source (`update-every-thing`)
+## The Fedora script
 
 ```bash
 #!/usr/bin/env bash
@@ -417,3 +833,4 @@ Press `Ctrl-C` and you still get the summary, with the step you interrupted mark
 - **`set -f`** — globbing off, so patterns like `--exclude=*nvidia*` reach the package manager intact instead of the shell expanding them against the current directory first.
 - **Graceful skips** — a tool that isn't installed is recorded as ⏭️ rather than silently ignored, so the summary distinguishes "not applicable here" from "broke".
 - **One password, once** — `sudo -v` up front, plus a background loop refreshing the timestamp every 50 seconds, so a long download can't be followed by a password prompt you never see.
+- **NVIDIA released on exit** (Ubuntu) — the `apt-mark hold` is lifted from an `EXIT` trap, so even an interrupted run can't leave your NVIDIA packages pinned.
