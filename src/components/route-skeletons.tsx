@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import HomeLoading from "@/app/loading";
 import AboutLoading from "@/app/about/loading";
 import AdminQuestionsLoading from "@/app/admin/questions/loading";
+import AdminUsersLoading from "@/app/admin/users/loading";
 import ArticlesLoading from "@/app/articles/loading";
 import ArticleLoading from "@/app/articles/[slug]/loading";
 import AskLoading from "@/app/ask/loading";
@@ -31,8 +32,10 @@ import ProfileAnsweredLoading from "@/app/u/[username]/questions/answered/loadin
  * is clicked, so the two can never drift out of sync — editing a skeleton is
  * still a one-file job.
  *
- * They are safe to pull into the client bundle: every one of them is pure
- * presentational JSX with no imports at all, server-only or otherwise.
+ * They are safe to pull into the client bundle: they are presentational JSX
+ * with no server-only imports. The two admin skeletons do import one component
+ * — AdminTabs, which is already a client component and is what keeps the admin
+ * tab bar on screen and clickable while an admin page loads.
  *
  * Patterns are written exactly as the `app/` directory spells them, `[param]`
  * included; a bracketed segment matches any single path segment.
@@ -51,6 +54,7 @@ const ROUTES: Readonly<Record<string, ReactElement>> = {
   "/": <HomeLoading />,
   "/about": <AboutLoading />,
   "/admin/questions": <AdminQuestionsLoading />,
+  "/admin/users": <AdminUsersLoading />,
   "/articles": <ArticlesLoading />,
   "/articles/[slug]": <ArticleLoading />,
   "/ask": <AskLoading />,

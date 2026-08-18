@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { getPendingQuestions } from "@/lib/questions";
 import AdminQuestionsQueue from "@/components/AdminQuestionsQueue";
+import AdminTabs from "@/components/AdminTabs";
 
 export const metadata: Metadata = { title: "Admin · Questions" };
 
@@ -23,6 +24,8 @@ export default async function AdminQuestionsPage() {
 
   return (
     <div className="mx-auto w-full px-4 pt-6 pb-12 sm:px-8 lg:px-12">
+      <AdminTabs />
+
       <h1 className="mb-2 text-3xl font-bold tracking-tight">Review questions</h1>
       <p className="mb-8 text-muted">
         {pending.length} pending. Publishing makes a question visible to everyone (and
