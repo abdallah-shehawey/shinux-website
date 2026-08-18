@@ -3,7 +3,7 @@ title: One Script to Update Everything on Ubuntu & Fedora
 description: >-
   update-every-thing: one command that updates the system, Flatpak, Snap,
   firmware, and GNOME extensions — retrying a failing step a fixed number of
-  times, then moving on and reporting what broke.
+  times, then moving on and reporting what happened.
 date: 2026-05-24T00:00:00.000Z
 tags:
   - ubuntu
@@ -20,9 +20,9 @@ author: abdallah-shehawey
 ## What it does
 
 - **Updates everything in one go** — apt/dnf, Snap, Flatpak, firmware (`fwupd`), GNOME extensions, then cleans up.
-- **You still watch it work.** Each command keeps the terminal, so download progress bars run live exactly as if you had typed the command yourself.
+- **You still watch it work.** No stream is redirected anywhere, so every download draws its progress bar live, exactly as if you had typed the command yourself.
 - **Retries a failing step, but not forever.** Each step gets 5 attempts by default (`-c N` to change it). A dropped connection recovers on its own; a step that is genuinely broken burns its attempts and the script **moves on to the next one** instead of hanging there.
-- **Tells you what happened.** The run ends with a summary: what succeeded, what was skipped because the tool isn't installed, and what failed — with the error and exit code behind each failure.
+- **Tells you what happened.** The run ends with a summary: what succeeded and on which attempt, what was skipped because the tool isn't installed, and what failed with its exit code.
 - **Skips NVIDIA drivers by default.** They can break a running session, so you opt in with `--with-nvidia`.
 - **Never dies halfway.** One broken step can't take the rest of the update with it.
 
@@ -91,10 +91,6 @@ set -uo pipefail
 # for the shell to expand against the current directory.
 set -f
 
-# Keep Python-based tools writing line by line even though their output is
-# piped through tee to be captured.
-export PYTHONUNBUFFERED=1
-
 # ==============================================================================
 # Options
 # ==============================================================================
@@ -150,43 +146,28 @@ done
 # Bookkeeping — every step records its outcome for the final summary
 # ==============================================================================
 
-SUMMARY=()           # one "STATUS|NAME|DETAIL|REASON" record per step
+SUMMARY=()           # one "STATUS|NAME|DETAIL" record per step
 FAILED=0
 CURRENT_STEP=""      # set while a step is running, for the Ctrl-C handler
 INTERRUPTED=false
 
-STEP_LOG="$(mktemp -t update-every-thing.XXXXXX)"
-
 record() {
-    SUMMARY+=("$1|$2|$3|${4:-}")
-}
-
-# Pulls the most useful line out of a failed step's captured stderr: the last
-# line that looks like an error, or just the last line if none of them do.
-# Progress bars redraw with \r and colours arrive as escape codes, so both are
-# stripped first.
-last_error_line() {
-    local text line
-    text=$(tr '\r' '\n' <"$STEP_LOG" | sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/[[:space:]]*$//' | grep -v '^$')
-
-    line=$(printf '%s\n' "$text" |
-           grep -iE 'error|failed|fatal|cannot|unable|denied|no such|not found|conflict|timeout' |
-           tail -n 1)
-    [[ -z "$line" ]] && line=$(printf '%s\n' "$text" | tail -n 1)
-    [[ -z "$line" ]] && line="(nothing on stderr — scroll up for the step's output)"
-
-    # Keep the summary readable.
-    if (( ${#line} > 220 )); then
-        line="${line:0:217}..."
-    fi
-    printf '%s' "$line"
+    SUMMARY+=("$1|$2|$3")
 }
 
 # retry_command <command> <name> [attempts]
 #
 # Runs a command, retrying it up to $RETRIES times — or [attempts], for
 # best-effort steps that are pointless to repeat. Never aborts the script: a
-# step that keeps failing is recorded, with its error, and the run moves on.
+# step that keeps failing is recorded and the run moves on to the next one.
+#
+# Neither stdout nor stderr is redirected anywhere. That is deliberate: dnf,
+# apt and flatpak draw their download progress on stderr and size it from the
+# terminal, so piping either stream (through `tee`, say) costs them the
+# terminal and their progress bars come out duplicated and wrapped. The command
+# runs exactly as if you had typed it yourself, and the summary at the end
+# records which step failed and with what exit code — its error text is already
+# on screen, right above.
 retry_command() {
     local cmd="$1"
     local name="$2"
@@ -200,16 +181,9 @@ retry_command() {
         echo "🔄 Trying: $name... (attempt $attempt/$max)"
         echo "============================================================"
 
-        : >"$STEP_LOG"
         CURRENT_STEP="$name"
-
-        # stdout is deliberately left alone: the command keeps its terminal, so
-        # download progress bars animate exactly as if it were run by hand.
-        # Only stderr is duplicated — into the log AND back to the screen — so
-        # the reason for a failure can be quoted in the summary later.
-        eval "$cmd" 2> >(tee "$STEP_LOG" >&2)
+        eval "$cmd"
         status=$?
-
         CURRENT_STEP=""
 
         if (( status == 0 )); then
@@ -227,9 +201,8 @@ retry_command() {
         fi
     done
 
-    sleep 0.2   # let tee flush the last attempt's stderr before reading it
     echo "⛔ $name failed $max time(s) — giving up on it and moving on."
-    record FAIL "$name" "gave up after $max attempt(s), exit $status" "$(last_error_line)"
+    record FAIL "$name" "gave up after $max attempt(s), exit $status"
     FAILED=$(( FAILED + 1 ))
     return 1
 }
@@ -241,7 +214,7 @@ skip_step() {
 }
 
 print_summary() {
-    local ok=0 fail=0 skip=0 entry status name detail reason
+    local ok=0 fail=0 skip=0 entry status name detail
 
     echo
     echo "============================================================"
@@ -252,21 +225,11 @@ print_summary() {
         echo "  (nothing ran)"
     else
         for entry in "${SUMMARY[@]}"; do
-            IFS='|' read -r status name detail reason <<<"$entry"
+            IFS='|' read -r status name detail <<<"$entry"
             case "$status" in
-                OK)
-                    printf '  ✅ %-32s %s\n' "$name" "$detail"
-                    ok=$(( ok + 1 ))
-                    ;;
-                FAIL)
-                    printf '  ❌ %-32s %s\n' "$name" "$detail"
-                    [[ -n "$reason" ]] && printf '       ↳ %s\n' "$reason"
-                    fail=$(( fail + 1 ))
-                    ;;
-                SKIP)
-                    printf '  ⏭️  %-32s %s\n' "$name" "$detail"
-                    skip=$(( skip + 1 ))
-                    ;;
+                OK)   printf '  ✅ %-32s %s\n' "$name" "$detail"; ok=$((   ok   + 1 )) ;;
+                FAIL) printf '  ❌ %-32s %s\n' "$name" "$detail"; fail=$(( fail + 1 )) ;;
+                SKIP) printf '  ⏭️  %-32s %s\n' "$name" "$detail"; skip=$(( skip + 1 )) ;;
             esac
         done
     fi
@@ -279,7 +242,7 @@ print_summary() {
     if [[ "$INTERRUPTED" == true ]]; then
         echo "🛑 Stopped early — the steps after this one never ran."
     elif (( fail > 0 )); then
-        echo "⚠️ Some updates did not go through — see the ❌ lines above."
+        echo "⚠️ Some updates did not go through — scroll up to the ❌ steps for their errors."
     else
         echo "🎉 All updates completed successfully!"
     fi
@@ -302,8 +265,8 @@ on_interrupt() {
 }
 trap on_interrupt INT
 
-# Ask for the sudo password once, up front, on a clean terminal — then keep the
-# timestamp fresh so no prompt can appear in the middle of a long download.
+# Ask for the sudo password once, up front — then keep the timestamp fresh so no
+# prompt can appear in the middle of a long download.
 sudo -v || true
 ( while kill -0 "$$" 2>/dev/null; do sudo -n true 2>/dev/null; sleep 50; done ) &
 SUDO_KEEPALIVE_PID=$!
@@ -323,7 +286,6 @@ unhold_nvidia() {
 cleanup() {
     unhold_nvidia
     [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
-    rm -f "$STEP_LOG"
 }
 trap cleanup EXIT
 
@@ -541,10 +503,6 @@ set -uo pipefail
 # for the shell to expand against the current directory.
 set -f
 
-# Keep Python-based tools writing line by line even though their output is
-# piped through tee to be captured.
-export PYTHONUNBUFFERED=1
-
 # ==============================================================================
 # Options
 # ==============================================================================
@@ -600,43 +558,28 @@ done
 # Bookkeeping — every step records its outcome for the final summary
 # ==============================================================================
 
-SUMMARY=()           # one "STATUS|NAME|DETAIL|REASON" record per step
+SUMMARY=()           # one "STATUS|NAME|DETAIL" record per step
 FAILED=0
 CURRENT_STEP=""      # set while a step is running, for the Ctrl-C handler
 INTERRUPTED=false
 
-STEP_LOG="$(mktemp -t update-every-thing.XXXXXX)"
-
 record() {
-    SUMMARY+=("$1|$2|$3|${4:-}")
-}
-
-# Pulls the most useful line out of a failed step's captured stderr: the last
-# line that looks like an error, or just the last line if none of them do.
-# Progress bars redraw with \r and colours arrive as escape codes, so both are
-# stripped first.
-last_error_line() {
-    local text line
-    text=$(tr '\r' '\n' <"$STEP_LOG" | sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/[[:space:]]*$//' | grep -v '^$')
-
-    line=$(printf '%s\n' "$text" |
-           grep -iE 'error|failed|fatal|cannot|unable|denied|no such|not found|conflict|timeout' |
-           tail -n 1)
-    [[ -z "$line" ]] && line=$(printf '%s\n' "$text" | tail -n 1)
-    [[ -z "$line" ]] && line="(nothing on stderr — scroll up for the step's output)"
-
-    # Keep the summary readable.
-    if (( ${#line} > 220 )); then
-        line="${line:0:217}..."
-    fi
-    printf '%s' "$line"
+    SUMMARY+=("$1|$2|$3")
 }
 
 # retry_command <command> <name> [attempts]
 #
 # Runs a command, retrying it up to $RETRIES times — or [attempts], for
 # best-effort steps that are pointless to repeat. Never aborts the script: a
-# step that keeps failing is recorded, with its error, and the run moves on.
+# step that keeps failing is recorded and the run moves on to the next one.
+#
+# Neither stdout nor stderr is redirected anywhere. That is deliberate: dnf,
+# apt and flatpak draw their download progress on stderr and size it from the
+# terminal, so piping either stream (through `tee`, say) costs them the
+# terminal and their progress bars come out duplicated and wrapped. The command
+# runs exactly as if you had typed it yourself, and the summary at the end
+# records which step failed and with what exit code — its error text is already
+# on screen, right above.
 retry_command() {
     local cmd="$1"
     local name="$2"
@@ -650,16 +593,9 @@ retry_command() {
         echo "🔄 Trying: $name... (attempt $attempt/$max)"
         echo "============================================================"
 
-        : >"$STEP_LOG"
         CURRENT_STEP="$name"
-
-        # stdout is deliberately left alone: the command keeps its terminal, so
-        # download progress bars animate exactly as if it were run by hand.
-        # Only stderr is duplicated — into the log AND back to the screen — so
-        # the reason for a failure can be quoted in the summary later.
-        eval "$cmd" 2> >(tee "$STEP_LOG" >&2)
+        eval "$cmd"
         status=$?
-
         CURRENT_STEP=""
 
         if (( status == 0 )); then
@@ -677,9 +613,8 @@ retry_command() {
         fi
     done
 
-    sleep 0.2   # let tee flush the last attempt's stderr before reading it
     echo "⛔ $name failed $max time(s) — giving up on it and moving on."
-    record FAIL "$name" "gave up after $max attempt(s), exit $status" "$(last_error_line)"
+    record FAIL "$name" "gave up after $max attempt(s), exit $status"
     FAILED=$(( FAILED + 1 ))
     return 1
 }
@@ -691,7 +626,7 @@ skip_step() {
 }
 
 print_summary() {
-    local ok=0 fail=0 skip=0 entry status name detail reason
+    local ok=0 fail=0 skip=0 entry status name detail
 
     echo
     echo "============================================================"
@@ -702,21 +637,11 @@ print_summary() {
         echo "  (nothing ran)"
     else
         for entry in "${SUMMARY[@]}"; do
-            IFS='|' read -r status name detail reason <<<"$entry"
+            IFS='|' read -r status name detail <<<"$entry"
             case "$status" in
-                OK)
-                    printf '  ✅ %-32s %s\n' "$name" "$detail"
-                    ok=$(( ok + 1 ))
-                    ;;
-                FAIL)
-                    printf '  ❌ %-32s %s\n' "$name" "$detail"
-                    [[ -n "$reason" ]] && printf '       ↳ %s\n' "$reason"
-                    fail=$(( fail + 1 ))
-                    ;;
-                SKIP)
-                    printf '  ⏭️  %-32s %s\n' "$name" "$detail"
-                    skip=$(( skip + 1 ))
-                    ;;
+                OK)   printf '  ✅ %-32s %s\n' "$name" "$detail"; ok=$((   ok   + 1 )) ;;
+                FAIL) printf '  ❌ %-32s %s\n' "$name" "$detail"; fail=$(( fail + 1 )) ;;
+                SKIP) printf '  ⏭️  %-32s %s\n' "$name" "$detail"; skip=$(( skip + 1 )) ;;
             esac
         done
     fi
@@ -729,7 +654,7 @@ print_summary() {
     if [[ "$INTERRUPTED" == true ]]; then
         echo "🛑 Stopped early — the steps after this one never ran."
     elif (( fail > 0 )); then
-        echo "⚠️ Some updates did not go through — see the ❌ lines above."
+        echo "⚠️ Some updates did not go through — scroll up to the ❌ steps for their errors."
     else
         echo "🎉 All updates completed successfully!"
     fi
@@ -752,15 +677,14 @@ on_interrupt() {
 }
 trap on_interrupt INT
 
-# Ask for the sudo password once, up front, on a clean terminal — then keep the
-# timestamp fresh so no prompt can appear in the middle of a long download.
+# Ask for the sudo password once, up front — then keep the timestamp fresh so no
+# prompt can appear in the middle of a long download.
 sudo -v || true
 ( while kill -0 "$$" 2>/dev/null; do sudo -n true 2>/dev/null; sleep 50; done ) &
 SUDO_KEEPALIVE_PID=$!
 
 cleanup() {
     [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
-    rm -f "$STEP_LOG"
 }
 trap cleanup EXIT
 
@@ -890,32 +814,32 @@ Nothing scrolls away. When the last step is done you get the whole run on one sc
 ============================================================
 📋 Update Summary
 ============================================================
+  ✅ Antigravity IDE Update           succeeded on attempt 1/5
   ✅ DNF Metadata Refresh             succeeded on attempt 1/5
   ✅ DNF System Update                succeeded on attempt 2/5
   ✅ Firmware Metadata Refresh        succeeded on attempt 1/5
   ❌ Firmware Update                  gave up after 5 attempt(s), exit 1
-       ↳ failed to write-firmware: failed to write (null): failed to write data to efivarsfs: Error writing to file descriptor: Invalid argument
   ✅ Flatpak Update                   succeeded on attempt 1/5
   ⏭️  GNOME Extensions Update          gnome-extensions CLI not installed
   ✅ Cleanup (autoremove)             succeeded on attempt 1/1
 ------------------------------------------------------------
-  5 succeeded · 1 failed · 1 skipped   (retry limit: 5, took 6m 12s)
+  6 succeeded · 1 failed · 1 skipped   (retry limit: 5, took 6m 12s)
 ============================================================
-⚠️ Some updates did not go through — see the ❌ lines above.
+⚠️ Some updates did not go through — scroll up to the ❌ steps for their errors.
 ```
 
-That firmware line is exactly why the retry count is capped. A machine whose EFI variable store rejects the write will never succeed, no matter how long you retry — an unbounded `while true` loop sits on it forever, and the Flatpak and cleanup steps never run at all. Here it spends its 5 attempts, records *why* it died, and the rest of the update still happens.
+That firmware line is exactly why the retry count is capped. A machine whose EFI variable store rejects the write will never succeed, no matter how long you retry — an unbounded `while true` loop sits on it forever, and the Flatpak and cleanup steps never run at all. Here it spends its 5 attempts, and the rest of the update still happens.
 
-Press `Ctrl-C` and you still get the summary, with the step you interrupted marked as such and a `🛑 Stopped early` note — it will never claim a run finished when it didn't. The exit status is `0` when everything that ran succeeded, `1` when any step failed, `130` when you interrupted it, and `2` on a bad argument, so it behaves inside a cron job or another script.
+Press `Ctrl-C` and you still get the summary, with the step you interrupted marked as such and a `🛑 Stopped early` note — it never claims a run finished when it didn't. Exit status is `0` when everything that ran succeeded, `1` when any step failed, `130` when you interrupted it, and `2` on a bad argument, so it behaves inside a cron job or another script.
 
 ## How it works
 
-- **Bounded retries** — `retry_command` loops `attempt` from 1 to `$RETRIES`. When the attempts run out it records the failure and returns; it never aborts the script, so one broken step can't take the rest of the run with it. Steps where retrying is pointless (`apt autoremove`, `pro security-status`) pass `1` as a third argument and get a single shot.
-- **Live output, captured errors** — the command's **stdout is left completely alone**, so it still sees a terminal and animates its progress bars. Only *stderr* is duplicated, with `2> >(tee "$STEP_LOG" >&2)`, which both prints it and saves it. `last_error_line` then pulls the useful line back out for the summary — stripping ANSI colours and the `\r` redraws that progress bars leave behind.
+- **Bounded retries** — `retry_command` loops `attempt` from 1 to `$RETRIES`. When the attempts run out it records the failure and returns; it never aborts the script, so one broken step can't take the rest of the run with it. Steps where retrying is pointless (`autoremove`, `clean`, `pro security-status`) pass `1` as a third argument and get a single shot.
+- **Nothing is redirected — on purpose.** `dnf`, `apt` and `flatpak` draw their download progress on **stderr**, sized from the terminal. Pipe either stream anywhere — through `tee`, to a file — and they lose the terminal: the width goes wrong, `\r` stops overwriting, and every redraw lands on a new line as a wall of duplicated bars. So `retry_command` runs `eval "$cmd"` bare. You watch the download exactly as if you had typed the command yourself, and the summary records which step failed with which exit code — the error text itself is already on screen, right above it.
 - **`set -uo pipefail`, deliberately without `-e`** — the script *expects* commands to fail and handles it itself. `-e` would defeat the whole design.
-- **`set -f`** — globbing off, so patterns like `--exclude=*nvidia*` reach `dnf` intact instead of the shell expanding them against the current directory first.
+- **`set -f`** — globbing off, so patterns like `--exclude=*nvidia*` reach the package manager intact instead of the shell expanding them against the current directory first.
 - **Graceful skips** — a tool that isn't installed is recorded as ⏭️ rather than silently ignored, so the summary distinguishes "not applicable here" from "broke".
-- **One password, once** — `sudo -v` up front, plus a background loop that refreshes the timestamp every 50 seconds, so a long download can't be followed by a password prompt you never see.
+- **One password, once** — `sudo -v` up front, plus a background loop refreshing the timestamp every 50 seconds, so a long download can't be followed by a password prompt you never see.
 - **NVIDIA released on exit** (Ubuntu) — the `apt-mark hold` is lifted from an `EXIT` trap, so even an interrupted run can't leave your NVIDIA packages pinned.
 
 ## Notes
