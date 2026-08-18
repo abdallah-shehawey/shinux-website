@@ -15,7 +15,7 @@ draft: false
 author: abdallah-shehawey
 ---
 
-`update-every-thing` is a single Bash script that updates your whole desktop in one go: the IDE, system packages, firmware, Flatpaks, Snaps, and GNOME extensions. There are two versions below — **one for Ubuntu/Debian, one for Fedora** — same name, same options, same behaviour. Install the one that matches your distro.
+`update-every-thing` is a single Bash script that updates your whole desktop in one go: the IDE, system packages, firmware, Flatpaks, Snaps, and GNOME extensions. There are two versions below — **[one for Ubuntu/Debian](#ubuntu)** and **[one for Fedora](#fedora)** — same name, same options, same behaviour. Install the one that matches your distro.
 
 Network hiccups are common mid-update, so every step is retried — but only a **bounded** number of times. A step that is genuinely broken (a firmware write the EFI variable store rejects, a dead Flatpak remote) is given up on once its attempts are spent, and the run carries on to the next step instead of looping forever. Nothing is downloaded twice, and no stream is redirected anywhere, so you still watch every download draw its progress bar live.
 

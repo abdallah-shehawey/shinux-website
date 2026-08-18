@@ -15,7 +15,7 @@ draft: false
 author: abdallah-shehawey
 ---
 
-`update-every-thing` is one command that updates your whole machine: system packages, Snap, Flatpak, firmware, and GNOME extensions. There are two versions below — **one for Ubuntu/Debian, one for Fedora** — same name, same options, same behaviour. Install the one that matches your distro, and you're done.
+`update-every-thing` is one command that updates your whole machine: system packages, Snap, Flatpak, firmware, and GNOME extensions. There are two versions below — **[one for Ubuntu/Debian](#ubuntu)** and **[one for Fedora](#fedora)** — same name, same options, same behaviour. Install the one that matches your distro, and you're done.
 
 ## What it does
 
