@@ -15,96 +15,56 @@ draft: false
 author: abdallah-shehawey
 ---
 
-`update-every-thing` is one command that updates your whole machine: system packages, Snap, Flatpak, firmware, and GNOME extensions. There are two versions below — **one for Ubuntu/Debian, one for Fedora** — same name, same options, same behaviour. Install the one that matches your distro.
+`update-every-thing` is one command that updates your whole machine: system packages, Snap, Flatpak, firmware, and GNOME extensions. There are two versions below — **one for Ubuntu/Debian, one for Fedora** — same name, same options, same behaviour. Install the one that matches your distro, and you're done.
 
 ## What it does
 
 - **Updates everything in one go** — apt/dnf, Snap, Flatpak, firmware (`fwupd`), GNOME extensions, then cleans up.
+- **You still watch it work.** Each command keeps the terminal, so download progress bars run live exactly as if you had typed the command yourself.
 - **Retries a failing step, but not forever.** Each step gets 5 attempts by default (`-c N` to change it). A dropped connection recovers on its own; a step that is genuinely broken burns its attempts and the script **moves on to the next one** instead of hanging there.
-- **Tells you what happened.** The run ends with a summary: what succeeded, what was skipped because the tool isn't installed, and what failed — with the error line and exit code behind each failure.
+- **Tells you what happened.** The run ends with a summary: what succeeded, what was skipped because the tool isn't installed, and what failed — with the error and exit code behind each failure.
 - **Skips NVIDIA drivers by default.** They can break a running session, so you opt in with `--with-nvidia`.
 - **Never dies halfway.** One broken step can't take the rest of the update with it.
 
-## Where to put the script
+# Ubuntu
 
-The script is just a file on your `PATH`. `/usr/local/bin` is the standard place for scripts you add yourself — it's on the `PATH` of every user on the machine and no package manager will overwrite it.
+## Install it
+
+The script is just a file on your `PATH`. `/usr/local/bin` is the standard home for scripts you add yourself: it's already on every user's `PATH`, and no package manager will ever overwrite it.
 
 ```bash
-# 1. Create the file and paste in the script for your distro (from below)
+# 1) Open the file, paste in the Ubuntu script from below, then save & exit
 sudo nano /usr/local/bin/update-every-thing
 
-# 2. Make it executable
+# 2) Make it executable
 sudo chmod +x /usr/local/bin/update-every-thing
 
-# 3. Check it's picked up — this should print the usage text
+# 3) Check it's picked up — this prints the usage text
 update-every-thing -h
 ```
 
-If you already saved the script as a file somewhere (say `~/Downloads/update-every-thing`), skip the copy-paste and install it in one line:
+Use whichever editor you like in step 1 — `sudo nvim`, `sudo vim`, `sudo gedit`, they all work. If you already have the script saved as a file (say in `~/Downloads`), skip the copy-paste and install it in one line:
 
 ```bash
 sudo install -m 755 ~/Downloads/update-every-thing /usr/local/bin/update-every-thing
 ```
 
-Prefer to keep it to your own user? Use `~/.local/bin` instead — no `sudo` needed for the install:
+## Use it
 
 ```bash
-mkdir -p ~/.local/bin
-install -m 755 ~/Downloads/update-every-thing ~/.local/bin/update-every-thing
-```
-
-Most distros already put `~/.local/bin` on the `PATH`. If `update-every-thing -h` says *command not found*, add it and reopen the terminal:
-
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-```
-
-## Usage
-
-```bash
-update-every-thing                    # 5 attempts per step (default)
+update-every-thing                    # 5 attempts per failing step (default)
 update-every-thing -c 3               # 3 attempts per step
 update-every-thing -c 1               # no retries: one shot per step
 update-every-thing --with-nvidia      # update NVIDIA drivers too
-update-every-thing -c 10 --with-nvidia
 update-every-thing -h                 # help
 ```
 
-`-c` (long form `--retries`) takes a positive integer. Exit status is `0` when everything that ran succeeded, `1` when any step failed, and `2` on a bad argument — so it works inside a cron job or another script.
-
-## The summary
-
-Nothing scrolls away. When the last step is done you get the whole run on one screen:
-
-```text
-============================================================
-📋 Update Summary
-============================================================
-  ✅ APT Metadata Refresh             succeeded on attempt 1/5
-  ✅ APT System Update                succeeded on attempt 2/5
-  ✅ Snap Update                      succeeded on attempt 1/5
-  ✅ Firmware Metadata Refresh        succeeded on attempt 1/5
-  ❌ Firmware Update                  gave up after 5 attempt(s), exit 1
-       ↳ failed to write-firmware: failed to write (null): failed to write data to efivarsfs: Error writing to file descriptor: Invalid argument
-  ✅ Flatpak Update                   succeeded on attempt 1/5
-  ⏭️  GNOME Extensions Update          gnome-extensions CLI not installed
-  ✅ Cleanup (autoremove)             succeeded on attempt 1/1
-------------------------------------------------------------
-  6 succeeded · 1 failed · 1 skipped   (retry limit: 5, took 6m 12s)
-============================================================
-⚠️ Some updates did not go through — see the ❌ lines above.
-```
-
-That firmware line is exactly why the retry count is capped. A machine whose EFI variable store rejects the write will never succeed, no matter how long you retry — an unbounded `while true` loop sits on it forever and the Flatpak and cleanup steps never run at all. Here it spends its 5 attempts, records *why* it died, and the rest of the update still happens.
-
-# Ubuntu
-
-Tested on Ubuntu; it works on Debian and the Ubuntu derivatives too (the Snap and Ubuntu Pro steps skip themselves if those tools aren't installed).
+## The Ubuntu script
 
 ```bash
 #!/usr/bin/env bash
 # Script: update-every-thing  (Ubuntu / Debian)
-# Install: sudo install -m 755 update-every-thing /usr/local/bin/update-every-thing
+# Put it in: /usr/local/bin/update-every-thing   (then: sudo chmod +x it)
 #
 # Update order:
 #   1. Antigravity IDE
@@ -192,6 +152,8 @@ done
 
 SUMMARY=()           # one "STATUS|NAME|DETAIL|REASON" record per step
 FAILED=0
+CURRENT_STEP=""      # set while a step is running, for the Ctrl-C handler
+INTERRUPTED=false
 
 STEP_LOG="$(mktemp -t update-every-thing.XXXXXX)"
 
@@ -199,16 +161,20 @@ record() {
     SUMMARY+=("$1|$2|$3|${4:-}")
 }
 
-# Pulls the most useful line out of a failed step's output: the last line that
-# looks like an error, or just the last line if none of them do. Progress bars
-# are stripped (they redraw with \r, so they would otherwise win).
+# Pulls the most useful line out of a failed step's captured stderr: the last
+# line that looks like an error, or just the last line if none of them do.
+# Progress bars redraw with \r and colours arrive as escape codes, so both are
+# stripped first.
 last_error_line() {
-    local line
-    line=$(tr '\r' '\n' <"$STEP_LOG" | sed 's/[[:space:]]*$//' | grep -v '^$' |
+    local text line
+    text=$(tr '\r' '\n' <"$STEP_LOG" | sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/[[:space:]]*$//' | grep -v '^$')
+
+    line=$(printf '%s\n' "$text" |
            grep -iE 'error|failed|fatal|cannot|unable|denied|no such|not found|conflict|timeout' |
            tail -n 1)
-    [[ -z "$line" ]] && line=$(tr '\r' '\n' <"$STEP_LOG" | sed 's/[[:space:]]*$//' | grep -v '^$' | tail -n 1)
-    [[ -z "$line" ]] && line="(no output)"
+    [[ -z "$line" ]] && line=$(printf '%s\n' "$text" | tail -n 1)
+    [[ -z "$line" ]] && line="(nothing on stderr — scroll up for the step's output)"
+
     # Keep the summary readable.
     if (( ${#line} > 220 )); then
         line="${line:0:217}..."
@@ -234,8 +200,17 @@ retry_command() {
         echo "🔄 Trying: $name... (attempt $attempt/$max)"
         echo "============================================================"
 
-        eval "$cmd" 2>&1 | tee "$STEP_LOG"
-        status=${PIPESTATUS[0]}
+        : >"$STEP_LOG"
+        CURRENT_STEP="$name"
+
+        # stdout is deliberately left alone: the command keeps its terminal, so
+        # download progress bars animate exactly as if it were run by hand.
+        # Only stderr is duplicated — into the log AND back to the screen — so
+        # the reason for a failure can be quoted in the summary later.
+        eval "$cmd" 2> >(tee "$STEP_LOG" >&2)
+        status=$?
+
+        CURRENT_STEP=""
 
         if (( status == 0 )); then
             echo "✅ $name finished successfully"
@@ -252,6 +227,7 @@ retry_command() {
         fi
     done
 
+    sleep 0.2   # let tee flush the last attempt's stderr before reading it
     echo "⛔ $name failed $max time(s) — giving up on it and moving on."
     record FAIL "$name" "gave up after $max attempt(s), exit $status" "$(last_error_line)"
     FAILED=$(( FAILED + 1 ))
@@ -300,13 +276,37 @@ print_summary() {
         "$ok" "$fail" "$skip" "$RETRIES" "$(( SECONDS / 60 ))" "$(( SECONDS % 60 ))"
     echo "============================================================"
 
-    if (( fail > 0 )); then
+    if [[ "$INTERRUPTED" == true ]]; then
+        echo "🛑 Stopped early — the steps after this one never ran."
+    elif (( fail > 0 )); then
         echo "⚠️ Some updates did not go through — see the ❌ lines above."
     else
         echo "🎉 All updates completed successfully!"
     fi
     echo
 }
+
+# Ctrl-C stops the run, but still reports honestly: the step that was running
+# is recorded as interrupted, and the summary says the run ended early.
+on_interrupt() {
+    INTERRUPTED=true
+    echo
+    echo "🛑 Interrupted."
+    if [[ -n "$CURRENT_STEP" ]]; then
+        record FAIL "$CURRENT_STEP" "interrupted by Ctrl-C"
+        FAILED=$(( FAILED + 1 ))
+        CURRENT_STEP=""
+    fi
+    print_summary
+    exit 130
+}
+trap on_interrupt INT
+
+# Ask for the sudo password once, up front, on a clean terminal — then keep the
+# timestamp fresh so no prompt can appear in the middle of a long download.
+sudo -v || true
+( while kill -0 "$$" 2>/dev/null; do sudo -n true 2>/dev/null; sleep 50; done ) &
+SUDO_KEEPALIVE_PID=$!
 
 # NVIDIA packages are pinned for the duration of the apt run; release them
 # however the script ends, so an interrupted run can't leave them held.
@@ -322,12 +322,10 @@ unhold_nvidia() {
 
 cleanup() {
     unhold_nvidia
+    [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
     rm -f "$STEP_LOG"
 }
 trap cleanup EXIT
-
-# Ctrl-C still prints what got done before the interrupt.
-trap 'echo; echo "🛑 Interrupted."; print_summary; exit 130' INT
 
 echo
 echo "============================================================"
@@ -338,9 +336,6 @@ else
     echo "   ⏭️ NVIDIA drivers will be held back (--with-nvidia to include them)."
 fi
 echo "============================================================"
-
-# Ask for the sudo password once, up front, on a clean terminal.
-sudo -v || true
 
 
 # ==============================================================================
@@ -434,8 +429,8 @@ fi
 if command -v pro &> /dev/null; then
 
     # Best effort, one shot each: repeating these fixes nothing.
-    retry_command "pro security-status"        "Ubuntu Pro Security Status" 1
-    retry_command "sudo pro fix --dry-run"     "Ubuntu Pro Fixes (dry run)" 1
+    retry_command "pro security-status"    "Ubuntu Pro Security Status" 1
+    retry_command "sudo pro fix --dry-run" "Ubuntu Pro Fixes (dry run)" 1
 
 else
     skip_step "Ubuntu Pro Security Status" "pro not installed"
@@ -493,12 +488,36 @@ exit $(( FAILED > 0 ? 1 : 0 ))
 
 # Fedora
 
-Same script, `dnf` instead of `apt`. NVIDIA and CUDA packages are excluded from the upgrade unless you pass `--with-nvidia`.
+## Install it
+
+Exactly the same three steps — just paste the Fedora script instead:
+
+```bash
+# 1) Open the file, paste in the Fedora script from below, then save & exit
+sudo nano /usr/local/bin/update-every-thing
+
+# 2) Make it executable
+sudo chmod +x /usr/local/bin/update-every-thing
+
+# 3) Check it's picked up — this prints the usage text
+update-every-thing -h
+```
+
+## Use it
+
+```bash
+update-every-thing                    # 5 attempts per failing step (default)
+update-every-thing -c 3               # 3 attempts per step
+update-every-thing --with-nvidia      # update NVIDIA/CUDA packages too
+update-every-thing -h                 # help
+```
+
+## The Fedora script
 
 ```bash
 #!/usr/bin/env bash
 # Script: update-every-thing  (Fedora)
-# Install: sudo install -m 755 update-every-thing /usr/local/bin/update-every-thing
+# Put it in: /usr/local/bin/update-every-thing   (then: sudo chmod +x it)
 #
 # Update order:
 #   1. Antigravity IDE
@@ -583,6 +602,8 @@ done
 
 SUMMARY=()           # one "STATUS|NAME|DETAIL|REASON" record per step
 FAILED=0
+CURRENT_STEP=""      # set while a step is running, for the Ctrl-C handler
+INTERRUPTED=false
 
 STEP_LOG="$(mktemp -t update-every-thing.XXXXXX)"
 
@@ -590,16 +611,20 @@ record() {
     SUMMARY+=("$1|$2|$3|${4:-}")
 }
 
-# Pulls the most useful line out of a failed step's output: the last line that
-# looks like an error, or just the last line if none of them do. Progress bars
-# are stripped (they redraw with \r, so they would otherwise win).
+# Pulls the most useful line out of a failed step's captured stderr: the last
+# line that looks like an error, or just the last line if none of them do.
+# Progress bars redraw with \r and colours arrive as escape codes, so both are
+# stripped first.
 last_error_line() {
-    local line
-    line=$(tr '\r' '\n' <"$STEP_LOG" | sed 's/[[:space:]]*$//' | grep -v '^$' |
+    local text line
+    text=$(tr '\r' '\n' <"$STEP_LOG" | sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/[[:space:]]*$//' | grep -v '^$')
+
+    line=$(printf '%s\n' "$text" |
            grep -iE 'error|failed|fatal|cannot|unable|denied|no such|not found|conflict|timeout' |
            tail -n 1)
-    [[ -z "$line" ]] && line=$(tr '\r' '\n' <"$STEP_LOG" | sed 's/[[:space:]]*$//' | grep -v '^$' | tail -n 1)
-    [[ -z "$line" ]] && line="(no output)"
+    [[ -z "$line" ]] && line=$(printf '%s\n' "$text" | tail -n 1)
+    [[ -z "$line" ]] && line="(nothing on stderr — scroll up for the step's output)"
+
     # Keep the summary readable.
     if (( ${#line} > 220 )); then
         line="${line:0:217}..."
@@ -625,8 +650,17 @@ retry_command() {
         echo "🔄 Trying: $name... (attempt $attempt/$max)"
         echo "============================================================"
 
-        eval "$cmd" 2>&1 | tee "$STEP_LOG"
-        status=${PIPESTATUS[0]}
+        : >"$STEP_LOG"
+        CURRENT_STEP="$name"
+
+        # stdout is deliberately left alone: the command keeps its terminal, so
+        # download progress bars animate exactly as if it were run by hand.
+        # Only stderr is duplicated — into the log AND back to the screen — so
+        # the reason for a failure can be quoted in the summary later.
+        eval "$cmd" 2> >(tee "$STEP_LOG" >&2)
+        status=$?
+
+        CURRENT_STEP=""
 
         if (( status == 0 )); then
             echo "✅ $name finished successfully"
@@ -643,6 +677,7 @@ retry_command() {
         fi
     done
 
+    sleep 0.2   # let tee flush the last attempt's stderr before reading it
     echo "⛔ $name failed $max time(s) — giving up on it and moving on."
     record FAIL "$name" "gave up after $max attempt(s), exit $status" "$(last_error_line)"
     FAILED=$(( FAILED + 1 ))
@@ -691,7 +726,9 @@ print_summary() {
         "$ok" "$fail" "$skip" "$RETRIES" "$(( SECONDS / 60 ))" "$(( SECONDS % 60 ))"
     echo "============================================================"
 
-    if (( fail > 0 )); then
+    if [[ "$INTERRUPTED" == true ]]; then
+        echo "🛑 Stopped early — the steps after this one never ran."
+    elif (( fail > 0 )); then
         echo "⚠️ Some updates did not go through — see the ❌ lines above."
     else
         echo "🎉 All updates completed successfully!"
@@ -699,11 +736,33 @@ print_summary() {
     echo
 }
 
-cleanup() { rm -f "$STEP_LOG"; }
-trap cleanup EXIT
+# Ctrl-C stops the run, but still reports honestly: the step that was running
+# is recorded as interrupted, and the summary says the run ended early.
+on_interrupt() {
+    INTERRUPTED=true
+    echo
+    echo "🛑 Interrupted."
+    if [[ -n "$CURRENT_STEP" ]]; then
+        record FAIL "$CURRENT_STEP" "interrupted by Ctrl-C"
+        FAILED=$(( FAILED + 1 ))
+        CURRENT_STEP=""
+    fi
+    print_summary
+    exit 130
+}
+trap on_interrupt INT
 
-# Ctrl-C still prints what got done before the interrupt.
-trap 'echo; echo "🛑 Interrupted."; print_summary; exit 130' INT
+# Ask for the sudo password once, up front, on a clean terminal — then keep the
+# timestamp fresh so no prompt can appear in the middle of a long download.
+sudo -v || true
+( while kill -0 "$$" 2>/dev/null; do sudo -n true 2>/dev/null; sleep 50; done ) &
+SUDO_KEEPALIVE_PID=$!
+
+cleanup() {
+    [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
+    rm -f "$STEP_LOG"
+}
+trap cleanup EXIT
 
 echo
 echo "============================================================"
@@ -714,9 +773,6 @@ else
     echo "   ⏭️ NVIDIA drivers will be skipped (--with-nvidia to include them)."
 fi
 echo "============================================================"
-
-# Ask for the sudo password once, up front, on a clean terminal.
-sudo -v || true
 
 
 # ==============================================================================
@@ -826,17 +882,41 @@ print_summary
 exit $(( FAILED > 0 ? 1 : 0 ))
 ```
 
+## The summary
+
+Nothing scrolls away. When the last step is done you get the whole run on one screen:
+
+```text
+============================================================
+📋 Update Summary
+============================================================
+  ✅ DNF Metadata Refresh             succeeded on attempt 1/5
+  ✅ DNF System Update                succeeded on attempt 2/5
+  ✅ Firmware Metadata Refresh        succeeded on attempt 1/5
+  ❌ Firmware Update                  gave up after 5 attempt(s), exit 1
+       ↳ failed to write-firmware: failed to write (null): failed to write data to efivarsfs: Error writing to file descriptor: Invalid argument
+  ✅ Flatpak Update                   succeeded on attempt 1/5
+  ⏭️  GNOME Extensions Update          gnome-extensions CLI not installed
+  ✅ Cleanup (autoremove)             succeeded on attempt 1/1
+------------------------------------------------------------
+  5 succeeded · 1 failed · 1 skipped   (retry limit: 5, took 6m 12s)
+============================================================
+⚠️ Some updates did not go through — see the ❌ lines above.
+```
+
+That firmware line is exactly why the retry count is capped. A machine whose EFI variable store rejects the write will never succeed, no matter how long you retry — an unbounded `while true` loop sits on it forever, and the Flatpak and cleanup steps never run at all. Here it spends its 5 attempts, records *why* it died, and the rest of the update still happens.
+
+Press `Ctrl-C` and you still get the summary, with the step you interrupted marked as such and a `🛑 Stopped early` note — it will never claim a run finished when it didn't. The exit status is `0` when everything that ran succeeded, `1` when any step failed, `130` when you interrupted it, and `2` on a bad argument, so it behaves inside a cron job or another script.
+
 ## How it works
 
-- **Bounded retries** — `retry_command` loops `attempt` from 1 to `$RETRIES`. When the attempts run out it records the failure and returns; it never aborts the script, so one broken step can't take the rest of the run with it. Steps where a retry is pointless (`apt autoremove`, `pro security-status`) pass `1` as a third argument and get a single shot.
-- **Capturing the reason** — each attempt's output goes through `tee` into a temp file, so it stays on screen *and* is available afterwards. `last_error_line` then pulls the most useful line out of it: progress bars redraw with `\r`, so those get split back into lines and dropped, and the last line matching `error|failed|fatal|cannot|…` wins.
-- **`${PIPESTATUS[0]}`** — because the command is piped into `tee`, `$?` describes the pipeline, not the command. `PIPESTATUS[0]` is the step's own exit code, and it goes into the summary too.
+- **Bounded retries** — `retry_command` loops `attempt` from 1 to `$RETRIES`. When the attempts run out it records the failure and returns; it never aborts the script, so one broken step can't take the rest of the run with it. Steps where retrying is pointless (`apt autoremove`, `pro security-status`) pass `1` as a third argument and get a single shot.
+- **Live output, captured errors** — the command's **stdout is left completely alone**, so it still sees a terminal and animates its progress bars. Only *stderr* is duplicated, with `2> >(tee "$STEP_LOG" >&2)`, which both prints it and saves it. `last_error_line` then pulls the useful line back out for the summary — stripping ANSI colours and the `\r` redraws that progress bars leave behind.
 - **`set -uo pipefail`, deliberately without `-e`** — the script *expects* commands to fail and handles it itself. `-e` would defeat the whole design.
 - **`set -f`** — globbing off, so patterns like `--exclude=*nvidia*` reach `dnf` intact instead of the shell expanding them against the current directory first.
 - **Graceful skips** — a tool that isn't installed is recorded as ⏭️ rather than silently ignored, so the summary distinguishes "not applicable here" from "broke".
-- **`sudo -v` up front** — asks for the password once, on a clean terminal, before any output is piped.
-- **NVIDIA released on exit** (Ubuntu) — the hold is lifted from an `EXIT` trap, so even an interrupted run can't leave your NVIDIA packages pinned.
-- **Ctrl-C still reports** — the `INT` trap prints the summary of whatever finished before you interrupted it.
+- **One password, once** — `sudo -v` up front, plus a background loop that refreshes the timestamp every 50 seconds, so a long download can't be followed by a password prompt you never see.
+- **NVIDIA released on exit** (Ubuntu) — the `apt-mark hold` is lifted from an `EXIT` trap, so even an interrupted run can't leave your NVIDIA packages pinned.
 
 ## Notes
 
