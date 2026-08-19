@@ -1,4 +1,16 @@
 import type { NextConfig } from "next";
+import { site } from "./src/lib/site";
+
+// Where the site actually lives now. Same precedence as everywhere else, so a
+// preview deployment pointed elsewhere redirects to itself, not to production.
+const canonicalOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? site.url).origin;
+
+// Domains the site used to answer on. They stay pointed at the Vercel project
+// so old links keep resolving — this is what turns them into a one-hop move
+// instead of a second, competing copy of the site.
+const LEGACY_HOSTS = ["shehaweyblog.vercel.app"].filter(
+  (host) => host !== new URL(canonicalOrigin).host,
+);
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -19,6 +31,27 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // ── the shehaweyblog -> shinux move ──────────────────────────────────
+      // The old domain is still an alias on the Vercel project and answers
+      // 200, so without this every previously shared link serves a full second
+      // copy of the site: duplicate content for crawlers, and the retired name
+      // sitting in the address bar. A permanent redirect retires it without
+      // breaking anything already shared — removing the alias outright would
+      // instead 404 every one of those links.
+      //
+      // This belongs here rather than in src/proxy.ts: that matcher is
+      // deliberately narrow (see the note at the bottom of it) and widening it
+      // to cover every path would cost a function invocation on every request.
+      // Redirects are resolved before any of that runs.
+      //
+      // Listed first so an old link to a moved tutorial lands on the new host
+      // and then follows the path redirects below.
+      ...LEGACY_HOSTS.map((host) => ({
+        source: "/:path*",
+        has: [{ type: "host" as const, value: host }],
+        destination: `${canonicalOrigin}/:path*`,
+        permanent: true,
+      })),
       {
         source: "/tutorials/linux-desktop-setup/automating-system-updates",
         destination: "/tutorials/scripts/automating-system-updates",
