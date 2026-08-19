@@ -75,7 +75,7 @@ export async function GET() {
   <channel>
     <title>${site.name}</title>
     <link>${siteUrl}</link>
-    <description>Articles and answered questions about Linux and the terminal.</description>
+    <description>${escapeXml(site.description)}</description>
     <language>en</language>
 ${rssItems}
   </channel>

@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
+import { site } from "@/lib/site";
 
 // Web App Manifest — makes the site installable as a standalone app (PWA).
 // Served at /manifest.webmanifest.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "shehaweyblog",
-    short_name: "shehaweyblog",
-    description:
-      "A personal Linux blog with articles and a Q&A archive. مدونة شخصية عن لينكس: مقالات، أوامر، وأرشيف أسئلة وأجوبة.",
+    name: `${site.name} — ${site.tagline}`,
+    short_name: site.name,
+    description: site.description,
     lang: "en",
     dir: "ltr",
     start_url: "/",

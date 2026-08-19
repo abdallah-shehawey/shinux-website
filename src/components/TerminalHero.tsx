@@ -27,7 +27,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
     },
     {
       command: "uname -a",
-      output: "ShehaweyOS · Embedded/Linux · x86_64\nKernel: curiosity-driven · Uptime: still learning",
+      output: "shinux · Embedded/Linux · x86_64\nKernel: curiosity-driven · Uptime: still learning",
     },
     {
       command: "cat /proc/shehawey/status",

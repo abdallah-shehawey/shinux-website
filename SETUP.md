@@ -1,4 +1,4 @@
-# دليل الإعداد — shehaweyblog
+# دليل الإعداد — shinux
 
 > هذا الملف موجّه لك أنت (صاحب الموقع). مكتوب بالعربية وبخطوات مفصّلة.
 > يُحدَّث بعد كل مرحلة. المراحل 4 و5 و6 خلصوا كلهم — فيه خطوات يدوية بسيطة
@@ -73,14 +73,14 @@
 افتح الطرفية (Terminal) ثم:
 
 ```bash
-cd /media/Local-Disk2/My_Projects/Linux-website
+cd ~/My_Projects/shinux-website
 npm install      # مرة واحدة فقط (أو عند تحديث المكتبات)
 npm run dev      # يشغّل الموقع محلياً
 ```
 
 ثم افتح المتصفح على: **http://localhost:3000**
 
-> الدومين النهائي للموقع (بعد النشر في المرحلة 6): **https://shehaweyblog.vercel.app**
+> الدومين النهائي للموقع (بعد النشر في المرحلة 6): **https://shinux.vercel.app**
 
 لإيقاف الموقع: اضغط `Ctrl + C` في الطرفية.
 
@@ -102,17 +102,13 @@ npm start
 لذلك تم نقل المشروع فعلياً إلى قرص لينكس (ext4) في مجلد منزلك:
 
 ```
-المسار الحقيقي:   /home/abdallah-shehawey/My_Projects/Linux-website
-المسار المختصر:   /media/Local-Disk2/My_Projects/Linux-website  →  (اختصار symlink يشير للمسار الحقيقي)
+المسار الحقيقي:   /home/abdallah-shehawey/My_Projects/shinux-website
 ```
 
 **ماذا يعني هذا لك عملياً؟**
 
-- تستطيع الاستمرار في استخدام نفس المسار القديم `‎/media/Local-Disk2/My_Projects/Linux-website‎`
-  في المحرّر والطرفية كأن شيئاً لم يتغيّر — لأنه صار اختصاراً يفتح المسار الحقيقي تلقائياً.
-- **git و GitHub و Vercel كلها تعمل بشكل طبيعي** ولم يتغيّر أي شيء فيها (نفس الريبو، نفس الرابط).
-- لو أردت يوماً حذف المشروع أو نسخه، تذكّر أن الملفات الحقيقية في
-  `‎/home/abdallah-shehawey/My_Projects/Linux-website‎`.
+- افتح المشروع دائماً من `‎~/My_Projects/shinux-website‎` في المحرّر والطرفية.
+- **git و GitHub و Vercel كلها تعمل بشكل طبيعي** — نفس الريبو، ونفس الموقع المنشور.
 - **لا تنقل المشروع يدوياً إلى قرص `Local-Disk` أو `Local-Disk2`** (فكلاهما NTFS) وإلا سيتوقف
   البناء. أبقِه على قرص ext4 (المنزل).
 
@@ -167,7 +163,7 @@ npm start
    URL** الظاهر هناك (شكله `https://<project-ref>.supabase.co/auth/v1/callback`).
 2. اذهب لـ **github.com → Settings → Developer settings → OAuth Apps → New
    OAuth App**.
-3. **Homepage URL**: `http://localhost:3000` (وبعد النشر: `https://shehaweyblog.vercel.app`).
+3. **Homepage URL**: `http://localhost:3000` (وبعد النشر: `https://shinux.vercel.app`).
 4. **Authorization callback URL**: الصق الـ Callback URL اللي نسخته من Supabase.
 5. بعد الإنشاء، انسخ **Client ID** واعمل **Generate a new client secret** وانسخه.
 6. ارجع لصفحة GitHub Provider في Supabase، الصق الـ Client ID والـ Secret،
@@ -313,7 +309,7 @@ npm start
 4. خلاص. من غير أي حاجة تانية، من دلوقتي أي إشعار بيتبعت على الموقع (نشر
    سؤالك، حد جاوب، حد رد على إجابتك، سؤال جديد محتاج مراجعتك) هيوصلك برضو
    إيميل نسخة منه على نفس الإيميل اللي داخل بيه الموقع (Google/GitHub/إيميلك).
-   المرسل هيبقى `shehaweyblog <onboarding@resend.dev>` (عنوان Resend التجريبي —
+   المرسل هيبقى `shinux <onboarding@resend.dev>` (عنوان Resend التجريبي —
    لو عايز يبقى بعنوان دومينك بتاعك، لازم تتحقق من الدومين في Resend نفسه،
    ده اختياري ومش ضروري دلوقتي).
 5. لو مسبتش الخطوة دي، الموقع هيفضل شغال عادي تمامًا — بس من غير إيميلات،

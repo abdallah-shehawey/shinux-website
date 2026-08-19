@@ -1,6 +1,6 @@
 <div align="center">
 
-# shehaweyblog — Linux Blog & Q&A Platform
+# shinux — Linux Blog & Q&A Platform
 
 A modern Linux technical blog, structured tutorial platform, and community Q&A engine built with **Next.js 16**, **Supabase**, and **Tailwind CSS**.
 
@@ -9,7 +9,7 @@ A modern Linux technical blog, structured tutorial platform, and community Q&A e
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
 
-**Live Demo:** [shehaweyblog.vercel.app](https://shehaweyblog.vercel.app)
+**Live Demo:** [shinux.vercel.app](https://shinux.vercel.app)
 
 </div>
 
@@ -67,8 +67,8 @@ content/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/abdallah-shehawey/shehaweyblog.git
-cd shehaweyblog
+git clone https://github.com/abdallah-shehawey/shinux-website.git
+cd shinux-website
 
 # 2. Install dependencies
 npm install

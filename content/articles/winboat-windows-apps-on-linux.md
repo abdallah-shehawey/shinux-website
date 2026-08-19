@@ -41,6 +41,6 @@ author: abdallah-shehawey
 
 دا لينك الشرح والتوثيق كاملاً على الموقع لطريقة الـ Setup للبرنامج و Docker، ورابط الموقع الرسمي:
 
-[https://shehaweyblog.vercel.app/tutorials/linux-desktop-setup/winboat-windows-apps-on-linux](/tutorials/linux-desktop-setup/winboat-windows-apps-on-linux)
+[https://shinux.vercel.app/tutorials/linux-desktop-setup/winboat-windows-apps-on-linux](/tutorials/linux-desktop-setup/winboat-windows-apps-on-linux)
 
 وخلاص بقى يا صديقي معدش عندك حُجّة ابقى هات حُجّة تانية بقى 😂

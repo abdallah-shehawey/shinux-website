@@ -48,7 +48,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: site.name, template: `%s · ${site.name}` },
-  description: site.tagline,
+  description: site.description,
   // Installability only. The manifest is what lets someone add the site to
   // their home screen and open it in its own window — it caches nothing and
   // costs nothing to serve. Offline support is a separate thing entirely, and
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: site.name,
     title: { default: site.name, template: `%s · ${site.name}` },
-    description: site.tagline,
+    description: site.description,
     url: siteUrl,
     // The shell (and the card) are English — <html lang> says the same.
     locale: "en_US",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: { default: site.name, template: `%s · ${site.name}` },
-    description: site.tagline,
+    description: site.description,
   },
   // iOS has no install prompt: Safari's "Add to Home Screen" reads these,
   // which is what opens the installed copy without browser chrome.

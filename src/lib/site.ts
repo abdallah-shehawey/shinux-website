@@ -18,11 +18,22 @@ export interface Author {
 }
 
 export const site = {
-  name: "shehaweyblog",
-  tagline: "A personal blog about Linux: distros, commands, and troubleshooting.",
+  // Lowercase everywhere — it is a shell name, and the header renders it as a
+  // prompt ("$ shinux"). "sh" (the shell) + "linux" is the whole story, and the
+  // logo is that same lockup: sh_
+  name: "shinux",
+  /** Short slogan — the site's own words, matching the home page heading. */
+  tagline: "Notes from below the OS",
+  /**
+   * The long form, used as the meta description on every page that does not
+   * write its own. Search results cut off around 155 characters, so this is
+   * written to survive the truncation.
+   */
+  description:
+    "Embedded Linux, RTOS internals, and everything else on the way from firmware to the kernel — write-ups, hands-on tutorials, and a Q&A archive.",
   /** Production URL (env-overridable elsewhere via NEXT_PUBLIC_SITE_URL). */
-  url: "https://shehaweyblog.vercel.app",
-  repoUrl: "https://github.com/abdallah-shehawey/shehaweyblog",
+  url: "https://shinux.vercel.app",
+  repoUrl: "https://github.com/abdallah-shehawey/shinux-website",
   /** My portfolio — cross-linked from the header nav and the About page CTA. */
   portfolioUrl: "https://abdallahshehawey.vercel.app/",
   author: {
@@ -70,5 +81,5 @@ export const ogCard = {
   width: 1200,
   height: 630,
   // Mirrors src/app/opengraph-image.alt.txt.
-  alt: 'A terminal window on a dark grid background running "$ whoami", answering with "Abdallah Shehawey — Building. Learning. Sharing." over a short blurb about the blog and pills for its Articles, Tutorials and Q&A sections.',
+  alt: 'A terminal window on a dark grid background running "$ cat /etc/shinux-release", answering with the shinux wordmark and "Notes from below the OS" over a short blurb about the site, with pills for its Articles, Tutorials and Q&A sections.',
 };
