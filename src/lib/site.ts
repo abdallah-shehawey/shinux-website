@@ -81,5 +81,5 @@ export const ogCard = {
   width: 1200,
   height: 630,
   // Mirrors src/app/opengraph-image.alt.txt.
-  alt: 'A terminal window on a dark grid background running "$ cat /etc/shinux-release", answering with the shinux wordmark and "Notes from below the OS" over a short blurb about the site, with pills for its Articles, Tutorials and Q&A sections.',
+  alt: 'A terminal window on a dark grid background running "$ whoami", answering with "Abdallah Shehawey — Building. Learning. Sharing." over a short blurb about the blog and pills for its Articles, Tutorials and Q&A sections.',
 };

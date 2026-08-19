@@ -14,11 +14,13 @@ Sources
   public/icon.svg              the primary mark: rounded terminal tile + "sh_"
   public/icon-maskable.svg     full-bleed variant for Android adaptive masks
   public/apple-icon-src.svg    iOS home-screen tile
-  scripts/brand/og-card.svg    the 1200x630 link-preview card
   scripts/brand/favicon-16-src.svg
       A deliberately simplified mark for the 16px favicon layer: no inner
       stroke, no cursor, letters filling the tile. The full "sh_" lockup turns
       to mush at that size.
+
+The link-preview card (src/app/opengraph-image.png) is NOT generated here: it
+is hand-made artwork. This script must never write over it.
 """
 from __future__ import annotations
 
@@ -35,7 +37,6 @@ RASTERS = [
     ("public/icon.svg", "public/icon-512.png", 512),
     ("public/icon-maskable.svg", "public/icon-maskable-512.png", 512),
     ("public/apple-icon-src.svg", "public/apple-icon.png", 180),
-    ("scripts/brand/og-card.svg", "src/app/opengraph-image.png", 1200),
 ]
 
 # The .ico carries three layers; 16px gets the simplified art.
@@ -64,10 +65,8 @@ def main() -> int:
         return 1
 
     for src, dst, size in RASTERS:
-        # The OG card is the only non-square asset.
-        height = 630 if size == 1200 else size
-        render(ROOT / src, ROOT / dst, size, height)
-        print(f"  {dst}  ({size}x{height})")
+        render(ROOT / src, ROOT / dst, size, size)
+        print(f"  {dst}  ({size}x{size})")
 
     # Pillow's ICO writer resizes one image into every layer, which would throw
     # away the simplified 16px drawing — ImageMagick packs distinct files.
