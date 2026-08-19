@@ -81,6 +81,20 @@ export function setScroll(path: string, y: number): void {
 }
 
 /**
+ * Drop the remembered position for `path`, so the next arrival there starts at
+ * the top.
+ *
+ * This is what "take me home" means when it is asked for explicitly — the
+ * brand in the header — as opposed to the tab next to it, which is a way back
+ * to a page you were reading and keeps your place.
+ */
+export function forgetScroll(path: string): void {
+  const map = store();
+  if (!map.delete(path)) return;
+  if (flushTimer === 0) flushTimer = window.setTimeout(flush, FLUSH_MS);
+}
+
+/**
  * Write the map out now. Called on a debounce, and directly whenever the
  * document may be about to go away — a pending write lost there is the one that
  * mattered most.

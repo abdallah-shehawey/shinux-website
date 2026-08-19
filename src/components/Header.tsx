@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { site } from "@/lib/site";
+import BrandLink from "./BrandLink";
 import ThemeToggle from "./ThemeToggle";
 import HeaderAuth from "./HeaderAuth";
 import DesktopNav from "./DesktopNav";
@@ -24,13 +24,13 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur">
       <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-6 lg:px-6">
-        <Link
+        <BrandLink
           href="/"
           className="flex items-center gap-1.5 font-mono text-sm font-semibold text-fg active:scale-95 transition-transform"
         >
           <span className="text-accent">$</span>
           <span>{site.name}</span>
-        </Link>
+        </BrandLink>
 
         {/* Warms every tab, including on phones where the nav below is
             display:none and Link's viewport prefetch therefore never fires. */}
