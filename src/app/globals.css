@@ -796,6 +796,19 @@ input:not([type]) {
   padding: 0.1em 0.4em;
 }
 
+/* A heading that names a command or a package puts it in backticks, and 0.85em
+   of an already-small heading renders it smaller than the prose around it —
+   exactly the word the reader is scanning for. Keep the heading's own size and
+   let the accent, not a size drop, mark it as code. */
+.prose h1 code,
+.prose h2 code,
+.prose h3 code,
+.prose h4 code {
+  font-size: 1em;
+  color: var(--accent);
+  padding: 0.05em 0.3em;
+}
+
 /* Code blocks are ALWAYS LTR, regardless of page direction (spec §5). */
 .prose pre {
   direction: ltr;
