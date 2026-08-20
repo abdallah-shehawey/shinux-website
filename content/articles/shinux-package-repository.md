@@ -34,6 +34,15 @@ sudo dnf install vidtime
 sudo apt install vidtime
 ```
 
+It lives at
+[abdallah-shehawey.github.io/shinux](https://abdallah-shehawey.github.io/shinux/),
+and the source is on [GitHub](https://github.com/abdallah-shehawey/shinux). If a
+tool misbehaves on your distribution, or you want one of these to do something
+it does not,
+[open an issue](https://github.com/abdallah-shehawey/shinux/issues) — knowing
+which distributions people actually run this on is half of what keeps it
+working.
+
 ## Add the repository
 
 One command, whichever distribution you are on:
@@ -42,49 +51,13 @@ One command, whichever distribution you are on:
 curl -fsSL https://abdallah-shehawey.github.io/shinux/install.sh | sudo sh
 ```
 
-It detects whether you have `dnf`, `yum` or `apt`, imports the signing key, and
+It detects whether you have `dnf`, `yum` or `apt`, trusts the signing key, and
 writes the repository definition. If you would rather not pipe a script into a
 shell — a reasonable instinct —
-[read it first](https://abdallah-shehawey.github.io/shinux/install.sh), or do it
-by hand.
-
-### By hand, Fedora / RHEL / CentOS / Rocky / Alma
-
-```bash
-sudo rpm --import https://abdallah-shehawey.github.io/shinux/RPM-GPG-KEY-shinux
-sudo dnf install -y https://abdallah-shehawey.github.io/shinux/rpm/shinux-release-1.1-1.noarch.rpm
-```
-
-The first line trusts the signing key; the second drops
-`/etc/yum.repos.d/shinux.repo` and a copy of the key into `/etc/pki/rpm-gpg/`.
-Doing it in that order is what keeps your first install quiet — a package cannot
-trust its own key from a scriptlet, because rpm holds its database open for the
-whole transaction, so this is a job for whatever adds the repository. Skip the
-first line and dnf simply asks you to confirm the key the next time you install
-something; same outcome, one prompt.
-
-Either way, check what you trusted:
-
-```bash
-rpm -qa gpg-pubkey --qf '%{SUMMARY} %{VERSION}\n' | grep -i shinux
-```
-
-The fingerprint should match the one below in
-[A note on trust](#a-note-on-trust). Reading it before you install from a
-stranger's repository is the whole exercise.
-
-### By hand, Debian / Ubuntu / Mint
-
-```bash
-curl -fsSL https://abdallah-shehawey.github.io/shinux/shinux-keyring.deb \
-  -o /tmp/shinux-keyring.deb
-sudo apt install -y /tmp/shinux-keyring.deb
-sudo apt update
-```
-
-The keyring package installs `/etc/apt/sources.list.d/shinux.sources` with a
-`Signed-By:` line pinning the key, so this key can only ever vouch for this one
-repository and nothing else on your system.
+[read it first](https://abdallah-shehawey.github.io/shinux/install.sh): it is
+forty lines, and importing the key before adding the repository is the only part
+that matters, because it is what keeps your first install from stopping to ask
+about it.
 
 ## Check that it worked
 
@@ -366,22 +339,6 @@ installed in place. To take the packages with it:
 curl -fsSL https://abdallah-shehawey.github.io/shinux/uninstall.sh | sudo sh -s -- --purge
 ```
 
-By hand, on Fedora:
-
-```bash
-sudo dnf remove shinux-release
-sudo rpm -e $(rpm -qa 'gpg-pubkey*' \
-  --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n' | grep -i shinux | cut -d' ' -f1)
-```
-
-and on Debian or Ubuntu:
-
-```bash
-sudo apt purge shinux-archive-keyring
-sudo rm -f /etc/apt/sources.list.d/shinux.sources /etc/apt/keyrings/shinux.gpg
-sudo apt update
-```
-
 ## When something does not work
 
 **dnf says the signature could not be verified, or that the key is not
@@ -487,12 +444,3 @@ and the source of every script in them is right there next to the packaging: one
 source tree per package produces both the `.rpm` and the `.deb`, so the two can
 never quietly drift apart. It is all MIT-licensed — read it, copy it, or build
 your own repository the same way.
-
-The repository lives at
-[abdallah-shehawey.github.io/shinux](https://abdallah-shehawey.github.io/shinux/),
-and the source is on [GitHub](https://github.com/abdallah-shehawey/shinux). If a
-tool misbehaves on your distribution, or you want one of these to do something
-it does not,
-[open an issue](https://github.com/abdallah-shehawey/shinux/issues) — knowing
-which distributions people actually run this on is half of what keeps it
-working.

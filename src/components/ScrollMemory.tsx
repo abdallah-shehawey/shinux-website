@@ -8,6 +8,7 @@ import {
   getScroll,
   resumeTracking,
   setScroll,
+  startsAtTopOnFreshVisit,
   suppressTracking,
   trackingSuppressed,
 } from "@/lib/scroll-memory";
@@ -138,6 +139,15 @@ export default function ScrollMemory() {
   // the fragment can put them there. Held separately from the recorded position,
   // which by then describes the heading they jumped to.
   const beforeFragment = useRef<{ path: string; y: number } | null>(null);
+  // Set when the reader clicks a link to a different page, and cleared by the
+  // arrival it causes. Its absence is what identifies Back and Forward.
+  //
+  // Deliberately keyed off the click rather than off `popstate`: a popstate
+  // listener cannot win this race. Next re-renders from inside its own popstate
+  // handler, which is registered before this component's, so by the time a
+  // listener here could set a flag the layout effect below has already read it.
+  // A click always happens first, whatever the router does afterwards.
+  const followedLink = useRef(false);
   // The page a scroll event belongs to. It has to come from a ref written in the
   // layout effect below, not from this render's `pathname`, because the listener
   // is re-subscribed in a passive effect — which React can run *after* the
@@ -193,6 +203,9 @@ export default function ScrollMemory() {
       if (anchor.origin !== window.location.origin) return;
 
       setScroll(trackedPath.current, window.scrollY);
+      // Only a link that leaves the page counts: a jump to a heading on this one
+      // produces no arrival to clear the flag again.
+      if (!samePath(anchor.pathname, trackedPath.current)) followedLink.current = true;
 
       if (!anchor.hash) return;
       if (!samePath(anchor.pathname, trackedPath.current)) {
@@ -209,6 +222,33 @@ export default function ScrollMemory() {
     return () => document.removeEventListener("click", handleClick, { capture: true });
   }, []);
 
+  // Back onto this document out of the back/forward cache.
+  //
+  // Links inside an article are plain anchors — rendered Markdown, not
+  // `next/link` — so following one is a full page load and Back is a document
+  // restore, not a route change. Nothing else in this component runs for that:
+  // there is no remount and no pathname change, so neither the mount path nor
+  // the layout effect below ever sees it.
+  //
+  // The browser restores the offset it captured when the document was frozen,
+  // and that offset is 0, because the pending-navigation skeleton scrolls the
+  // outgoing page to the top before the click leaves it. The position recorded
+  // here is the only surviving record of where the reader actually was.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      // trackedPath, not location.pathname: the store is keyed by the decoded
+      // paths usePathname reports, and this document's own is still in hand.
+      const saved = getScroll(trackedPath.current);
+      if (saved === null || saved <= 0) return;
+      cancelRestore.current?.();
+      cancelRestore.current = restoreScroll(saved);
+    };
+
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   // Back out of a table-of-contents jump.
   //
   // Nothing else covers this: the pathname has not changed, so React does not
@@ -218,6 +258,10 @@ export default function ScrollMemory() {
   // page — resetting the scroll — after that has already happened.
   useEffect(() => {
     const onPopState = () => {
+      // Belt and braces for the one case the click cannot cover: a link that was
+      // clicked but never landed, leaving the flag set for the Back that follows.
+      followedLink.current = false;
+
       const saved = beforeFragment.current;
       if (saved === null) return;
       // A hash in the URL is the browser's job, and a different page is the
@@ -270,6 +314,16 @@ export default function ScrollMemory() {
       if (type !== "reload" && type !== "back_forward") return;
       // Back onto a document the phone discarded, or a plain reload. The browser
       // may have restored something already; restoreScroll only ever adds to it.
+    }
+
+    // A link click into a page that is one piece of writing starts at its
+    // start. Back and Forward still resume, and so do the listings, which are
+    // scrolled *through* rather than read. See startsAtTopOnFreshVisit.
+    const clicked = followedLink.current;
+    followedLink.current = false;
+    if (!first && clicked && startsAtTopOnFreshVisit(pathname)) {
+      window.scrollTo(0, 0);
+      return;
     }
 
     const saved = getScroll(pathname);

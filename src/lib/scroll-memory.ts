@@ -114,6 +114,29 @@ export function flush(): void {
 }
 
 /**
+ * Whether arriving at `path` by following a link should start at the top,
+ * rather than wherever the reader last was.
+ *
+ * The browser's own rule, and every reader's expectation: Back and Forward
+ * resume, a fresh click starts over. Opening an article you half-read yesterday
+ * and being dropped into its middle reads as a bug, because nothing about the
+ * click said "continue".
+ *
+ * Listings are the exception, and deliberately so. The header tabs and the
+ * "← All articles" links are ways *back* to something you were scrolling
+ * through, so they keep the place; see BrandLink, which is the one control that
+ * means "start over" instead. So this only claims the pages that are a single
+ * piece of content: an article, a lesson, a question.
+ */
+export function startsAtTopOnFreshVisit(path: string): boolean {
+  const parts = path.split("/").filter(Boolean);
+  if (parts[0] === "articles" || parts[0] === "questions") return parts.length === 2;
+  // /tutorials/<track> is another listing; only /tutorials/<track>/<lesson> reads.
+  if (parts[0] === "tutorials") return parts.length === 3;
+  return false;
+}
+
+/**
  * Stop recording scroll positions until the page changes or the reader touches
  * something.
  *
