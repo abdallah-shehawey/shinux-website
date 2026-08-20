@@ -51,15 +51,22 @@ by hand.
 ### By hand, Fedora / RHEL / CentOS / Rocky / Alma
 
 ```bash
+sudo rpm --import https://abdallah-shehawey.github.io/shinux/RPM-GPG-KEY-shinux
 sudo dnf install -y https://abdallah-shehawey.github.io/shinux/rpm/shinux-release-1.1-1.noarch.rpm
 ```
 
-That single package drops `/etc/yum.repos.d/shinux.repo` and the public key into
-`/etc/pki/rpm-gpg/`, and trusts that key on the way in, so nothing stops to ask
-you anything afterwards. Check what you just trusted:
+The first line trusts the signing key; the second drops
+`/etc/yum.repos.d/shinux.repo` and a copy of the key into `/etc/pki/rpm-gpg/`.
+Doing it in that order is what keeps your first install quiet — a package cannot
+trust its own key from a scriptlet, because rpm holds its database open for the
+whole transaction, so this is a job for whatever adds the repository. Skip the
+first line and dnf simply asks you to confirm the key the next time you install
+something; same outcome, one prompt.
+
+Either way, check what you trusted:
 
 ```bash
-rpm -qa gpg-pubkey --qf '%{SUMMARY}\n' | grep -i shinux
+rpm -qa gpg-pubkey --qf '%{SUMMARY} %{VERSION}\n' | grep -i shinux
 ```
 
 The fingerprint should match the one below in
@@ -124,14 +131,14 @@ of the script failing halfway through because something was not installed.
 
 | Command | What it does | Brings in |
 |---|---|---|
-| `vidtime` | How long media files run, and their total | `ffmpeg` |
-| `padnum` | Zero-pad numeric filename prefixes, with undo | `sed`, `awk`, `less` |
-| `hashnum` | Move a `#N` tag to the front of a filename | — |
-| `meet` | Open a saved meeting link by name | `xdg-utils`, and `fzf` if you let it |
-| `dlup` | Download with yt-dlp, upload to an rclone remote | `yt-dlp`, `rclone` |
-| `antigravity-update` | Update a local Antigravity IDE install | `curl`, `jq`, `rsync` |
-| `update-every-thing` | Every update the machine needs, in one pass | `fwupd`, `flatpak` if present |
-| `shinux-scripts` | Metapackage pulling in all of the above | all seven |
+| [`vidtime`](#vidtime--how-long-is-all-this-video) | How long media files run, and their total | `ffmpeg` |
+| [`padnum`](#padnum--make-numbered-files-sort-correctly) | Zero-pad numeric filename prefixes, with undo | `sed`, `awk`, `less` |
+| [`hashnum`](#hashnum--move-a-n-tag-to-the-front) | Move a `#N` tag to the front of a filename | — |
+| [`meet`](#meet--open-a-saved-meeting-by-name) | Open a saved meeting link by name | `xdg-utils`, and `fzf` if you let it |
+| [`dlup`](#dlup--download-upload-delete-repeat) | Download with yt-dlp, upload to an rclone remote | `yt-dlp`, `rclone` |
+| [`antigravity-update`](#antigravity-update--keep-antigravity-ide-current) | Update a local Antigravity IDE install | `curl`, `jq`, `rsync` |
+| [`update-every-thing`](#update-every-thing--one-command-for-the-whole-machine) | Every update the machine needs, in one pass | `fwupd`, `flatpak` if present |
+| [`shinux-scripts`](#shinux-scripts--all-of-the-above) | Metapackage pulling in all of the above | all seven |
 
 `fzf`, `fwupd` and `flatpak` are *recommendations* rather than hard
 requirements. dnf and apt install them by default, but neither tool needs
