@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getTracks, getTrack } from "@/lib/tutorials";
 import { getAuthorProfiles } from "@/lib/authors";
 import AuthorInline from "@/components/AuthorInline";
+import CommentsSection from "@/components/CommentsSection";
 import { FaGithub } from "react-icons/fa";
 
 export function generateStaticParams() {
@@ -116,6 +117,8 @@ export default async function TrackPage({
           </li>
         ))}
       </ol>
+
+      <CommentsSection kind="tutorial" slug={track} title={meta.title} />
     </div>
   );
 }

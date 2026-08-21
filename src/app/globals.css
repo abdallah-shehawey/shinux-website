@@ -982,3 +982,22 @@ input:not([type]) {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+/* A comment arrived at from a notification link (#comment-<id>). The page it
+   lives on is static, so the comment does not exist when the browser tries to
+   honour the fragment — CommentsSection scrolls to it once the discussion
+   loads, and this is what says "here, this one" after the scroll stops. */
+.comment-flash {
+  animation: comment-flash 2.2s ease-out 1;
+}
+@keyframes comment-flash {
+  0%,
+  35% {
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    border-radius: 0.8rem;
+  }
+  100% {
+    background: transparent;
+    border-radius: 0.8rem;
+  }
+}

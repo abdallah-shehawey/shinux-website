@@ -14,6 +14,7 @@ import { getAuthorProfiles } from "@/lib/authors";
 import AuthorCard from "@/components/AuthorCard";
 import ArticleCard from "@/components/ArticleCard";
 import ArticleReader, { type RenderedLocale } from "@/components/ArticleReader";
+import CommentsSection from "@/components/CommentsSection";
 
 export function generateStaticParams() {
   return getArticles().map((a) => ({ slug: a.slug }));
@@ -166,6 +167,8 @@ export default async function ArticlePage({
               {next && <AdjacentCard article={next} label="Next" align="end" />}
             </nav>
           )}
+
+          <CommentsSection kind="article" slug={slug} title={article.title} />
 
           {related.length > 0 && (
             <div className="mt-10">

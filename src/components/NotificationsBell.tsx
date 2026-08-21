@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { notificationLabel, notificationHref, type NotificationRecord } from "@/lib/notification-types";
+import {
+  notificationLabel,
+  notificationHref,
+  notificationSubtitle,
+  type NotificationRecord,
+} from "@/lib/notification-types";
 import { useDismissOnOutsideOrBack } from "@/hooks/useDismissOnOutsideOrBack";
 
 function formatDate(iso: string): string {
@@ -214,6 +219,7 @@ export default function NotificationsBell({
             <div className="mt-1 flex max-h-96 flex-col gap-1 overflow-y-auto">
               {notifications.map((n) => {
                 const href = notificationHref(n);
+                const subtitle = notificationSubtitle(n);
                 const onOpen = () => {
                   dismiss();
                   if (!n.is_read) markRead(n.id);
@@ -226,9 +232,9 @@ export default function NotificationsBell({
                       <p className="text-sm text-fg">{notificationLabel(n)}</p>
                       {!n.is_read && <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />}
                     </div>
-                    {n.payload.question_title && (
+                    {subtitle && (
                       <p className="mt-0.5 truncate text-xs text-muted" dir="auto">
-                        {n.payload.question_title}
+                        {subtitle}
                       </p>
                     )}
                     {/* The admin's feedback on a rejection. It only ever lived

@@ -13,6 +13,7 @@ import { getAuthorProfile, unresolvedAuthor } from "@/lib/authors";
 import { siteAuthor, ogCard } from "@/lib/site";
 import TutorialReader from "@/components/TutorialReader";
 import AuthorCard from "@/components/AuthorCard";
+import CommentsSection from "@/components/CommentsSection";
 
 export function generateStaticParams() {
   return getAllLessonParams();
@@ -123,6 +124,12 @@ export default async function LessonPage({
               {next && <AdjacentCard track={track} lesson={next} label="Next" align="end" />}
             </nav>
           )}
+
+          <CommentsSection
+            kind="lesson"
+            slug={`${track}/${lesson}`}
+            title={found.title}
+          />
         </TutorialReader>
       </div>
     </>
