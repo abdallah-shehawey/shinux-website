@@ -1,1 +1,1 @@
-A terminal window on a dark grid background running "$ whoami", answering with "Abdallah Shehawey — Building. Learning. Sharing." over a short blurb about the blog and pills for its Articles, Tutorials and Q&A sections.
+A terminal window titled "shinux — bash" on a dark grid background running "$ whoami", answering with "Abdallah Shehawey — Building. Learning. Sharing." over a short blurb about the blog, pills for its Articles, Tutorials and Q&A sections, and a footer reading "shinux.vercel.app — notes from below the OS · Abdallah Shehawey, Embedded Software Engineer".

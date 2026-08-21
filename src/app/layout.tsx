@@ -5,6 +5,7 @@ import { site } from "@/lib/site";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeScript } from "@/components/ThemeScript";
+import { CleanUrlScript } from "@/components/CleanUrlScript";
 import ServiceWorkerCleanup from "@/components/ServiceWorkerCleanup";
 import ScrollMemory from "@/components/ScrollMemory";
 import PrefetchOnIntent from "@/components/PrefetchOnIntent";
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         <ThemeScript />
+        <CleanUrlScript />
       </head>
       <body className="flex min-h-full flex-col bg-bg text-fg">
         {/* Wraps the header too, not just the page: while a navigation is in
