@@ -160,6 +160,21 @@ export default function NavigationPendingProvider({
       const to = anchor.pathname;
       if (to === window.location.pathname) return;
 
+      // A link inside rendered Markdown is a plain <a> — the pipeline emits
+      // HTML, not next/link — so the browser does a FULL page load and the
+      // router never runs. Nothing would ever clear the pending state: the
+      // pathname this is keyed on cannot change in a document that is being
+      // replaced. What that left behind was a real bug, not just a wasted
+      // skeleton. The outgoing article was covered by the destination's
+      // skeleton and scrolled to the top; if that document then went into the
+      // back/forward cache, Back restored it still showing the skeleton, and
+      // stayed that way until the give-up timer above fired seconds later —
+      // with the scroll restore having measured its height and given up long
+      // before. Leaving these alone also keeps the browser's own scroll
+      // offset for the entry honest, which is what makes Back land right
+      // without any of this having to intervene.
+      if (anchor.closest(".prose")) return;
+
       if (skeletonForPath(to) === null) return;
 
       // Before the timer, not after it: the skeleton Next.js paints for itself
@@ -180,11 +195,26 @@ export default function NavigationPendingProvider({
       applySkeletonDir(dirByPath.get(window.location.pathname) ?? "ltr");
     };
 
+    // Coming BACK to this document out of the back/forward cache. It was
+    // frozen mid-navigation, so whatever it was in the middle of showing is
+    // still on screen — and the page it was heading for is not where the
+    // reader now is. Drop it immediately: the article they pressed Back for is
+    // ready underneath, and ScrollMemory needs its real height in this frame to
+    // restore their position into.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      cancel();
+      setPending(null);
+      resumeTracking();
+    };
+
     document.addEventListener("click", onClick, { capture: true });
     window.addEventListener("popstate", onPopState);
+    window.addEventListener("pageshow", onPageShow);
     return () => {
       document.removeEventListener("click", onClick, { capture: true });
       window.removeEventListener("popstate", onPopState);
+      window.removeEventListener("pageshow", onPageShow);
       cancel();
     };
   }, []);
