@@ -232,9 +232,20 @@ input:not([type]) {
   }
 }
 /* Replies sit one level in, so they get a flatter corner on the side the
-   connector elbow arrives from — the same cue a chat thread uses. */
-.bubble-nested {
-  border-start-start-radius: 0.35rem;
+   connector elbow arrives from — the same cue a chat thread uses.
+
+   Keyed on the ROW's direction, not the bubble's, and therefore physical
+   properties behind :dir(). The bubble carries a dir of its own so an Arabic
+   reply keeps its name and its text on the same side as each other; a logical
+   property here would resolve against THAT and put the flat corner opposite
+   the elbow whenever a reply was written in the other language. A browser
+   without :dir() simply gets a fully rounded bubble, which is no worse than
+   the wrong corner. */
+.reply-row:dir(ltr) .bubble-nested {
+  border-top-left-radius: 0.35rem;
+}
+.reply-row:dir(rtl) .bubble-nested {
+  border-top-right-radius: 0.35rem;
 }
 
 /* The small bold controls under a bubble (Reply / Edit / Delete). Padding

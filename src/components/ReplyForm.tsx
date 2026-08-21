@@ -23,6 +23,7 @@ export default function ReplyForm({
   onOpenChange,
   body,
   onBodyChange,
+  focusKey,
 }: {
   answerId: string;
   /** null when signed out — the box then only offers a way in. */
@@ -32,6 +33,8 @@ export default function ReplyForm({
   onOpenChange: (open: boolean) => void;
   body: string;
   onBodyChange: (body: string) => void;
+  /** Bumped by the parent on every Reply click; re-aims an open box. */
+  focusKey: number;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -106,6 +109,7 @@ export default function ReplyForm({
             <MentionTextarea
               required
               autoFocus
+              focusKey={focusKey}
               autoGrow
               dir="auto"
               rows={1}

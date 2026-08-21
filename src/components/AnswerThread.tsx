@@ -38,19 +38,28 @@ export default function AnswerThread({
   const [open, setOpen] = useState(false);
   const [body, setBody] = useState("");
   const [expanded, setExpanded] = useState(false);
+  // Bumped by every Reply click so the composer takes focus again even when it
+  // was already open — see MentionTextarea's focusKey.
+  const [focusKey, setFocusKey] = useState(0);
 
   // Long threads open on their tail — the newest replies are the ones being
   // read, and the rest stay one click away.
   const hidden = expanded ? 0 : Math.max(0, replies.length - COLLAPSE_AFTER);
   const visible = hidden > 0 ? replies.slice(hidden) : replies;
 
+  // Every Reply button addresses somebody: the one under the answer names its
+  // author, the one under a reply names whoever wrote that reply. Facebook's
+  // behaviour, and the reason a reply reads as coming *from* the comment above
+  // it rather than as another message in a flat list.
+  //
   // The mention is appended rather than replacing the draft, so clicking Reply
-  // on a second person adds them instead of throwing away what was typed. An
-  // anonymous asker has no handle to address (username is null) — the box still
-  // opens, just empty.
+  // on a second person adds them instead of throwing away what was typed.
+  // Skipped in two cases: an anonymous asker has no handle to address
+  // (username is null), and nobody needs to be @mentioned in their own thread.
   function startReply(handle: string | null) {
     setOpen(true);
-    if (!handle) return;
+    setFocusKey((n) => n + 1);
+    if (!handle || handle === viewer?.username) return;
     setBody((current) => {
       if (current.includes(`@${handle}`)) return current;
       return current ? `${current.trimEnd()} @${handle} ` : `@${handle} `;
@@ -81,7 +90,7 @@ export default function AnswerThread({
           isAccepted={answer.is_accepted}
           isAdmin={isAdmin}
           currentUserId={viewer?.id ?? null}
-          onReply={() => startReply(null)}
+          onReply={() => startReply(answer.author_username)}
         />
 
         {hidden > 0 && (
@@ -117,6 +126,7 @@ export default function AnswerThread({
           onOpenChange={setOpen}
           body={body}
           onBodyChange={setBody}
+          focusKey={focusKey}
         />
       </div>
     </div>

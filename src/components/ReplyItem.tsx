@@ -55,9 +55,14 @@ export default function ReplyItem({
     : [];
 
   return (
-    // A reply follows its own text too, so a reply in the other language flips
-    // its avatar and connector rather than sitting backwards under the answer.
-    <div dir={detectDirection(reply.body)} className="reply-row">
+    // No dir of its own: the ROW belongs to the answer it hangs off, and takes
+    // that thread's direction. Giving each reply its own flipped the avatar and
+    // the connector elbow to the other side whenever somebody answered in the
+    // other language, so an Arabic answer with an English reply under it drew
+    // the reply on the opposite edge of the column, attached to nothing — a
+    // thread that zig-zagged instead of nesting. Only the bubble below reads
+    // its own text; where the reply SITS is a property of the conversation.
+    <div className="reply-row">
       <div className="flex gap-2">
         <Avatar
           name={authorName}
@@ -67,7 +72,10 @@ export default function ReplyItem({
         />
         <div className="min-w-0 flex-1">
           <div className="bubble-row">
-            <div className="bubble bubble-nested">
+            {/* The message itself still follows its own language, so an Arabic
+                reply keeps its name and text on the same side as each other —
+                inside a bubble whose position the thread has already fixed. */}
+            <div dir={detectDirection(reply.body)} className="bubble bubble-nested">
               <p className="bidi-isolate text-sm font-semibold">
                 {reply.author_username ? (
                   <Link

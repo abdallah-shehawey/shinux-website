@@ -35,6 +35,7 @@ export default function MentionTextarea({
   textareaClassName = "",
   showMentionButton = true,
   autoFocus = false,
+  focusKey = 0,
   autoGrow = false,
   onEnterSubmit,
   mentionButton = "chip",
@@ -48,6 +49,11 @@ export default function MentionTextarea({
   /** The "@" affordance under the box, for people who don't know the shortcut. */
   showMentionButton?: boolean;
   autoFocus?: boolean;
+  /** Bump to pull focus into the box and drop the caret at the end. autoFocus
+   *  only fires on mount, so it does nothing for the second "Reply" click on an
+   *  already-open composer — which is exactly when the reader needs the caret
+   *  to follow the person they just addressed. */
+  focusKey?: number;
   /** Grow with the text instead of scrolling — for the comment composers. */
   autoGrow?: boolean;
   /** Enter posts, Shift+Enter breaks the line (a comment box, not a document
@@ -97,6 +103,16 @@ export default function MentionTextarea({
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [autoGrow, value]);
+
+  // Re-aim an open composer. Runs after the value it belongs to has been
+  // written, so the caret lands past the mention the caller just appended.
+  useEffect(() => {
+    if (focusKey === 0) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [focusKey]);
 
   const syncMention = useCallback((el: HTMLTextAreaElement) => {
     // selectionStart !== selectionEnd means a selection, not a caret — nothing
