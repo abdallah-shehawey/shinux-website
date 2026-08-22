@@ -522,7 +522,14 @@ input:not([type]) {
   padding-inline: 0.15em;
   margin-inline: -0.15em;
   transition: background-color 0.15s;
+  /* A handle's alphabet is fixed ([A-Za-z0-9_-]), so the island is always LTR.
+     `isolate` alone was not enough: it keeps the mention from reordering the
+     text around it, but the base direction INSIDE it is still inherited — so in
+     an Arabic reply the "@" is a neutral character before a Latin run and gets
+     laid out at the run's right-hand end. Every auto-mentioned reply rendered
+     as "dazai0x13@". */
   unicode-bidi: isolate;
+  direction: ltr;
 }
 .mention:hover,
 .prose .mention:hover {

@@ -88,13 +88,11 @@ export default function CommentItem({
 
         <div className="min-w-0 flex-1">
           <div className="bubble-row">
-            {/* The message follows its own language so its name and text stay on
-                the same side as each other. Where it SITS is the thread's
-                business, not the message's. */}
-            <div
-              dir={detectDirection(comment.body)}
-              className={`bubble ${isReply ? "bubble-nested" : ""}`}
-            >
+            {/* No dir: a display name is a label the interface writes, so it
+                belongs next to the avatar it names rather than at whichever
+                edge the message's language would throw it. Only the body below
+                follows the language it was written in — see ReplyItem. */}
+            <div className={`bubble ${isReply ? "bubble-nested" : ""}`}>
               <p className="bidi-isolate text-sm font-semibold">
                 {comment.author_username ? (
                   <Link
@@ -108,7 +106,15 @@ export default function CommentItem({
                   <span className="text-fg">{authorName}</span>
                 )}
               </p>
-              <p className="mt-0.5 text-[0.95rem] whitespace-pre-wrap text-fg" dir="auto">
+              {/* detectDirection, not dir="auto": the auto rule takes the first
+                  strong character, and every reply now opens with an @mention —
+                  a Latin handle — which flipped whole Arabic paragraphs to LTR.
+                  detectDirection has the 2:1 dominance override for exactly this
+                  (see bidi.ts). */}
+              <p
+                className="mt-0.5 text-[0.95rem] whitespace-pre-wrap text-fg"
+                dir={detectDirection(comment.body)}
+              >
                 <MentionText text={comment.body} knownHandles={mentionHandles} />
               </p>
             </div>

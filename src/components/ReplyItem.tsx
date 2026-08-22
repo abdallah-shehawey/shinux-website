@@ -72,10 +72,14 @@ export default function ReplyItem({
         />
         <div className="min-w-0 flex-1">
           <div className="bubble-row">
-            {/* The message itself still follows its own language, so an Arabic
-                reply keeps its name and text on the same side as each other —
-                inside a bubble whose position the thread has already fixed. */}
-            <div dir={detectDirection(reply.body)} className="bubble bubble-nested">
+            {/* No dir here either. A display name is a label the interface
+                writes, not part of the message, so it belongs next to the
+                avatar it names — turning the whole bubble over sent it to the
+                far edge, a hand's width from the face it goes with. Only the
+                body below follows the language it was written in, which is
+                what every chat app does: the name at the bubble's start,
+                Arabic text right-aligned inside it. */}
+            <div className="bubble bubble-nested">
               <p className="bidi-isolate text-sm font-semibold">
                 {reply.author_username ? (
                   <Link
@@ -89,7 +93,15 @@ export default function ReplyItem({
                   <span className="text-fg">{authorName}</span>
                 )}
               </p>
-              <p className="mt-0.5 text-[0.95rem] whitespace-pre-wrap text-fg" dir="auto">
+              {/* detectDirection, not dir="auto": the auto rule takes the first
+                  strong character, and every reply now opens with an @mention —
+                  a Latin handle — which flipped whole Arabic paragraphs to LTR.
+                  detectDirection has the 2:1 dominance override for exactly this
+                  (see bidi.ts). */}
+              <p
+                className="mt-0.5 text-[0.95rem] whitespace-pre-wrap text-fg"
+                dir={detectDirection(reply.body)}
+              >
                 <MentionText text={reply.body} knownHandles={mentionHandles} />
               </p>
             </div>
