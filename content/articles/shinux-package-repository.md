@@ -2,8 +2,9 @@
 title: Install My Tools with One Command — The shinux Repository
 description: >-
   A signed dnf and apt repository you add once, then install my command-line
-  tools like any distribution package — with man pages, tab completion,
-  dependencies, and real upgrades through dnf upgrade or apt upgrade.
+  tools — and a WhatsApp desktop client — like any distribution package, with man
+  pages, tab completion, dependencies, and real upgrades through dnf upgrade or
+  apt upgrade.
 date: 2026-08-19T00:00:00.000Z
 tags:
   - linux
@@ -14,6 +15,7 @@ tags:
   - deb
   - apt
   - tooling
+  - whatsapp
 locale: en
 draft: false
 author: abdallah-shehawey
@@ -117,6 +119,16 @@ of the script failing halfway through because something was not installed.
 requirements. dnf and apt install them by default, but neither tool needs
 them — `meet` falls back to a plain numbered menu, and `update-every-thing`
 skips any step it has no tool for.
+
+One more package is not a script at all. `whatsapp` is a desktop
+application — a real GTK4 window with a launcher entry and a tray icon — and it
+stays out of the table above because `shinux-scripts` deliberately does not pull
+it in. A repository of command-line tools should not install a chat client on
+you.
+
+| Application | What it does | Brings in |
+|---|---|---|
+| [`whatsapp`](#whatsapp--a-desktop-client-that-behaves-like-one) | WhatsApp Web in a GTK4 window, in the tray, at 79 KB | `webkitgtk6.0`, `gtk4` |
 
 ## `vidtime` — how long is all this video?
 
@@ -282,11 +294,52 @@ sudo apt install shinux-scripts
 A metapackage with no files of its own. Removing it leaves the commands
 installed; remove those by name.
 
+## `whatsapp` — a desktop client that behaves like one
+
+```bash
+sudo dnf install whatsapp
+sudo apt install whatsapp
+```
+
+WhatsApp ships no Linux client, so what everyone runs is a wrapper: a window with
+a browser engine inside it pointed at `web.whatsapp.com`. That part is fine — it
+is the client WhatsApp itself serves — but the wrappers around it get a
+surprising number of things wrong, and the fixes are not where you would look.
+
+Pasting an image into a chat did nothing, because WebKitGTK hands the page a
+`paste` event with an empty `clipboardData` for images. The page sees nothing to
+paste, so nothing happens. This client never asks WebKit for the clipboard at
+all: it reads the image on the GTK side, where the bytes are plainly there, and
+hands them to the page itself.
+
+WhatsApp also believed it was talking to Safari on a Mac — it offered a Mac
+download and registered the device as "Safari (Mac OS)" — even though the
+application had set a Chrome user agent. WebKitGTK ships site-specific quirks
+that rewrite the user agent for a list of hosts including `whatsapp.com`, and the
+quirk wins over whatever the application asks for.
+
+The rest is the ordinary desktop behaviour a chat client is expected to have, and
+each piece needed its own fix: it starts hidden at login and lives in the tray;
+the tray icon and the launcher badge carry the number of unread **messages**, not
+the number of unread chats the page title reports; notifications name the sender,
+quote the message and carry the contact's photo; and it follows the desktop's
+dark mode and interface font.
+
+It is about 79 KB of C. That number is not the point — the browser engine behind
+it is what uses the memory — but it does mean the wrapper itself is not part of
+the problem, and WebKit's own memory pressure handler is switched on so the
+engine sheds caches as it approaches a ceiling instead of being starved by one.
+
+The whole story, including the two diagnoses that turned out to be wrong on the
+way, is in [The WhatsApp Client I Had to
+Write](/articles/a-whatsapp-client-for-linux).
+
 ## Where it works
 
-Every package here is a shell script, so all of them are
+Every package here is a shell script, apart from `whatsapp`, so all of them are
 architecture-independent — `noarch` on rpm, `all` on deb — and behave the same
-on x86-64 and on ARM. Before a release goes out the whole path is tested inside
+on x86-64 and on ARM. `whatsapp` is compiled, so it ships for x86-64 only.
+Before a release goes out the whole path is tested inside
 throwaway Fedora 44 and Ubuntu 24.04 containers: add the repository, install a
 package, run the command.
 
