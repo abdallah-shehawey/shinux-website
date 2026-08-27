@@ -2,8 +2,9 @@
 title: The WhatsApp Client I Had to Write
 description: >-
   WhatsApp on my laptop was eating two gigabytes, refusing to paste images, and
-  telling WhatsApp it was Safari on a Mac. Several bugs, causes nobody would guess,
-  and a small C client that fixes all of them.
+  telling WhatsApp it was Safari on a Mac — and downloading 4.7 MB of emoji on
+  every launch because nothing was caching them. Several bugs, causes nobody
+  would guess, and a small C client that fixes all of them.
 date: 2026-08-26T00:00:00.000Z
 tags:
   - linux
@@ -194,6 +195,107 @@ The lesson generalises past this client: when a page asks the browser a question
 about the user, lying is not a local change. Something else is reading the same
 answer.
 
+## 4.7 MB of emoji, every single launch
+
+The emoji panel was full of blank squares for the first half-minute after every
+start, and this one I had already "fixed" once, wrongly.
+
+WhatsApp Web does not draw emoji with a font. It draws them from **152 sprite
+sheets**, about 30 KB each, and picks which sheet to fetch from the display
+resolution. My first read of the blank squares was that the memory-pressure
+handler was dropping them, so I raised the ceiling. The squares stayed. My second
+was that the sheets simply had not arrived yet, so I warmed them on startup with
+`new Image()`.
+
+That made it worse, and the measurement is the reason I know:
+
+```
+cold start, sprite sheets:  328 requests   9.3 MB
+```
+
+152 sheets, fetched twice. WhatsApp preloads every one of them itself with an
+XHR, and my warm was racing that preload for the same bytes over the same six
+connections — so both halves arrived slower, and I had added 3.7 MB to a start
+that was already too heavy.
+
+The real question was the one I had not asked: *why is a 30 KB file with
+`Cache-Control: max-age=31449600` being downloaded again at all?* A year is not
+an accident. So I looked at what was actually on disk:
+
+```
+~/.cache/whatsapp/WebKitCache   55 records   not one of them an image
+```
+
+Nothing was keeping them. Not WebKit's disk cache — I fetched a sheet, waited,
+and grepped the cache for its URL; it was never written. And not WhatsApp's own
+service worker either, which caches its JavaScript in CacheStorage and hands the
+emoji straight through to the network. Both halves of the system assumed the
+other one was caching, and neither was.
+
+Once that is the question, the answer is not a browser setting. The client keeps
+them itself:
+
+```js
+const cache = await caches.open('wa-emoji-v1');
+await cache.put(url, response.clone());
+```
+
+CacheStorage is origin-scoped, lives on disk, and — this is the part worth
+measuring rather than assuming — **survives a restart**: a sheet stored before
+one reads back afterwards in 0 ms. A sheet is asked for in two different ways, so
+both are served from the stored copy. The generated `background-image` rules are
+overridden with a `blob:` URL, and WhatsApp's own preload XHR is pointed at the
+same URL, so the request still happens and costs nothing.
+
+```
+warm start, sprite sheets:  2 requests   0.05 MB
+```
+
+Two bugs found on the way there are worth more than the fix. The first: my
+scanner walked the stylesheets looking for sprite rules and found nothing, on a
+page with exactly 152 of them. The code said
+
+```js
+if (rule.cssRules) { visit(rule.cssRules); continue; }   // wrong
+```
+
+which used to be a fine way to ask "is this a grouping rule?" CSS nesting gave
+`CSSStyleRule` a `cssRules` of its own — an empty list, and an empty list is
+still an object, and an object is still truthy. So every rule that mattered was
+treated as a container and skipped. Read the rule *and* its children, and check
+`length`, not existence.
+
+The second: the first version waited for the `load` event before applying the
+override, and still fetched 15 sheets, 0.40 MB, from the network. Those 15 are
+exactly the emoji visible in the chat list on first paint. Anything generated
+before your override is written has already gone to the network — so the watch
+starts at document-start, and closely, then slows down.
+
+The softness was real too, and it was the resolution problem I originally
+thought the blanks were. A Wayland session at scale 1 reports 1x however far the
+view is zoomed, so WhatsApp serves 40px tiles and the browser stretches them
+across 60 device pixels. The client answers resolution queries with the scale the
+view is really drawn at — and now does that at any zoom above 1 rather than above
+1.25, because what paid for that threshold was bandwidth, and the sheets no
+longer cost any.
+
+## Ten messages, ten rows to dismiss
+
+A smaller one, but it is the kind of thing you only notice once the notifications
+work. Every message left its own entry in the notification centre. Ten messages
+from one person meant ten rows, each holding one line, none of them saying how
+many others there were — so clearing up after a busy chat meant dismissing ten
+notifications by hand.
+
+The desktop notification spec has had the answer since the beginning:
+`replaces_id`. Post the conversation's messages into a single body and replace
+the entry in place, newest line first, and the shell keeps one row per
+conversation with an arrow for the rest. Two details make it behave: the id is
+only remembered while the slot still belongs to the conversation that filed it,
+so a stranger's messages can never be appended to somebody else's row, and
+clearing the entry clears the pile, so the next message starts a fresh row
+instead of resurrecting a conversation that was just finished with.
+
 ## A tray icon with no library
 
 GTK4 removed `GtkStatusIcon`, and the usual replacement — libayatana-appindicator
@@ -222,15 +324,12 @@ and the actual savings came from the cache model and the pressure handler.
 It starts hidden at login, sits in the tray, follows your desktop's dark mode and
 interface font, and pastes screenshots.
 
-Two later fixes are worth keeping for the same reason as the rest — the cause was
-nowhere near the symptom. Emoji looked soft and sometimes failed to appear at all:
-they are sprite sheets chosen by display resolution, and a zoomed view still
-reports 1x, so 40px tiles were being stretched across 60 device pixels. And text
-twitched up and down while being typed, because a `line-height` one pixel taller
-than WhatsApp's own made the composer's content overflow its box — and a box with
-one pixel of overflow is a scrollable box, so the browser scrolled the caret back
-into view on every keystroke. That `line-height` had been added to fix the
-twitching.
+One more later fix is worth keeping for the same reason as the rest — the cause
+was nowhere near the symptom. Text twitched up and down while being typed, because
+a `line-height` one pixel taller than WhatsApp's own made the composer's content
+overflow its box — and a box with one pixel of overflow is a scrollable box, so
+the browser scrolled the caret back into view on every keystroke. That
+`line-height` had been added to fix the twitching.
 
 ```sh
 sudo dnf install whatsapp     # Fedora and friends
