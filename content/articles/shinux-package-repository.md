@@ -1,8 +1,8 @@
 ---
-title: Install My Tools with One Command — The shinux Repository
+title: Install My Tools with One Command — The shinux-repo Repository
 description: >-
-  A signed dnf and apt repository you add once, then install my command-line
-  tools — and a WhatsApp desktop client — like any distribution package, with man
+  A signed dnf and apt repository plus native Arch packages you can use to install
+  my command-line tools — and a WhatsApp desktop client — like any distribution package, with man
   pages, tab completion, dependencies, and real upgrades through dnf upgrade or
   apt upgrade.
 date: 2026-08-19T00:00:00.000Z
@@ -14,6 +14,7 @@ tags:
   - rpm
   - deb
   - apt
+  - arch
   - tooling
   - whatsapp
 locale: en
@@ -27,9 +28,10 @@ machine. Updating meant remembering which ones I had, where they came from, and
 whether the copy on this laptop was the one with the fix.
 
 That is exactly the problem a package repository solves, so I built one.
-**shinux** is a signed repository for both `dnf` and `apt`. You add it once, and
-after that my tools install, upgrade and uninstall like anything that shipped
-with your distribution.
+**shinux-repo** is a signed repository for `dnf` and `apt`, with native Arch
+artifacts alongside it. You add it once on Fedora or Debian, or install the
+Arch artifact you need with `pacman`, and my tools upgrade like anything that
+shipped with your distribution.
 
 ```bash
 sudo dnf install vidtime
@@ -37,11 +39,11 @@ sudo apt install vidtime
 ```
 
 It lives at
-[abdallah-shehawey.github.io/shinux](https://abdallah-shehawey.github.io/shinux/),
-and the source is on [GitHub](https://github.com/abdallah-shehawey/shinux). If a
+[abdallah-shehawey.github.io/shinux-repo](https://abdallah-shehawey.github.io/shinux-repo/),
+and the source is on [GitHub](https://github.com/abdallah-shehawey/shinux-repo). If a
 tool misbehaves on your distribution, or you want one of these to do something
 it does not,
-[open an issue](https://github.com/abdallah-shehawey/shinux/issues) — knowing
+[open an issue](https://github.com/abdallah-shehawey/shinux-repo/issues) — knowing
 which distributions people actually run this on is half of what keeps it
 working.
 
@@ -50,13 +52,21 @@ working.
 One command, whichever distribution you are on:
 
 ```bash
-curl -fsSL https://abdallah-shehawey.github.io/shinux/install.sh | sudo sh
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh
 ```
 
-It detects whether you have `dnf`, `yum` or `apt`, trusts the signing key, and
-writes the repository definition. If you would rather not pipe a script into a
+On Arch Linux, install the latest native package directly:
+
+```bash
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- whatsapp
+# Replace whatsapp with vidtime, padnum, meet, or another package name.
+```
+
+It detects whether you have `dnf`, `yum`, `apt`, or `pacman`, trusts the
+signing key where the package manager uses one, and writes the repository
+definition or installs the requested Arch artifact. If you would rather not pipe a script into a
 shell — a reasonable instinct —
-[read it first](https://abdallah-shehawey.github.io/shinux/install.sh): it is
+[read it first](https://abdallah-shehawey.github.io/shinux-repo/install.sh): it is
 forty lines, and importing the key before adding the repository is the only part
 that matters, because it is what keeps your first install from stopping to ask
 about it.
@@ -68,12 +78,15 @@ The repository is now an ordinary one, so the ordinary checks apply:
 ```bash
 dnf repolist | grep shinux        # Fedora
 apt policy | grep shinux          # Debian / Ubuntu
+pacman -Q whatsapp                   # Arch, after installation
 ```
 
 There is also a package whose entire job is to prove the path works end to end:
 
 ```bash
-sudo dnf install hello-shinux     # or: sudo apt install hello-shinux
+sudo dnf install hello-shinux     # Fedora
+sudo apt install hello-shinux     # Debian / Ubuntu
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- hello-shinux  # Arch
 hello-shinux
 ```
 
@@ -94,6 +107,7 @@ To see everything the repository offers:
 ```bash
 dnf repoquery --repo shinux                  # Fedora
 apt list --all-versions '?origin(shinux)'    # Debian / Ubuntu, apt 2.0+
+ls /var/cache/pacman/pkg/                    # Arch package cache, if installed locally
 ```
 
 ## What is in it
@@ -128,7 +142,7 @@ you.
 
 | Application | What it does | Brings in |
 |---|---|---|
-| [`whatsapp`](#whatsapp--a-desktop-client-that-behaves-like-one) | WhatsApp Web in a GTK4 window, in the tray, at 79 KB | `webkitgtk6.0`, `gtk4` |
+| [`whatsapp`](#whatsapp--a-desktop-client-that-behaves-like-one) | WhatsApp Web in a GTK4 window, in the tray | `webkitgtk6.0`, `gtk4` |
 
 ## `vidtime` — how long is all this video?
 
@@ -299,6 +313,7 @@ installed; remove those by name.
 ```bash
 sudo dnf install whatsapp
 sudo apt install whatsapp
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- whatsapp  # Arch
 ```
 
 WhatsApp ships no Linux client, so what everyone runs is a wrapper: a window with
@@ -337,8 +352,10 @@ Write](/articles/a-whatsapp-client-for-linux).
 ## Where it works
 
 Every package here is a shell script, apart from `whatsapp`, so all of them are
-architecture-independent — `noarch` on rpm, `all` on deb — and behave the same
-on x86-64 and on ARM. `whatsapp` is compiled, so it ships for x86-64 only.
+architecture-independent — `noarch` on rpm, `all` on deb, and `any` on Arch —
+and behave the same on x86-64 and on ARM. `whatsapp` is compiled, so it ships
+for x86-64 only on all three package formats. Arch packages are native
+`.pkg.tar.zst` artifacts and can be installed with `pacman -U`.
 Before a release goes out the whole path is tested inside
 throwaway Fedora 44 and Ubuntu 24.04 containers: add the repository, install a
 package, run the command.
@@ -354,7 +371,9 @@ This is the part that makes it a repository rather than a download page. When I
 publish a new version, you get it the same way you get everything else:
 
 ```bash
-sudo dnf upgrade          # or: sudo apt update && sudo apt upgrade
+sudo dnf upgrade          # Fedora / RHEL
+sudo apt update && sudo apt upgrade  # Debian / Ubuntu
+sudo pacman -Syu          # Arch system updates; reinstall a downloaded artifact when a package changes
 ```
 
 Or just run `update-every-thing`, which does that along with everything else.
@@ -382,14 +401,14 @@ sudo apt-mark hold padnum            # and stay there
 ## Removing it
 
 ```bash
-curl -fsSL https://abdallah-shehawey.github.io/shinux/uninstall.sh | sudo sh
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/uninstall.sh | sudo sh
 ```
 
 That removes the repository and stops trusting its key, but leaves anything you
 installed in place. To take the packages with it:
 
 ```bash
-curl -fsSL https://abdallah-shehawey.github.io/shinux/uninstall.sh | sudo sh -s -- --purge
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/uninstall.sh | sudo sh -s -- --purge
 ```
 
 ## When something does not work
@@ -399,7 +418,7 @@ trusted.** The key was not imported, or a stale copy of the metadata is in the
 cache. Both are fixed by the same two commands:
 
 ```bash
-sudo rpm --import https://abdallah-shehawey.github.io/shinux/RPM-GPG-KEY-shinux
+sudo rpm --import https://abdallah-shehawey.github.io/shinux-repo/RPM-GPG-KEY-shinux
 sudo dnf clean all && sudo dnf --refresh repolist
 ```
 
@@ -409,7 +428,7 @@ was copied onto the machine without it. Installing the keyring package puts both
 halves in place:
 
 ```bash
-curl -fsSL https://abdallah-shehawey.github.io/shinux/shinux-keyring.deb \
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/shinux-keyring.deb \
   -o /tmp/shinux-keyring.deb
 sudo apt install -y /tmp/shinux-keyring.deb && sudo apt update
 ```
@@ -493,7 +512,7 @@ If those digits ever differ from the ones above, do not continue — that is
 precisely the case this whole mechanism exists to catch.
 
 The packages are built and signed by CI from a public repository, on every push,
-and the source of every script in them is right there next to the packaging: one
-source tree per package produces both the `.rpm` and the `.deb`, so the two can
-never quietly drift apart. It is all MIT-licensed — read it, copy it, or build
-your own repository the same way.
+and the source of every script in them is right next to the packaging: one source
+tree per package produces `.rpm`, `.deb`, and native Arch `.pkg.tar.zst` artifacts,
+so the formats cannot quietly drift apart. It is all MIT-licensed — read it, copy
+it, or build your own repository the same way.

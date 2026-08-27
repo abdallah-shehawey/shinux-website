@@ -15,6 +15,7 @@ tags:
   - whatsapp
   - c
   - packaging
+  - arch
 locale: en
 draft: false
 author: abdallah-shehawey
@@ -31,8 +32,9 @@ chat did nothing at all. And WhatsApp kept offering to sell me the Mac app.
 Each of those turned out to have a cause I would never have guessed from the
 symptom, so this is the write-up. The client I ended up writing is
 [on GitHub](https://github.com/abdallah-shehawey/whatsapp), and it is in the
-[shinux repository](/articles/shinux-package-repository) if you want it rather
-than the story.
+[shinux-repo repository](/articles/shinux-package-repository) if you want it rather
+than the story. Fedora and Debian users can install it through the package
+repository; Arch users can install the native `.pkg.tar.zst` release artifact.
 
 ## 1.4 GB of dead cache
 
@@ -126,15 +128,18 @@ The client intercepts Ctrl+V itself, reads the bytes with
 `gdk_clipboard_read_async`, and hands them to the page:
 
 ```c
-/* Let text paste take WebKit's native path, which works fine. */
-if (!clipboard_holds_image_only(GTK_WIDGET(self->window)))
+/* Text-only paste takes WebKit's native path. Any image wins over auxiliary
+ * text/html formats published by screenshot tools and browsers. */
+if (!clipboard_holds_image(GTK_WIDGET(self->window)))
     return GDK_EVENT_PROPAGATE;
 paste_clipboard_image(self);
 return GDK_EVENT_STOP;
 ```
 
-Text paste is deliberately left alone. It was never broken, and the fastest way
-to break it would be to "fix" it.
+Text-only paste is deliberately left alone. It was never broken, and the fastest way
+to break it would be to "fix" it. A clipboard that offers both image data and
+text/HTML is treated as an image paste, because otherwise WhatsApp can show a
+preview without receiving a sendable media attachment.
 
 ## WhatsApp thought I was on a Mac
 
@@ -296,7 +301,7 @@ dock icon.
 ## The result
 
 ```
-whatsapp     79 KB
+whatsapp     128 KB
 ```
 
 Written in C against GTK4 and WebKitGTK 6, because at this size the language is
@@ -305,7 +310,9 @@ have cost about 40 MB more; the engine costs 1500. Choosing C bought roughly 2%,
 and the actual savings came from the cache model and the pressure handler.
 
 It starts hidden at login, sits in the tray, follows your desktop's dark mode and
-interface font, and pastes screenshots.
+interface font, and pastes screenshots. Releases include RPM, DEB, and an Arch
+`PKGBUILD`/native package path; the current package is available through
+[shinux-repo](/articles/shinux-package-repository).
 
 One more later fix is worth keeping for the same reason as the rest — the cause
 was nowhere near the symptom. Text twitched up and down while being typed, because
@@ -317,7 +324,9 @@ the browser scrolled the caret back into view on every keystroke. That
 ```sh
 sudo dnf install whatsapp     # Fedora and friends
 sudo apt install whatsapp     # Debian, Ubuntu 24.04+
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- whatsapp  # Arch
 ```
 
 The source is at
-[github.com/abdallah-shehawey/whatsapp](https://github.com/abdallah-shehawey/whatsapp).
+[github.com/abdallah-shehawey/whatsapp](https://github.com/abdallah-shehawey/whatsapp),
+and the release assets are published under [GitHub Releases](https://github.com/abdallah-shehawey/whatsapp/releases).
