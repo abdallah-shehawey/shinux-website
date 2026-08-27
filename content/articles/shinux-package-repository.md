@@ -55,16 +55,17 @@ One command, whichever distribution you are on:
 curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh
 ```
 
-On Arch Linux, install the latest native package directly:
+On Arch Linux, add the signed pacman repository once, then install packages by name:
 
 ```bash
-curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- whatsapp
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh
+sudo pacman -S whatsapp
 # Replace whatsapp with vidtime, padnum, meet, or another package name.
 ```
 
 It detects whether you have `dnf`, `yum`, `apt`, or `pacman`, trusts the
 signing key where the package manager uses one, and writes the repository
-definition or installs the requested Arch artifact. If you would rather not pipe a script into a
+definition or adds the signed pacman repository and refreshes its database. If you would rather not pipe a script into a
 shell — a reasonable instinct —
 [read it first](https://abdallah-shehawey.github.io/shinux-repo/install.sh): it is
 forty lines, and importing the key before adding the repository is the only part
@@ -86,7 +87,7 @@ There is also a package whose entire job is to prove the path works end to end:
 ```bash
 sudo dnf install hello-shinux     # Fedora
 sudo apt install hello-shinux     # Debian / Ubuntu
-curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- hello-shinux  # Arch
+sudo pacman -S hello-shinux  # Arch
 hello-shinux
 ```
 
@@ -313,7 +314,7 @@ installed; remove those by name.
 ```bash
 sudo dnf install whatsapp
 sudo apt install whatsapp
-curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- whatsapp  # Arch
+sudo pacman -S whatsapp  # Arch
 ```
 
 WhatsApp ships no Linux client, so what everyone runs is a wrapper: a window with
@@ -355,7 +356,8 @@ Every package here is a shell script, apart from `whatsapp`, so all of them are
 architecture-independent — `noarch` on rpm, `all` on deb, and `any` on Arch —
 and behave the same on x86-64 and on ARM. `whatsapp` is compiled, so it ships
 for x86-64 only on all three package formats. Arch packages are native
-`.pkg.tar.zst` artifacts and can be installed with `pacman -U`.
+`.pkg.tar.zst` artifacts indexed in a signed pacman repository and can be
+installed by name with `pacman -S`.
 Before a release goes out the whole path is tested inside
 throwaway Fedora 44 and Ubuntu 24.04 containers: add the repository, install a
 package, run the command.

@@ -324,7 +324,8 @@ the browser scrolled the caret back into view on every keystroke. That
 ```sh
 sudo dnf install whatsapp     # Fedora and friends
 sudo apt install whatsapp     # Debian, Ubuntu 24.04+
-curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh -s -- whatsapp  # Arch
+curl -fsSL https://abdallah-shehawey.github.io/shinux-repo/install.sh | sudo sh
+sudo pacman -S whatsapp  # Arch
 ```
 
 The source is at
