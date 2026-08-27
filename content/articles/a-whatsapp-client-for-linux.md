@@ -279,23 +279,6 @@ view is really drawn at — and now does that at any zoom above 1 rather than ab
 1.25, because what paid for that threshold was bandwidth, and the sheets no
 longer cost any.
 
-## Ten messages, ten rows to dismiss
-
-A smaller one, but it is the kind of thing you only notice once the notifications
-work. Every message left its own entry in the notification centre. Ten messages
-from one person meant ten rows, each holding one line, none of them saying how
-many others there were — so clearing up after a busy chat meant dismissing ten
-notifications by hand.
-
-The desktop notification spec has had the answer since the beginning:
-`replaces_id`. Post the conversation's messages into a single body and replace
-the entry in place, newest line first, and the shell keeps one row per
-conversation with an arrow for the rest. Two details make it behave: the id is
-only remembered while the slot still belongs to the conversation that filed it,
-so a stranger's messages can never be appended to somebody else's row, and
-clearing the entry clears the pile, so the next message starts a fresh row
-instead of resurrecting a conversation that was just finished with.
-
 ## A tray icon with no library
 
 GTK4 removed `GtkStatusIcon`, and the usual replacement — libayatana-appindicator
