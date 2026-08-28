@@ -2,7 +2,7 @@
 title: whatsapp-desktop — WhatsApp for Linux, on Chromium
 description: >-
   A desktop client for WhatsApp Web built on Electron and Chromium: full voice and
-  video call support, lives in the tray, draws the page in your desktop's own font,
+  video calls with screen sharing, lives in the tray, draws the page in your desktop's own font,
   and raises one notification per message with the sender's picture on it. What it is,
   how it works, and what it is built on.
 date: 2026-08-28T00:00:00.000Z
@@ -35,9 +35,9 @@ engine.
 
 - WhatsApp Web in a window of its own, with no address bar and nothing else in
   it.
-- **Voice and video calls work out of the box.** Full hardware camera and
-  microphone WebRTC support with automatic device permissions and Linux-specific
-  rendering fixes.
+- **Voice, video calls, and screen sharing work out of the box.** Full hardware camera,
+  microphone, and desktop screen capture via WebRTC with automatic device permissions
+  and Linux/Wayland-specific fixes.
 - **Built-in Settings & Theme Switcher.** Switch between System Default, Dark Mode,
   and Light Mode, or toggle Autostart at login directly from the tray menu or via
   the dedicated Settings dialog (`Ctrl+,`).
@@ -148,11 +148,11 @@ Two rules that are less obvious than they look:
 There is no tone for the messages you send. The message is already on screen with
 a tick under it, in the window you are looking at.
 
-## Voice and video calls
+## Voice, video calls, and screen sharing
 
-Full voice and video calling works out of the box with your laptop's camera and
-microphone:
+Full voice calling, video calling, and live screen sharing work out of the box with your laptop's camera, microphone, and display:
 
+- **Screen sharing with PipeWire support:** In addition to voice and video calls, you can share your entire screen during calls. The client intercepts `navigator.mediaDevices.getDisplayMedia()` via Electron's `desktopCapturer` and passes the stream cleanly to WhatsApp Web, leveraging Chromium's native `WebRTCPipeWireCapturer` under Wayland without annoying third-party popups.
 - **Automatic permissions:** Media permissions (`audioCapture`, `videoCapture`,
   `speaker-selection`, `display-capture`) and device permissions are granted
   transparently for WhatsApp Web without annoying prompts or broken WebRTC origin checks.
@@ -161,9 +161,9 @@ microphone:
   fails silently (`Invalid ExternalTexture`), causing WhatsApp's video effect pipeline
   to render pitch-black video frames. The client disables WebGPU to force WhatsApp
   onto its reliable, battle-tested WebGL / direct MediaStream pipeline.
-- **Exempt call streams from muting:** WhatsApp Web's notification silencer never
-  intercepts or mutes `<video>` playback elements, WebRTC `MediaStream` objects, or
-  active call dialogs.
+- **Exempt call streams and voice notes from muting:** WhatsApp Web's notification silencer never
+  intercepts or mutes `<video>` playback elements, WebRTC `MediaStream` objects,
+  incoming/outgoing call dialogs, or voice message audio (`blob:` / CDN streams).
 
 ## Scrolling and the display server
 
