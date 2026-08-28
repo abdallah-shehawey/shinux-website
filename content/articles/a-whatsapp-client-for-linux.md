@@ -25,11 +25,11 @@ browser engine inside it, pointed at `web.whatsapp.com`. That is a perfectly
 reasonable design — it is the same client WhatsApp serves to Chrome, so nothing
 about it can get your account banned.
 
-**whatsapp** is mine. The binary is 128 KB, written in C against GTK4 and
-WebKitGTK 6, and at this size the language is not what decides memory use — the
-browser engine is. A Python wrapper would have cost about 40 MB more; the engine
-costs a great deal more than that. C bought roughly two per cent. The real
-savings came from the cache model, which is further down.
+**whatsapp** is mine. The binary is about 120 KB, written in C against GTK4 and
+WebKitGTK 6 — and at this size the language is not what decides memory use, the
+browser engine is. A Python wrapper would have cost perhaps 40 MB more; the
+engine costs far more than that. C bought a couple of per cent. The real saving
+came from the cache model, which is further down.
 
 There is a [second client](/articles/rewriting-my-whatsapp-client-on-chromium)
 now, built on Chromium, and this one is still here and still maintained. They
@@ -50,15 +50,15 @@ install side by side and share nothing.
 GTK4 for the window, WebKitGTK 6 for the page, and nothing else:
 
 ```
-src/main.c        the window, the view, the session
-src/tray.c        StatusNotifierItem, spoken directly over D-Bus
-src/notify.c      the banner policy
-src/inject.c      what runs inside WhatsApp's own page
-src/config.c      ~/.config/whatsapp/whatsapp.conf
+src/main.c     2138 lines — the window, the view, the session, notifications
+src/tray.c      421 lines — StatusNotifierItem, spoken directly over D-Bus
+src/inject.js   877 lines — what runs inside WhatsApp's own page
 ```
 
-No `libayatana-appindicator`, no notification library, no JavaScript framework.
-The dependencies are the two libraries above and GLib, which comes with them.
+`inject.js` is turned into a header at build time and compiled in, so the client
+is still one binary with nothing beside it. There is no
+`libayatana-appindicator`, no notification library and no JavaScript framework:
+the dependencies are the two libraries above and the GLib that comes with them.
 
 ## The tray, without a tray library
 
