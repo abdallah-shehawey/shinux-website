@@ -66,12 +66,28 @@ src/notify.js      the banner policy
 src/style.js       the user stylesheet
 src/fonts.js       the fontconfig file the client writes for itself
 src/config.js      ~/.config/whatsapp-desktop/whatsapp-desktop.conf
+src/autostart.js   XDG autostart manager
 ```
 
 It ships its own copy of Electron, so it needs no browser installed — 245 MB on
 disk, 76 MB as a `.deb`. Chromium carries 55 UI translations and this
 application shows no Chromium UI to translate, so only `en-US` and `ar` are
 kept.
+
+## Settings and appearance
+
+Configuration can be tuned live through the dedicated **Settings** window (`Ctrl+,` or right-click the tray icon), or directly in `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
+
+![WhatsApp Settings Dialog](/images/whatsapp-desktop-settings.png)
+
+The settings window gives you instant control over every aspect of the client:
+
+- **Theme Switcher:** Switch on the fly between System Default (which tracks your desktop's dark/light mode live), Dark Mode, and Light Mode. Chromium's `prefers-color-scheme` updates instantly without reloading the page.
+- **Startup & Tray:** Toggle starting WhatsApp automatically at login with a single switch. Choose whether closing or minimizing the window sends it to the tray.
+- **Notifications & Sounds:** Enable or disable desktop banners, incoming message tones, and outgoing send sounds.
+- **Display & Text:** Adjust interface zoom scaling (`Ctrl` `+`/`-`/`0`) and toggle font fixes for Arabic descenders.
+
+All preferences apply live and are saved permanently to `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
 
 ## How the font works
 
@@ -214,16 +230,6 @@ make install    # ~/.local, plus a desktop entry and icons
 make autostart  # also start hidden at login
 make test       # replays a chat list past the watcher, no browser needed
 ```
-
-## Settings and appearance
-
-Configuration can be tuned live through the dedicated **Settings** window (`Ctrl+,` or right-click the tray icon), or directly in `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
-
-![WhatsApp Settings Dialog](/images/whatsapp-desktop-settings.png)
-
-You can switch themes between System Default, Dark, and Light mode on the fly, toggle starting at login with a single switch, control notification sounds, and adjust interface scaling.
-
-Configuration keys are saved immediately to `~/.config/whatsapp-desktop/whatsapp-desktop.conf` and every key is optional — font family and size, zoom level, close-to-tray behavior, and audio preferences.
 
 ## Why not Zen, or Firefox
 
