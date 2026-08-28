@@ -3,8 +3,10 @@ title: I Rewrote My WhatsApp Client on Chromium — and Measured Everything
 description: >-
   The C client I wrote worked, and WebKitGTK kept it from being good. Rebuilding
   it on Chromium answered three bugs for free and introduced one of my own: my
-  own stylesheet was what made scrolling stutter. Real numbers for RAM, for
-  scrolling, and for why it is not built on Zen.
+  own stylesheet was what made scrolling stutter. Then a fix I shipped for it
+  turned out to be aimed at an element that does not exist, and the probe that
+  should have caught it was lying. Real numbers for RAM, for scrolling, and for
+  why it is not built on Zen.
 date: 2026-08-28T00:00:00.000Z
 tags:
   - linux
@@ -86,6 +88,33 @@ That is a login screen, not a signed-in session over three days, and I would not
 publish it as a general claim about Electron. It is enough to answer the specific
 question I had, which was whether starting from Chromium put me in a hole. It
 did not.
+
+I have since measured the honest version of it — signed in, seventy-one chats, a
+freshly started client sitting on the chat list:
+
+```
+renderer (the WhatsApp page)   584 MB
+main process                   125 MB
+GPU and zygotes                169 MB
+network and audio services      49 MB
+-----------------------------------
+total PSS                      937 MB
+```
+
+That is a lot, and it is worth knowing *where* it is. Breaking the renderer down:
+639 MB of it is anonymous memory — WhatsApp's own JavaScript heap, its DOM, its
+decoded images — against 59 MB file-backed, which is the Electron binary and its
+resources, shared with every other process. The weight is the page, not the
+shell it is in. On the same laptop at the same moment, VS Code was using 2.1 GB
+and GNOME Shell 920 MB.
+
+One honest caveat, because I put the flag in myself: Chromium is asked to hand
+memory back when a renderer is frozen, and this window is explicitly exempt from
+background throttling so the chat-list watcher keeps running while it sits in the
+tray. A renderer that is never frozen is never purged. That is a trade I made on
+purpose — notifications that work while hidden are the entire point — but the
+flag is doing nothing, and pretending otherwise would be the same mistake as the
+next section.
 
 ## Three fixes I got to delete
 
@@ -260,6 +289,129 @@ draws the pill a beat *after* it moves the row, so the report arriving right
 behind an arrival can still show the chat as caught up. Banners raised in the
 last few seconds are left alone.
 
+And that guard is where the next bug lived, which I only found because somebody
+used the thing. Open a chat *while its banner is still on screen* and the message
+stayed in the notification centre for good — but open the same chat a minute
+later, after the banner had already been refiled, and it came down correctly.
+Groups looked random for the same reason: one message, nothing happened; a second
+message, and suddenly it worked.
+
+Both are one line. The withdrawal was refused for banners younger than the guard,
+and the page reports the unread list only when the answer *changes* — so a
+refusal was final. Nothing ever asked again.
+
+The fix is two answers instead of one, and the point is that they are not the
+same kind of thing:
+
+- **The chat is the one on screen**, in a window that has focus. That is an
+  answer. It is immediate, it is certain, and it needs no guard at all — a
+  conversation drawn in a focused window is a conversation being read.
+- **The chat has stopped being unread.** That is an inference, it arrives late,
+  and it keeps the guard — but a refused withdrawal is now deferred to the moment
+  the guard expires and asked again, rather than dropped on the floor.
+
+The first is what fires the instant you click a chat. The second is what still
+covers reading it on your phone.
+
+## The sound of your own message
+
+WhatsApp plays a tone when a message of yours goes out. I never wanted it: the
+message is already on screen, with a tick under it, in the window I am looking
+at.
+
+You cannot silence it by name. WhatsApp serves its sounds from
+`static.whatsapp.net` under filenames that are hashes — `l-ut9G1w4eu.ogg`,
+`kAbvQpjkfMK.ogg` — and they change with the build, so there is nothing stable to
+match on.
+
+So it is silenced by the moment instead. A message goes out because you pressed
+`Enter` in the composer or clicked send; anything played within a beat of that is
+the sound of your own message. Both ways a page can make a sound are covered,
+because I did not want to depend on which one WhatsApp uses this month, and a
+voice note in the conversation is left alone — muting one of those because a
+message went out a second ago would be a bug of its own.
+
+## The fix that was aimed at nothing
+
+Weeks later the scrolling came back — or rather, it never entirely left, and I
+had stopped looking. A fix went in for it: put the conversation's viewport on a
+compositor layer of its own, scoped to one selector so the rest of the page does
+not pay for it.
+
+```css
+#main [data-tab="conversation-panel-body"] {
+  will-change: scroll-position;
+  transform: translate3d(0, 0, 0);
+}
+```
+
+It reads like a fix. It applied to nothing at all.
+
+This build of WhatsApp marks that element `data-testid`, not `data-tab` — the
+`data-tab` values are bare numbers — and the panel *body* is not the scroller
+anyway; the messages list inside it is. One question to the live page settles it,
+and I should have asked it before believing anything:
+
+```js
+getComputedStyle(document.querySelector('#main [data-testid="conversation-panel-messages"]'))
+  .willChange   // "auto"  ← the rule is not there
+```
+
+A CSS rule aimed at the wrong element does not fail. It applies to nothing and
+looks exactly like a fix that did not help much.
+
+And the reason it survived is worse, and it is the part I actually want to write
+down. **My probe was lying.** The thing I built specifically so I would stop
+guessing had two bugs in it:
+
+- It picked which element to scroll by a heuristic over every `div` on the page,
+  then sent the wheel at *that* element's centre. Pick wrong and it measures one
+  element while the wheel turns over another.
+- It kept the **node**. WhatsApp re-renders the conversation while you scroll it
+  and replaces that element, so the report read a detached node that had not
+  moved since — and answered *did not move, cost nothing* for a scroll that had
+  moved 7351 pixels.
+
+Two runs against the same conversation, thirty seconds apart, picked two
+different elements. That is not a measurement, it is a coin toss with a JSON
+output.
+
+It takes a selector now, re-resolves it at the end instead of holding the node,
+says `moved: true/false` outright so a scroll that never happened cannot read as
+a scroll that cost nothing, and sends the wheel in phases the way a mouse does,
+because Chromium latches a scroll gesture to whatever it began over.
+
+With it honest, the answer was not what either of us thought. On a warm
+conversation: **zero long tasks over 4800 px**, with the stylesheet and without
+it. The chat list: zero either way — I tried promoting that one too, measured no
+difference, and did not ship it. What actually blocks the main thread is
+WhatsApp fetching and laying out older messages, 71–123 ms at a time, and that is
+its work, not the compositor's. No engine choice deletes it.
+
+## The bug that only shows up on somebody else's machine
+
+While I was in there I found the one that actually worries me, because it is
+invisible on the machine it was written on.
+
+The client asks for native Wayland rather than XWayland — that is the difference
+between crisp text at a fractional scale and a blurry upscale, and between smooth
+trackpad scrolling and stepped wheel events. It asked like this:
+
+```js
+if (process.env.XDG_SESSION_TYPE === 'wayland') { ... }
+```
+
+`XDG_SESSION_TYPE` is set by the login session and inherited. Start the client
+from anything that does not pass the whole environment on — a launcher, a systemd
+unit, a terminal opened inside something else — and it is simply missing.
+Electron falls through to X11, the window lands on XWayland, and nothing
+announces it. The user does not report "I am on XWayland". They report that it
+looks soft and scrolls in steps.
+
+`WAYLAND_DISPLAY` is set by the compositor itself, so between the two the answer
+survives the trip. And the client now prints which one it got at startup, because
+the failure mode of the first version was that it was silent.
+
 ## What is actually in it
 
 - WhatsApp Web in its own window. Same client WhatsApp serves to Chrome, so
@@ -268,8 +420,8 @@ last few seconds are left alone.
 - The tray: closing the window keeps the client connected, `Ctrl+Q` and the
   tray's own Quit are the two ways out, and it can start hidden at login.
 - One notification per message, with the sender, the text, the sender's picture,
-  a sound, a click that opens the conversation — and a withdrawal when it is
-  read.
+  a sound, a click that opens the conversation — and a withdrawal the moment you
+  open the chat, or read it on your phone. No tone for the messages you send.
 - Banners come down on the client's own clock. GNOME shows one at a time, queues
   three behind it and drops the rest, and a banner parked under an idle mouse
   pointer swallows every message that follows. Each one is closed after twelve
@@ -283,7 +435,7 @@ client ended up with, carried over line for line. It is the part that was never
 about the engine, and every bug it ever had was found by hand on a live session,
 which means waiting for somebody to write to you and being unable to reproduce
 what you just saw. It has a test rig now: a mock chat list replayed past the
-watcher in plain node, seventeen checks, no browser and no account.
+watcher in plain node, twenty-nine checks, no browser and no account.
 
 ## Installing it
 
@@ -316,8 +468,9 @@ make test       # replay a chat list past the watcher, no browser needed
 
 Configuration lives in `~/.config/whatsapp-desktop/whatsapp-desktop.conf` and
 every key is optional — the font family and size, the zoom, whether closing the
-window hides it, whether a notification makes a sound, and how long a banner
-stays before it is refiled.
+window hides it, whether a notification makes a sound, how long a banner stays
+before it is refiled, and `outgoing-sound` if you want WhatsApp's tone for your
+own messages back.
 
 ## The one about measuring
 
@@ -330,6 +483,14 @@ smoothness, right up until they reported 164 fps for a window that was not being
 drawn at all.
 
 The measurements took an afternoon and every one of them contradicted me.
+
+And then the second lesson, which cost more than the first: a measurement can be
+wrong in the direction you want. A CSS rule that matches nothing and a probe that
+reports on an element it is not touching both produce clean output and no
+warning. So the two habits I actually kept are small ones — ask the live page
+what it computed rather than trusting that a selector matched, and make the tool
+say *nothing moved* out loud instead of quietly returning a zero that looks like
+a good result.
 
 The client is at
 [github.com/abdallah-shehawey/whatsapp-desktop](https://github.com/abdallah-shehawey/whatsapp-desktop),
