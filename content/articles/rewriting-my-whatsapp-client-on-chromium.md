@@ -215,11 +215,15 @@ make autostart  # also start hidden at login
 make test       # replays a chat list past the watcher, no browser needed
 ```
 
-Configuration lives in `~/.config/whatsapp-desktop/whatsapp-desktop.conf` and
-every key is optional — the font family and size, the zoom, whether closing the
-window hides it, whether notifications make a sound, `outgoing-sound` if you want
-WhatsApp's tone for your own messages back, and how long a banner stays before it
-is refiled.
+## Settings and appearance
+
+Configuration can be tuned live through the dedicated **Settings** window (`Ctrl+,` or right-click the tray icon), or directly in `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
+
+![WhatsApp Settings Dialog](/images/whatsapp-desktop-settings.png)
+
+You can switch themes between System Default, Dark, and Light mode on the fly, toggle starting at login with a single switch, control notification sounds, and adjust interface scaling.
+
+Configuration keys are saved immediately to `~/.config/whatsapp-desktop/whatsapp-desktop.conf` and every key is optional — font family and size, zoom level, close-to-tray behavior, and audio preferences.
 
 ## Why not Zen, or Firefox
 
