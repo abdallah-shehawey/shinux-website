@@ -1,10 +1,10 @@
 ---
 title: whatsapp-desktop — WhatsApp for Linux, on Chromium
 description: >-
-  A desktop client for WhatsApp Web built on Electron and Chromium: it lives in
-  the tray, draws the page in your desktop's own font, and raises one
-  notification per message with the sender's picture on it. What it is, how it
-  works, and what it is built on.
+  A desktop client for WhatsApp Web built on Electron and Chromium: full voice and
+  video call support, lives in the tray, draws the page in your desktop's own font,
+  and raises one notification per message with the sender's picture on it. What it is,
+  how it works, and what it is built on.
 date: 2026-08-28T00:00:00.000Z
 tags:
   - linux
@@ -35,6 +35,9 @@ engine.
 
 - WhatsApp Web in a window of its own, with no address bar and nothing else in
   it.
+- **Voice and video calls work out of the box.** Full hardware camera and
+  microphone WebRTC support with automatic device permissions and Linux-specific
+  rendering fixes.
 - **In the tray.** Closing the window keeps the client connected and messages
   arriving. `Ctrl+Q` and the tray's own Quit are the two ways out, and it can
   start hidden at login.
@@ -125,6 +128,23 @@ Two rules that are less obvious than they look:
 
 There is no tone for the messages you send. The message is already on screen with
 a tick under it, in the window you are looking at.
+
+## Voice and video calls
+
+Full voice and video calling works out of the box with your laptop's camera and
+microphone:
+
+- **Automatic permissions:** Media permissions (`audioCapture`, `videoCapture`,
+  `speaker-selection`, `display-capture`) and device permissions are granted
+  transparently for WhatsApp Web without annoying prompts or broken WebRTC origin checks.
+- **Linux WebGPU fix:** Modern Chromium on Linux with Wayland/Mesa has a bug in
+  its WebGPU implementation where `CreateExternalTexture` on camera video elements
+  fails silently (`Invalid ExternalTexture`), causing WhatsApp's video effect pipeline
+  to render pitch-black video frames. The client disables WebGPU to force WhatsApp
+  onto its reliable, battle-tested WebGL / direct MediaStream pipeline.
+- **Exempt call streams from muting:** WhatsApp Web's notification silencer never
+  intercepts or mutes `<video>` playback elements, WebRTC `MediaStream` objects, or
+  active call dialogs.
 
 ## Scrolling and the display server
 
