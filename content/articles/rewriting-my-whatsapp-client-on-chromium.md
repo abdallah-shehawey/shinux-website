@@ -38,6 +38,9 @@ engine.
 - **Voice and video calls work out of the box.** Full hardware camera and
   microphone WebRTC support with automatic device permissions and Linux-specific
   rendering fixes.
+- **Built-in Settings & Theme Switcher.** Switch between System Default, Dark Mode,
+  and Light Mode, or toggle Autostart at login directly from the tray menu or via
+  the dedicated Settings dialog (`Ctrl+,`).
 - **In the tray.** Closing the window keeps the client connected and messages
   arriving. `Ctrl+Q` and the tray's own Quit are the two ways out, and it can
   start hidden at login.
