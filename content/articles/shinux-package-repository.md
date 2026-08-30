@@ -135,15 +135,20 @@ requirements. dnf and apt install them by default, but neither tool needs
 them — `meet` falls back to a plain numbered menu, and `update-every-thing`
 skips any step it has no tool for.
 
-One more package is not a script at all. `whatsapp` is a desktop
-application — a real GTK4 window with a launcher entry and a tray icon — and it
-stays out of the table above because `shinux-scripts` deliberately does not pull
-it in. A repository of command-line tools should not install a chat client on
-you.
+Two more packages are not scripts at all. Both are desktop applications — real
+windows with launcher entries and tray icons — and both stay out of the table
+above because `shinux-scripts` deliberately does not pull them in. A repository
+of command-line tools should not install a chat client on you.
 
 | Application | What it does | Brings in |
 |---|---|---|
+| [`whatsapp-desktop`](#whatsapp-desktop--whatsapp-with-calls-and-screen-sharing) | WhatsApp Web on Chromium, with calls and screen sharing | nothing — ships its own Electron |
 | [`whatsapp`](#whatsapp--a-desktop-client-that-behaves-like-one) | WhatsApp Web in a GTK4 window, in the tray | `webkitgtk6.0`, `gtk4` |
+
+They are two clients for the same service and you want one of them.
+`whatsapp-desktop` is the one to install: it carries a whole Chromium, so voice
+and video calls and screen sharing work. `whatsapp` is 79 KB against the
+system's WebKitGTK, which is a fraction of the memory and cannot place a call.
 
 ## `vidtime` — how long is all this video?
 
@@ -309,6 +314,34 @@ sudo apt install shinux-scripts
 A metapackage with no files of its own. Removing it leaves the commands
 installed; remove those by name.
 
+## `whatsapp-desktop` — WhatsApp with calls and screen sharing
+
+```bash
+sudo dnf install whatsapp-desktop
+sudo apt install whatsapp-desktop
+sudo pacman -S whatsapp-desktop  # Arch
+```
+
+WhatsApp Web in a window of its own, on Electron. **Voice and video calls work,
+and so does sharing your screen during one** — the thing the WebKitGTK client
+above cannot do, and the reason this one exists despite being two hundred times
+the size.
+
+It lives in the tray: closing the window leaves the client connected and the
+messages arriving, it can start hidden at login, and `Ctrl+Q` is the way out. It
+raises one notification per message rather than one per chat, with the sender's
+name, the text and their picture on it; clicking one opens that conversation,
+and reading the message anywhere — on your phone included — takes the banner
+down. The whole page is drawn in your desktop's own interface font, read from
+GSettings and applied live when you change it, and dark or light follows the
+desktop. There is a Settings dialog on `Ctrl+,` for the theme, the font and the
+autostart toggle.
+
+It depends on no browser being installed: the package ships its own copy of
+Electron, which is most of its 77 MB. The full account of what it is built on
+and what had to be fixed to get there is in [whatsapp-desktop — WhatsApp for
+Linux, on Chromium](/articles/rewriting-my-whatsapp-client-on-chromium).
+
 ## `whatsapp` — a desktop client that behaves like one
 
 ```bash
@@ -352,10 +385,11 @@ Write](/articles/a-whatsapp-client-for-linux).
 
 ## Where it works
 
-Every package here is a shell script, apart from `whatsapp`, so all of them are
-architecture-independent — `noarch` on rpm, `all` on deb, and `any` on Arch —
-and behave the same on x86-64 and on ARM. `whatsapp` is compiled, so it ships
-for x86-64 only on all three package formats. Arch packages are native
+Every package here is a shell script, apart from the two clients, so all of them
+are architecture-independent — `noarch` on rpm, `all` on deb, and `any` on
+Arch — and behave the same on x86-64 and on ARM. `whatsapp` is compiled and
+`whatsapp-desktop` carries a Chromium, so both ship for x86-64 only on all three
+package formats. Arch packages are native
 `.pkg.tar.zst` artifacts indexed in a signed pacman repository and can be
 installed by name with `pacman -S`.
 Before a release goes out the whole path is tested inside

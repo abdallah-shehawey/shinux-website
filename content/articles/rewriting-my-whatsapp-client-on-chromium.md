@@ -293,6 +293,8 @@ the entire notification story above.
 ## The source
 
 [github.com/abdallah-shehawey/whatsapp-desktop](https://github.com/abdallah-shehawey/whatsapp-desktop),
-GPL-3.0. The C client it grew out of is still
-[where it was](https://github.com/abdallah-shehawey/whatsapp) — they install side
-by side and share nothing, not even a state directory.
+GPL-3.0.
+
+It installs *alongside* the C client rather than over it: two separate packages
+with separate state directories, so you can run both, and removing one leaves
+the other untouched.
