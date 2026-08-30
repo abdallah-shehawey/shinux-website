@@ -48,7 +48,7 @@ engine.
   Settings, applied live when you change it.
 - **One notification per message**, with the sender, the text and the sender's
   picture, a click that opens that conversation and brings the window back, and
-  a withdrawal the moment you read it.
+  a withdrawal the moment you read it — on your phone as readily as here.
 - Dark or light follows the desktop, links open in your browser, downloads land
   in `~/Downloads` without a dialog, `Ctrl` `+`/`-`/`0` zoom and the window size
   is remembered.
@@ -61,7 +61,9 @@ WhatsApp's own; everything I wrote lives around it:
 ```
 src/main.js        the window, the session, the tray, the switches
 src/preload.js     the bridge — the page's world on one side, IPC on the other
-src/page/inject.js the chat-list watcher and the notification shim, in the page
+src/page/store.js  what WhatsApp's own model layer is asked, in the page
+src/page/media.js  stickers, fetched whether or not photos are
+src/page/inject.js the chat-list watcher and the notification shim — the fallback
 src/notify.js      the banner policy
 src/style.js       the user stylesheet
 src/fonts.js       the fontconfig file the client writes for itself
@@ -114,23 +116,48 @@ is paid for on every scroll. Aliasing costs nothing per element.
 
 ## How notifications work
 
-This is most of the code, and it splits on where the focus is.
+This is most of the code, and until recently all of it was guesswork.
 
-**While the window is away**, WhatsApp Web raises its own notification, and it is
-by far the better judge of what just happened: it knows the sender, the text,
-whether the chat is muted, and that what arrived is a message rather than a
-typing indicator or something you sent from your phone. What it cannot do is
-dress one or bring a window back from the tray. So the page's `Notification` is
-intercepted, the sender's picture is fetched, and the app raises the banner
-itself.
+WhatsApp Web is a page. The obvious way to know what has happened in it is to
+watch what it draws: a row moves to the top of the chat list, so something
+arrived; an unread pill goes away, so something was read; an `@` badge is on a
+row, so that message was addressed to you. Each of those is an inference about a
+picture drawn for a person, and each of them was wrong in a way that eventually
+showed:
 
-**While the window is in front**, WhatsApp stays silent — it can see it has your
-attention — so the client watches the chat list instead. That is what makes one
-banner per message possible: the document title cannot do it, because its number
-counts unread *chats*, and a second and third message from the same person leave
-`(1) WhatsApp` exactly as it was.
+- the `@` badge stays on the row until the mention is *read*, so every ordinary
+  message that followed one into a muted group was announced as though it were
+  addressed to you;
+- the pill is redrawn on WhatsApp's own clock, so "read on the phone" arrived
+  seconds late — behind an observer's debounce, a grace period and a sweep — and
+  did not arrive at all with the window in the tray, because a hidden renderer
+  does not repaint a list nobody is looking at;
+- nothing in a chat list can say that a message which *was* there has gone, so a
+  message deleted for everyone left its notification behind for good.
 
-Two rules that are less obvious than they look:
+None of it has to be guessed. `contextIsolation` is off for the main window, so
+the page script shares WhatsApp's own world, and `window.require` is Meta's
+module registry — `require('__debug').modulesMap` lists 16,866 modules on the
+build I measured. The collections behind the interface are ordinary
+Backbone-shaped models with events on them, and every question this client asks
+has an answer WhatsApp is already computing:
+
+| what is asked | what answers |
+|---|---|
+| a message arrived | `MsgCollection` `add`, with its type, its author and its mentions |
+| it was read | `ChatCollection` `change:unreadCount` |
+| which chat is on screen | `ChatCollection` `change:active` |
+| it was deleted for everyone | `MsgCollection` `change:type` → `revoked` |
+| somebody reacted | `ReactionsCollection`, keyed by the message reacted to |
+
+The read signal is the one worth a number. Measured against a live account:
+`change:unreadCount` fires **16 milliseconds** after the arrival it belongs to,
+and again the instant the message is read — on the phone, here, or on another
+desktop; WhatsApp does not say which and it does not matter. There is now no age
+guard anywhere in the withdrawal path, because a guard belongs in front of a
+guess and none of these is one.
+
+Three rules that are less obvious than they look:
 
 - **A banner comes down on the client's own clock.** GNOME shows one at a time,
   queues three behind it and drops the rest, and a banner parked under an idle
@@ -138,15 +165,34 @@ Two rules that are less obvious than they look:
   twelve seconds and posted again at low urgency, which files it in the
   notification centre without a banner and without a sound. Nothing is lost and
   nothing blocks.
-- **A notification is an unread message made visible**, so it is withdrawn once
-  the message has been dealt with. Two things say so, and they are different in
-  kind: the chat being the one on screen in a focused window, which is an answer
-  and takes the banner down immediately; and the chat no longer being unread,
-  which is an inference that arrives a beat later and is what covers reading the
-  message on your phone.
+- **Reading part of a conversation withdraws part of it.** WhatsApp counts the
+  messages still waiting, and the ones it is counting are the last ones in the
+  chat — so five unread becoming two means the oldest three have been read, and
+  all but the newest two come down. That needs nothing from the read side but a
+  number.
+- **A notification is identified by its message, and keyed by its chat's id.**
+  Not by what it says: two identical sentences hash the same, which cost a
+  genuinely repeated message its banner. Not by a display name either — two
+  chats can share one, and on the account I develop against three pairs do.
 
-There is no tone for the messages you send. The message is already on screen with
-a tick under it, in the window you are looking at.
+WhatsApp's own notification settings are honoured rather than re-invented, and
+they are granular: there is a switch for reaction notifications under Messages
+and a *separate* one under Groups, and "only messages that mention me" is a third.
+Each is read at the moment of the decision, and each is an `and` with the
+client's own setting — the client's switch stays the master, because it is the
+one in the window you opened to turn notifications off.
+
+There is no tone for the messages you send, and none for a message that lands in
+the conversation you are already looking at. The bubble was drawn under your eyes
+as it arrived; there is nothing left for an announcement to tell you.
+
+**None of this is believed.** Those are private module names and they will not be
+private for ever. Every lookup happens inside a `try`, every answer is checked
+rather than trusted, and a store that does not resolve leaves the old chat-list
+watcher exactly where it was, running the client the way it ran before any of
+this existed. The test suite drives that path deliberately: it hands the page
+script a world with no `window` at all, so the store never resolves and the
+fallback is what gets exercised.
 
 ## Voice, video calls, and screen sharing
 

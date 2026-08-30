@@ -20,6 +20,21 @@ draft: false
 author: abdallah-shehawey
 ---
 
+> **There is a better one now.**
+> [**whatsapp-desktop**](/articles/rewriting-my-whatsapp-client-on-chromium) is
+> the successor to the client described here, built on Electron and Chromium
+> ([repository](https://github.com/abdallah-shehawey/whatsapp-desktop)). It does
+> everything below and adds what WebKitGTK could not give this one: **voice and
+> video calls with screen sharing**, and notifications read from WhatsApp Web's
+> own store rather than inferred from its chat list — so reading a message on
+> your phone takes its notification down at once, a deleted message takes its own
+> with it, and a mention gets through a muted group without letting the rest of
+> the group through behind it.
+>
+> Everything below is still true, and this client is still maintained. It is
+> 120 KB against 245 MB, and the two install side by side. If that trade is the
+> one you want, read on.
+
 WhatsApp has no Linux client. What we have instead are wrappers: a window with a
 browser engine inside it, pointed at `web.whatsapp.com`. That is a perfectly
 reasonable design — it is the same client WhatsApp serves to Chrome, so nothing
@@ -30,10 +45,6 @@ WebKitGTK 6 — and at this size the language is not what decides memory use, th
 browser engine is. A Python wrapper would have cost perhaps 40 MB more; the
 engine costs far more than that. C bought a couple of per cent. The real saving
 came from the cache model, which is further down.
-
-There is a [second client](/articles/rewriting-my-whatsapp-client-on-chromium)
-now, built on Chromium, and this one is still here and still maintained. They
-install side by side and share nothing.
 
 ## What it is
 
