@@ -251,6 +251,11 @@ sync. This carries one page.
 
 ## Installing it
 
+Every command below, plus the by-hand key and repository steps for each package
+manager, is also on the client's own page —
+[abdallah-shehawey.github.io/whatsapp-desktop](https://abdallah-shehawey.github.io/whatsapp-desktop/),
+which reads its download links straight off the newest release.
+
 From the [shinux repository](/articles/shinux-package-repository):
 
 ```sh
@@ -293,7 +298,9 @@ the entire notification story above.
 ## The source
 
 [github.com/abdallah-shehawey/whatsapp-desktop](https://github.com/abdallah-shehawey/whatsapp-desktop),
-GPL-3.0.
+GPL-3.0, with a landing page at
+[abdallah-shehawey.github.io/whatsapp-desktop](https://abdallah-shehawey.github.io/whatsapp-desktop/)
+if you would rather hand somebody a download link than a repository.
 
 It installs *alongside* the C client rather than over it: two separate packages
 with separate state directories, so you can run both, and removing one leaves
