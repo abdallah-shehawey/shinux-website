@@ -20,6 +20,12 @@ draft: false
 author: abdallah-shehawey
 ---
 
+> **The client has a page of its own.**
+> [**abdallah-shehawey.github.io/whatsapp-desktop**](https://abdallah-shehawey.github.io/whatsapp-desktop/)
+> is the short version: what it is, what every switch in it does, and the
+> install, update and removal commands for Fedora, Debian and Arch, ready to
+> copy. What follows here is the long one — how it is put together, and why.
+
 WhatsApp has no Linux client. What we have instead are wrappers: a window with a
 browser engine inside it, pointed at `web.whatsapp.com`. That is a perfectly
 reasonable design — it is the same client WhatsApp serves to Chrome, so nothing
@@ -87,7 +93,10 @@ The settings window gives you instant control over every aspect of the client:
 - **Theme Switcher:** Switch on the fly between System Default (which tracks your desktop's dark/light mode live), Dark Mode, and Light Mode. Chromium's `prefers-color-scheme` updates instantly without reloading the page.
 - **Startup & Tray:** Toggle starting WhatsApp automatically at login with a single switch. Choose whether closing or minimizing the window sends it to the tray.
 - **Notifications & Sounds:** Enable or disable desktop banners, incoming message tones, and outgoing send sounds.
-- **Display & Text:** Adjust interface zoom scaling (`Ctrl` `+`/`-`/`0`) and toggle font fixes for Arabic descenders.
+- **Display & Text:** Adjust interface zoom scaling (`Ctrl` `+`/`-`/`0`), set the
+  size of the words in a conversation on their own — 80 to 180 per cent of the
+  size WhatsApp draws them at, messages and the box you type in, with the chat
+  list left where it is — and toggle font fixes for Arabic descenders.
 
 All preferences apply live and are saved permanently to `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
 
