@@ -1,10 +1,10 @@
 ---
 title: whatsapp-desktop — WhatsApp for Linux, on Chromium
 description: >-
-  A desktop client for WhatsApp Web built on Electron and Chromium: full voice and
-  video calls with screen sharing, lives in the tray, draws the page in your desktop's own font,
-  and raises one notification per message with the sender's picture on it. What it is,
-  how it works, and what it is built on.
+  A desktop client for WhatsApp Web built on Electron and Chromium: voice and
+  video calls with screen sharing, lives in the tray, one notification per message
+  with the sender's picture on it, and a font for English and a different one for
+  Arabic. What it is, how it works, and what it is built on.
 date: 2026-08-28T00:00:00.000Z
 tags:
   - linux
@@ -41,23 +41,27 @@ engine.
 
 - WhatsApp Web in a window of its own, with no address bar and nothing else in
   it.
-- **Voice, video calls, and screen sharing work out of the box.** Full hardware camera,
-  microphone, and desktop screen capture via WebRTC with automatic device permissions
-  and Linux/Wayland-specific fixes.
-- **Built-in Settings & Theme Switcher.** Switch between System Default, Dark Mode,
-  and Light Mode, or toggle Autostart at login directly from the tray menu or via
-  the dedicated Settings dialog (`Ctrl+,`).
+- **Voice and video calls, and screen sharing.** Camera, microphone and screen
+  capture over WebRTC, with the permissions granted to WhatsApp's own origin and
+  to no other, so nothing asks first. PipeWire under Wayland.
 - **In the tray.** Closing the window keeps the client connected and messages
   arriving. `Ctrl+Q` and the tray's own Quit are the two ways out, and it can
   start hidden at login.
-- **In your desktop's font**, everywhere on the page — the family you chose in
-  Settings, applied live when you change it.
+- **A font for English and a font for Arabic** — a family, a size and a real
+  bold or italic face for each, each with its own switch, in a window of their
+  own. Left alone, it draws the page in your desktop's font and follows it as it
+  changes.
 - **One notification per message**, with the sender, the text and the sender's
   picture, a click that opens that conversation and brings the window back, and
   a withdrawal the moment you read it — on your phone as readily as here.
-- Dark or light follows the desktop, links open in your browser, downloads land
-  in `~/Downloads` without a dialog, `Ctrl` `+`/`-`/`0` zoom and the window size
-  is remembered.
+- **It moves better than the browser it is**: the conversation composited on the
+  GPU, a wheel notch animated rather than jumped, the side panel sliding, and the
+  reply bar and the messages above it rising as one piece.
+- **It says when a newer version is out** — a check against the latest release,
+  once a day and on demand, that never installs anything itself.
+- Two windows of switches and no text editor. Dark or light follows the desktop,
+  links open in your browser, every download asks where to go, `Ctrl` `+`/`-`/`0`
+  zoom and the window size is remembered.
 
 ## What it is built on
 
@@ -65,16 +69,22 @@ Electron 40, which is Chromium plus Node in one process tree. The page is
 WhatsApp's own; everything I wrote lives around it:
 
 ```
-src/main.js        the window, the session, the tray, the switches
-src/preload.js     the bridge — the page's world on one side, IPC on the other
-src/page/store.js  what WhatsApp's own model layer is asked, in the page
-src/page/media.js  stickers, fetched whether or not photos are
-src/page/inject.js the chat-list watcher and the notification shim — the fallback
-src/notify.js      the banner policy
-src/style.js       the user stylesheet
-src/fonts.js       the fontconfig file the client writes for itself
-src/config.js      ~/.config/whatsapp-desktop/whatsapp-desktop.conf
-src/autostart.js   XDG autostart manager
+src/main.js         the window, the session, the tray, the switches
+src/preload.js      the bridge — the page's world on one side, IPC on the other
+src/page/store.js   what WhatsApp's own model layer is asked, in the page
+src/page/media.js   stickers, fetched whether or not photos are
+src/page/inject.js  the chat-list watcher, the notification shim, the reply-bar motion
+src/notify.js       the banner policy
+src/style.js        the user stylesheet — the font, and the room Arabic needs
+src/fonts.js        the catalogue, and the fontconfig file the client writes itself
+src/settings.html   the switches
+src/fonts.html      a family, a size and a weight, per script
+src/about.html      the version, and whether a newer one is out
+src/window.css      the look those three share
+src/update.js       asks GitHub for the latest release, and compares
+src/tray.js         the menu — and src/tray-sni.js, the StatusNotifierItem behind it
+src/config.js       ~/.config/whatsapp-desktop/whatsapp-desktop.conf
+src/autostart.js    XDG autostart manager
 ```
 
 It ships its own copy of Electron, so it needs no browser installed — 245 MB on
@@ -82,23 +92,42 @@ disk, 76 MB as a `.deb`. Chromium carries 55 UI translations and this
 application shows no Chromium UI to translate, so only `en-US` and `ar` are
 kept.
 
-## Settings and appearance
+## Three windows of its own
 
-Configuration can be tuned live through the dedicated **Settings** window (`Ctrl+,` or right-click the tray icon), or directly in `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
+Everything the client can be told, it can be told without a text editor. There
+are three windows, all of them the client's own pages rather than the desktop
+toolkit's, and all three share one stylesheet.
 
-![WhatsApp Settings Dialog](/images/whatsapp-desktop-settings.png)
+![The whatsapp-desktop Settings window](/images/whatsapp-desktop-settings.png)
 
-The settings window gives you instant control over every aspect of the client:
+**Settings** (`Ctrl+,`, or the tray) holds the switches:
 
-- **Theme Switcher:** Switch on the fly between System Default (which tracks your desktop's dark/light mode live), Dark Mode, and Light Mode. Chromium's `prefers-color-scheme` updates instantly without reloading the page.
-- **Startup & Tray:** Toggle starting WhatsApp automatically at login with a single switch. Choose whether closing or minimizing the window sends it to the tray.
-- **Notifications & Sounds:** Enable or disable desktop banners, incoming message tones, and outgoing send sounds.
-- **Display & Text:** Adjust interface zoom scaling (`Ctrl` `+`/`-`/`0`), set the
-  size of the words in a conversation on their own — 80 to 180 per cent of the
-  size WhatsApp draws them at, messages and the box you type in, with the chat
-  list left where it is — and toggle font fixes for Arabic descenders.
+- **Theme.** System, Dark or Light. System tracks the desktop live —
+  `prefers-color-scheme` changes under the page without a reload.
+- **Startup and tray.** Start hidden at login; whether closing the window sends
+  it to the tray, and whether minimising does too.
+- **Notifications and sounds.** The banners, the tone when a message lands, and
+  the tone for a message you send — the last off by default, since it is already
+  on screen with a tick under it.
+- **Zoom.** The whole interface, the same as `Ctrl` `+`/`-`/`0`.
 
-All preferences apply live and are saved permanently to `~/.config/whatsapp-desktop/whatsapp-desktop.conf`.
+![The whatsapp-desktop Fonts window](/images/whatsapp-desktop-fonts.png)
+
+**Fonts** is a window of its own — the section below is what is behind it.
+
+![The whatsapp-desktop About window](/images/whatsapp-desktop-about.png)
+
+**About** has the version running, the versions of Electron, Chromium and Node
+underneath it — the first thing anybody asks for in a bug report, and the one
+thing on that window that can be selected and copied — and a check against the
+latest GitHub release. The client also looks once a day by itself, and when
+there is something newer the tray item names it. It installs nothing: your
+package manager does that.
+
+Everything lands the moment you set it, and is written to
+`~/.config/whatsapp-desktop/whatsapp-desktop.conf`. Only a change of font family
+ever asks for a restart, and only because a fontconfig document is read once,
+before any of the application's own code runs.
 
 ## How the font works
 
@@ -121,7 +150,47 @@ for at runtime, because WhatsApp changes it between builds.
 The obvious approach, `* { font-family: X !important }` at user origin, works
 and is what a browser told to ignore page fonts does. It also has to be resolved
 against every element of every row WhatsApp recycles down a conversation, which
-is paid for on every scroll. Aliasing costs nothing per element.
+is paid for on every scroll. Aliasing costs nothing per element. Measured on a live
+session, over the same 2100px of scrolling: 212ms of blocked main thread with
+the blanket rule, 82ms without it.
+
+### A font for English, and a different one for Arabic
+
+Most clients give you one font for everything, which means picking the one that
+is least wrong for both alphabets. Here the two scripts are set apart — a
+family, a size, and bold and italic for each, with a switch on each, so an
+Arabic face of your own does not oblige you to choose a Latin one.
+
+CSS cannot say "the Arabic words in this paragraph". There is no selector for
+it, and a rule that matched text rather than elements would be exactly the
+per-element cost the paragraph above exists to avoid. What *can* say it is
+`unicode-range`, a descriptor on the `@font-face` itself, resolved by the font
+engine per character for nothing:
+
+```css
+@font-face { font-family: "Segoe UI"; src: local("Adwaita Sans"); }
+@font-face { font-family: "Segoe UI"; src: local("Noto Naskh Arabic");
+             unicode-range: U+060C-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+```
+
+Every family the page names gets two faces: one with no range, and one whose
+range is the Arabic blocks. Both match an Arabic character, both have the same
+weight and style, and CSS breaks that tie by declaration order — the last one
+wins. So the Arabic face is written second, and moving it is a bug rather than a
+tidy-up.
+
+The rest of it rides on the same descriptor. Per-script size is `size-adjust`,
+which scales the glyphs *and* the metrics of one face, so Arabic can be drawn a
+size up from the Latin beside it in the same line — worth having, because Arabic
+sits smaller than Latin at the same nominal size in almost every pairing.
+
+Bold is a different file, never a declaration. Chromium synthesises a bold only
+when the page asks for a weight the family has no face for, and this page asks
+for 400 — so "bold Arabic" means `src: local("<the family's bold face>")`,
+resolved from `fc-list`. A family with no bold face cannot be made bold, and the
+window greys that button and says so in the row rather than offering a switch
+that does nothing. The Arabic list is filtered the same way: only families that
+can actually draw the script, so nothing on it comes out as boxes.
 
 ## How notifications work
 
@@ -205,20 +274,26 @@ fallback is what gets exercised.
 
 ## Voice, video calls, and screen sharing
 
-Full voice calling, video calling, and live screen sharing work out of the box with your laptop's camera, microphone, and display:
+Calls ring, are answered, and share a screen, with the laptop's own camera and
+microphone. Four things had to be arranged for that.
 
-- **Screen sharing with PipeWire support:** In addition to voice and video calls, you can share your entire screen during calls. The client intercepts `navigator.mediaDevices.getDisplayMedia()` via Electron's `desktopCapturer` and passes the stream cleanly to WhatsApp Web, leveraging Chromium's native `WebRTCPipeWireCapturer` under Wayland without annoying third-party popups.
-- **Automatic permissions:** Media permissions (`audioCapture`, `videoCapture`,
-  `speaker-selection`, `display-capture`) and device permissions are granted
-  transparently for WhatsApp Web without annoying prompts or broken WebRTC origin checks.
-- **Linux WebGPU fix:** Modern Chromium on Linux with Wayland/Mesa has a bug in
-  its WebGPU implementation where `CreateExternalTexture` on camera video elements
-  fails silently (`Invalid ExternalTexture`), causing WhatsApp's video effect pipeline
-  to render pitch-black video frames. The client disables WebGPU to force WhatsApp
-  onto its reliable, battle-tested WebGL / direct MediaStream pipeline.
-- **Exempt call streams and voice notes from muting:** WhatsApp Web's notification silencer never
-  intercepts or mutes `<video>` playback elements, WebRTC `MediaStream` objects,
-  incoming/outgoing call dialogs, or voice message audio (`blob:` / CDN streams).
+- **Permissions, once and narrowly.** `audioCapture`, `videoCapture`,
+  `speaker-selection` and `display-capture` are granted to WhatsApp's own origin
+  and refused to every other, in both the request handler and the check handler.
+  Nothing asks the user first, and nothing else in that session can ask at all.
+- **Screen sharing.** `navigator.mediaDevices.getDisplayMedia()` is answered by
+  Electron's `desktopCapturer` and the stream handed to WhatsApp, which puts
+  Chromium's own `WebRTCPipeWireCapturer` under it on Wayland — so the picker is
+  the desktop's, and windows are offered as well as whole screens.
+- **WebGPU is off, deliberately.** Chromium on Linux under Wayland and Mesa has a
+  broken `CreateExternalTexture` for video elements: it fails silently with
+  `Invalid ExternalTexture`, and WhatsApp's video-effect pipeline then renders a
+  black 1280×720 rectangle where the camera should be. Turning WebGPU off puts it
+  back on the WebGL and direct-MediaStream path that works.
+- **The silencer never touches a call.** The code that stops WhatsApp playing its
+  own notification tone leaves `<video>` elements, WebRTC `MediaStream`s, the
+  call dialogs and voice-note audio alone — muting a call to silence a
+  notification is a bug that is very easy to write once.
 
 ## Scrolling and the display server
 
@@ -234,6 +309,46 @@ trackpad scrolling and stepped wheel events. It works out which one it is on fro
 both `XDG_SESSION_TYPE` and `WAYLAND_DISPLAY`, because the first is inherited
 from the login session and is simply missing when a launcher does not pass the
 whole environment on, and it prints the answer at startup.
+
+There are deliberately no custom scrollbars. A single `::-webkit-scrollbar` rule
+takes a scroller off Chromium's composited scrollbar path and puts it back on
+the main thread, and a prettier scrollbar is not worth frames on the one surface
+that has to move smoothly.
+
+### The reply bar
+
+Click Reply and a bar carrying the quoted message rises over the composer, and
+the conversation above it makes room. Sampled every frame on the live page,
+neither half was smooth and they were not even the same motion: the bar grew
+from nothing to its full 67px between 83ms and 156ms, and the messages behind it
+did not move at all until 168ms — then jumped 66px in a single frame. Closing
+was worse: 225ms of nothing, then a collapse over 66ms with the room coming back
+in two jumps.
+
+They are two halves of one motion run by two things that do not keep step. The
+bar's height is written inline every frame by WhatsApp's own animation library;
+the conversation's is a resize watcher that answers two frames later.
+
+Both are taken over. The panel is pinned at the height it needs, the quoted
+message is parked a bar-height below it out of sight, and in the very frame the
+conversation shrinks the messages are pushed back down by exactly as far as they
+moved — then both are released together. Nothing but a transform moves after
+that.
+
+Two measurements decided how, and neither was guessable. An animation started
+with `element.animate()` does not take effect until the next frame, because
+animation effects are folded into style once a frame, *before* the callbacks
+that would create them — so pinning a height that way and forcing layout in the
+same task gives you the old height back. And the follower runs from a
+`ResizeObserver`, which fires after that point, so an animation started there
+would leave the messages 66px out of place for exactly the frame that matters.
+Both halves are CSS transitions instead, with a forced read between the offset
+and the release: without it the two writes land in one recalculation, and a
+transition from nought to nought does not run.
+
+Measured after — five opens and closes, plus one of each from a conversation
+scrolled up into: the last row travels its 66px in 21 to 23 steps, and no frame
+moves it further than the easing calls for.
 
 ## Memory
 
@@ -289,6 +404,7 @@ make            # fetches Electron
 make install    # ~/.local, plus a desktop entry and icons
 make autostart  # also start hidden at login
 make test       # replays a chat list past the watcher, no browser needed
+make screenshots # re-photographs the three windows above
 ```
 
 ## Why not Zen, or Firefox
@@ -307,7 +423,7 @@ the entire notification story above.
 ## The source
 
 [github.com/abdallah-shehawey/whatsapp-desktop](https://github.com/abdallah-shehawey/whatsapp-desktop),
-GPL-3.0, with a landing page at
+GPL-3.0-or-later, with a landing page at
 [abdallah-shehawey.github.io/whatsapp-desktop](https://abdallah-shehawey.github.io/whatsapp-desktop/)
 if you would rather hand somebody a download link than a repository.
 

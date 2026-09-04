@@ -332,10 +332,13 @@ messages arriving, it can start hidden at login, and `Ctrl+Q` is the way out. It
 raises one notification per message rather than one per chat, with the sender's
 name, the text and their picture on it; clicking one opens that conversation,
 and reading the message anywhere — on your phone included — takes the banner
-down. The whole page is drawn in your desktop's own interface font, read from
-GSettings and applied live when you change it, and dark or light follows the
-desktop. There is a Settings dialog on `Ctrl+,` for the theme, the font and the
-autostart toggle.
+down. Arabic and English get a font each — a family, a size and a real bold or italic
+face for either script, with a switch on each, so one alphabet can be set
+without touching the other; left alone it draws the page in your desktop's own
+interface font and follows it as you change it. Dark or light follows the
+desktop too. There are three windows and no text editor: Settings on `Ctrl+,`
+for the theme, the tray, the sounds and the zoom, Fonts for the two scripts, and
+About for the version and whether a newer release is out.
 
 It depends on no browser being installed: the package ships its own copy of
 Electron, which is most of its 77 MB. The full account of what it is built on
