@@ -706,10 +706,15 @@ input:not([type]) {
 @media (min-width: 768px) {
   /* Direct children only: a picture that rehypeSectionSplit() lifted into a
      column is laid out by the grid below, not by this float. */
+  /* `fit-content` and not a flat 45%: the box hugs the picture. A landscape
+     screenshot still fills the column, and a PORTRAIT one -- an application
+     window is often half as wide as it is tall -- no longer leaves a strip of
+     empty page between itself and the prose it is supposed to sit beside. */
   .prose-float > p:has(> img:only-child) {
     display: block;
     float: right;
-    width: min(45%, 420px);
+    width: fit-content;
+    max-width: min(45%, 420px);
     /* gap on the left, between the picture and the text it sits beside */
     margin: 0.35rem 0 1.25rem 1.75rem;
   }
@@ -719,7 +724,11 @@ input:not([type]) {
   }
   .prose-float p:has(> img:only-child) img {
     max-width: 100%;
-    max-height: none;
+    /* The base rule's 480px cap is restored here rather than dropped. Without
+       it a 560x960 settings window renders 720px tall against four lines of
+       prose, and the section becomes one long picture with a caption down its
+       side. With it, the height leads and the float above follows the width. */
+    max-height: 30rem;
     margin-block: 0;
   }
 

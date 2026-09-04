@@ -95,39 +95,55 @@ kept.
 ## Three windows of its own
 
 Everything the client can be told, it can be told without a text editor. There
-are three windows, all of them the client's own pages rather than the desktop
-toolkit's, and all three share one stylesheet.
+are three windows — all of them the client's own pages rather than the desktop
+toolkit's, all three sharing one stylesheet, and all three opened from the same
+four-item tray menu. Everything in them lands the moment you set it and is
+written to `~/.config/whatsapp-desktop/whatsapp-desktop.conf`. Only a change of
+font family ever asks for a restart, and only because a fontconfig document is
+read once, before any of the application's own code runs.
+
+### Settings
 
 ![The whatsapp-desktop Settings window](/images/whatsapp-desktop-settings.png)
 
-**Settings** (`Ctrl+,`, or the tray) holds the switches:
+`Ctrl+,`, or the tray. Four groups of switches and nothing that needs
+explaining twice:
 
 - **Theme.** System, Dark or Light. System tracks the desktop live —
   `prefers-color-scheme` changes under the page without a reload.
 - **Startup and tray.** Start hidden at login; whether closing the window sends
-  it to the tray, and whether minimising does too.
+  it to the tray, and whether minimising does too. Minimising does not, by
+  default: minimising is not closing.
 - **Notifications and sounds.** The banners, the tone when a message lands, and
-  the tone for a message you send — the last off by default, since it is already
-  on screen with a tick under it.
-- **Zoom.** The whole interface, the same as `Ctrl` `+`/`-`/`0`.
+  the tone for a message *you* send — the last off by default, since it is
+  already on screen with a tick under it.
+- **Zoom.** The whole interface, the same as `Ctrl` `+`/`-`/`0`, and remembered
+  between runs like the window size.
 
-![The whatsapp-desktop Fonts window](/images/whatsapp-desktop-fonts.png)
+There is no font row here any more. There used to be, and it grew until it
+deserved a window of its own.
 
-**Fonts** is a window of its own — the section below is what is behind it.
+### Fonts
+
+A family, a size and a weight for Latin and for Arabic — each script on its
+own, each with its own switch, and each with a preview line drawn in what you
+just picked. [The section below](#a-font-for-english-and-a-different-one-for-arabic)
+is what is behind it, and the window itself is the picture there.
+
+### About
 
 ![The whatsapp-desktop About window](/images/whatsapp-desktop-about.png)
 
-**About** has the version running, the versions of Electron, Chromium and Node
-underneath it — the first thing anybody asks for in a bug report, and the one
-thing on that window that can be selected and copied — and a check against the
-latest GitHub release. The client also looks once a day by itself, and when
-there is something newer the tray item names it. It installs nothing: your
-package manager does that.
+The version running, and the versions of Electron, Chromium and Node underneath
+it — the first thing anybody asks for in a bug report, and the one thing on that
+window that can be selected and copied.
 
-Everything lands the moment you set it, and is written to
-`~/.config/whatsapp-desktop/whatsapp-desktop.conf`. Only a change of font family
-ever asks for a restart, and only because a fontconfig document is read once,
-before any of the application's own code runs.
+Beside them, a check against the latest GitHub release. The client also looks
+once a day by itself, and when there is something newer the tray item names it
+rather than staying silent about it. It installs nothing and downloads nothing:
+your package manager does that, on your say-so, with the rest of your system.
+Turn `[updates] check` off and nothing asks by itself — the button here still
+does.
 
 ## How the font works
 
@@ -172,6 +188,8 @@ engine per character for nothing:
 @font-face { font-family: "Segoe UI"; src: local("Noto Naskh Arabic");
              unicode-range: U+060C-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
 ```
+
+![The whatsapp-desktop Fonts window](/images/whatsapp-desktop-fonts.png)
 
 Every family the page names gets two faces: one with no range, and one whose
 range is the Arabic blocks. Both match an Arabic character, both have the same
