@@ -8,7 +8,7 @@ order: 16
 tags:
   - linux
 draft: false
-author: abdallah-shehawey
+author: abdelrahmanadwe
 ---
 QuestaSim is Mentor Graphics' HDL simulator, commonly used for Verilog/VHDL verification work. Getting 2021.2 running on a modern Ubuntu or Fedora install takes a bit of work, since it needs 32-bit compatibility libraries and a Python 2.7 environment purely for license generation — neither of which ships by default anymore.
 
