@@ -13,6 +13,7 @@ const LEGACY_HOSTS = ["shehaweyblog.vercel.app"].filter(
 );
 
 const nextConfig: NextConfig = {
+  ...(process.env.CONTAINER_BUILD === "1" ? { output: "standalone" as const } : {}),
   experimental: {
     // How long the CLIENT router may reuse an already-fetched route before a
     // click has to go back to the network. The tabs are statically prerendered

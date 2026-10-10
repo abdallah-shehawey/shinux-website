@@ -219,3 +219,21 @@ src/
 ## 📄 License
 
 This project is open-source and available under the [MIT License](LICENSE).
+
+## GitHub Container Registry
+
+A tested Linux amd64 image is published to [GitHub Packages](https://github.com/abdallah-shehawey/shinux-website/pkgs/container/shinux-website) on each push to `main`. `latest` follows `main`; `sha-<commit>` identifies an exact build. Version tags (`v*`) also publish a versioned image.
+
+```sh
+docker run --rm -p 8080:3000 ghcr.io/abdallah-shehawey/shinux-website:latest
+```
+
+Open http://localhost:8080. On first publication GitHub makes packages private; the owner can make the package public in its package settings. Private images require a GitHub token with `read:packages`.
+
+Public client configuration is compiled into the image. The publish workflow reads these GitHub Actions repository **variables**:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL`
+
+To use your own backend, build from source and supply these values with `docker build --build-arg NAME=value ... -t shinux-website .`. Server-only secrets belong in `docker run --env-file /path/to/runtime.env ...`, never build arguments. Local `.env` files and private keys are excluded from the build context.

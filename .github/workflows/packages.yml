@@ -1,0 +1,84 @@
+name: Publish GitHub Container
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: container-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set image tags
+        id: image
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          image="ghcr.io/${REPOSITORY,,}"
+          tags="$image:sha-${GITHUB_SHA::7}"
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            tags="$tags,$image:${REF_NAME#v}"
+          else
+            tags="$tags,$image:latest"
+          fi
+          echo "name=$image" >> "$GITHUB_OUTPUT"
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          load: true
+          tags: ${{ steps.image.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Check the running container
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+        run: |
+          container=$(docker run -d -p 127.0.0.1:8080:3000 "$IMAGE:sha-${GITHUB_SHA::7}")
+          trap 'docker logs "$container"; docker rm -f "$container"' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8080/ > /tmp/container-response; then
+              test -s /tmp/container-response
+              python3 -c 'import re, urllib.request, urllib.parse; html=open("/tmp/container-response").read(); base="http://127.0.0.1:8080/"; urls=re.findall(r"<script[^>]*src="([^"]+)"", html); assert urls, "No browser scripts served"; [urllib.request.urlopen(urllib.parse.urljoin(base, u)).read() for u in urls[:3]]'
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish verified image
+        env:
+          TAGS: ${{ steps.image.outputs.tags }}
+        run: |
+          IFS=',' read -ra tags <<< "$TAGS"
+          for tag in "${tags[@]}"; do docker push "$tag"; done
+          printf 'Published `%s`\n' "$TAGS" >> "$GITHUB_STEP_SUMMARY"
