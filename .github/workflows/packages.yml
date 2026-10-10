@@ -63,7 +63,7 @@ jobs:
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:8080/ > /tmp/container-response; then
               test -s /tmp/container-response
-              python3 -c 'import re, urllib.request, urllib.parse; html=open("/tmp/container-response").read(); base="http://127.0.0.1:8080/"; urls=re.findall(r"<script[^>]*src="([^"]+)"", html); assert urls, "No browser scripts served"; [urllib.request.urlopen(urllib.parse.urljoin(base, u)).read() for u in urls[:3]]'
+              python3 -c 'import re, urllib.request, urllib.parse; html=open("/tmp/container-response").read(); base="http://127.0.0.1:8080/"; urls=re.findall(r"<script[^>]*src=([^ >]+)", html); assert urls, "No browser scripts served"; [urllib.request.urlopen(urllib.parse.urljoin(base, u.strip(chr(34)+chr(39)))).read() for u in urls[:3]]'
               exit 0
             fi
             sleep 1
