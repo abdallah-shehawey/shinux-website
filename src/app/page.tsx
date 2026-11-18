@@ -111,9 +111,11 @@ export default async function HomePage() {
                 {authorName}
               </h2>
               <p className="text-sm leading-relaxed text-muted">
-                Embedded software engineer and an Electronics &amp;
-                Communication Engineering graduate of Al-Azhar University (May
-                2026 — Cumulative Grade: Very Good). I write firmware in C/C++,
+                Embedded Software Engineer &amp; PCB Designer at NiroTronix,
+                and an Electronics &amp; Communication Engineering graduate of
+                Al-Azhar University (May 2026 — Cumulative Grade: Very Good). I
+                design boards in KiCad, write firmware in C/C++ for STM32, AVR
+                and PIC,
                 build device drivers from the datasheet up, and care about
                 deterministic, real-time code —
                 automotive-grade, RTOS-based systems (CAN, LIN, UART, SPI, I2C)

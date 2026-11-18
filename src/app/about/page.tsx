@@ -23,11 +23,18 @@ export default async function AboutPage() {
 
       <div className="flex flex-col gap-4 text-lg leading-relaxed text-muted">
         <p>
-          Hi, I&apos;m {author.name} — an Electronics &amp; Communication Engineering
+          Hi, I&apos;m {author.name}{" "}— an Electronics &amp; Communication Engineering
           graduate from Al-Azhar University (Cairo, May 2026 — Cumulative Grade: Very
           Good) who fell in love with what happens below the operating system. I write
           firmware in C/C++, build device drivers from the datasheet up, and care about
           deterministic, real-time code.
+        </p>
+        <p>
+          Since June 2026 I&apos;ve been working full-time as an Embedded Software
+          Engineer &amp; PCB Designer at NiroTronix — designing schematics and PCB
+          layouts in KiCad, writing C firmware for PIC, AVR and STM32, building
+          automated board tests, debugging hardware/firmware integration, and
+          preparing the Gerber, drill and BOM files that go to the fab.
         </p>
         <p>
           My focus is automotive-grade embedded software: RTOS-based architectures,
@@ -38,7 +45,7 @@ export default async function AboutPage() {
         </p>
         <p>
           When I&apos;m not shipping firmware, I teach — I&apos;ve trained 200+ students in
-          C and embedded systems through AZEX and Google Developer Student Club at my
+          C and embedded systems through AZEX and Google Developer Groups (GDG) at my
           university — and I sharpen my skills in coding competitions and hackathons.
         </p>
         <p>

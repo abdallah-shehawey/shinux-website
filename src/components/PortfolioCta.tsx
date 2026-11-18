@@ -18,7 +18,7 @@ export default function PortfolioCta() {
             </h2>
             <p className="mt-1 text-sm text-muted">
               Curious about the projects behind these posts? My portfolio is a
-              closer look at what I build — my embedded &amp; firmware projects,
+              closer look at what I build — my embedded, firmware &amp; PCB projects,
               experience, and skills, all in one place.
             </p>
           </div>

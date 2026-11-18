@@ -5,6 +5,7 @@ import AvatarUploader from "@/components/AvatarUploader";
 import DisplayNameForm from "@/components/DisplayNameForm";
 import UsernameForm from "@/components/UsernameForm";
 import FinishOnboardingButton from "@/components/FinishOnboardingButton";
+import { safeNext } from "@/lib/safe-next";
 
 export const metadata: Metadata = { title: "Welcome" };
 
@@ -14,10 +15,10 @@ export default async function WelcomePage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next: rawNext } = await searchParams;
-  const next = rawNext && rawNext.startsWith("/") ? rawNext : "/";
+  const next = safeNext(rawNext);
 
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/welcome?next=${next}`)}`);
+  if (!user) redirect(`/login?next=${encodeURIComponent(`/welcome?next=${encodeURIComponent(next)}`)}`);
 
   const supabase = await createClient();
   const { data: profile } = await supabase

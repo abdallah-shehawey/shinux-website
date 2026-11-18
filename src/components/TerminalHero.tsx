@@ -23,7 +23,7 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
   const steps: TerminalStep[] = [
     {
       command: "whoami",
-      output: `${authorName} — Embedded Software Engineer\nLinux enthusiast · Open-source tinkerer · Always building something`,
+      output: `${authorName} — Embedded Software Engineer & PCB Designer\nLinux enthusiast · Open-source tinkerer · Always building something`,
     },
     {
       command: "uname -a",
@@ -31,31 +31,31 @@ export default function TerminalHero({ authorName }: { authorName: string }) {
     },
     {
       command: "cat /proc/shehawey/status",
-      output: "Role: Embedded Software Engineer · State: R (running)\nFocus: Embedded Systems · Linux · Networking",
+      output: "Role: Embedded SW Engineer & PCB Designer @ NiroTronix · State: R (running)\nFocus: Firmware · PCB Design · Embedded Linux",
       render: () => (
         <span>
-          Role: Embedded Software Engineer · State: <span className="text-accent">R (running)</span>{"\n"}
-          Focus: Embedded Systems · Linux · Networking
+          Role: Embedded SW Engineer &amp; PCB Designer @ NiroTronix · State: <span className="text-accent">R (running)</span>{"\n"}
+          Focus: Firmware · PCB Design · Embedded Linux
         </span>
       ),
     },
     {
       command: "systemctl status shehawey",
-      output: "● shehawey.service — Embedded Software Engineer\nActive: active (running) · Building · Learning · Debugging",
+      output: "● shehawey.service — Embedded Software Engineer & PCB Designer\nActive: active (running) · Building · Learning · Debugging",
       render: () => (
         <span>
-          <span className="text-accent">●</span> shehawey.service — Embedded Software Engineer{"\n"}
+          <span className="text-accent">●</span> shehawey.service — Embedded Software Engineer &amp; PCB Designer{"\n"}
           Active: <span className="text-accent">active (running)</span> · Building · Learning · Debugging
         </span>
       ),
     },
     {
       command: "cat skills.txt",
-      output: "C/C++ · Embedded C · STM32 · AVR · ESP32\nFreeRTOS · Embedded Linux · CAN · UART · SPI · I2C · Git",
+      output: "C/C++ · Embedded C · STM32 · AVR · PIC · ESP32\nFreeRTOS · Embedded Linux · KiCad PCB · CAN · LIN · UART · SPI · I2C",
     },
     {
       command: "echo $TOOLCHAIN",
-      output: "GCC · GDB · CMake · Git · VS Code · STM32CubeIDE\nLinux · Docker · Proteus · MATLAB",
+      output: "GCC · GDB · Git · STM32CubeIDE · MPLAB X · KiCad\nLinux · QEMU · Docker · Proteus · MATLAB",
     },
   ];
 

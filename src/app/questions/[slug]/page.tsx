@@ -9,6 +9,7 @@ import QuestionContent from "@/components/QuestionContent";
 import QuestionActions from "@/components/QuestionActions";
 import AnswerThread from "@/components/AnswerThread";
 import AnswerForm from "@/components/AnswerForm";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 function excerpt(text: string, max = 160): string {
   const plain = text.replace(/[#*`>_\-\[\]()]/g, " ").replace(/\s+/g, " ").trim();
@@ -120,7 +121,7 @@ export default async function QuestionDetailPage({
       <div className="mx-auto w-full max-w-3xl px-4 pt-2 pb-16 sm:px-6">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
 
         <QuestionContent

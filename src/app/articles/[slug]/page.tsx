@@ -15,6 +15,7 @@ import AuthorCard from "@/components/AuthorCard";
 import ArticleCard from "@/components/ArticleCard";
 import ArticleReader, { type RenderedLocale } from "@/components/ArticleReader";
 import CommentsSection from "@/components/CommentsSection";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 export function generateStaticParams() {
   return getArticles().map((a) => ({ slug: a.slug }));
@@ -147,7 +148,7 @@ export default async function ArticlePage({
       <div className="mx-auto w-full px-4 pt-4 pb-12 sm:px-8 lg:px-12">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
 
         <ArticleReader

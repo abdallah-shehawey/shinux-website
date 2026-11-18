@@ -40,7 +40,7 @@ export default async function AdminUsersPage() {
 
       <h1 className="mb-2 text-3xl font-bold tracking-tight">Registered users</h1>
       <p className="mb-8 text-muted">
-        {users.length} {users.length === 1 ? "account" : "accounts"} — {admins}{" "}
+        {users.length} {users.length === 1 ? "account" : "accounts"}{" "}— {admins}{" "}
         {admins === 1 ? "admin" : "admins"} and {members}{" "}
         {members === 1 ? "member" : "members"}. Newest first. Open a name for the public
         profile with everything that account has posted.
